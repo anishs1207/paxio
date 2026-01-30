@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import ReactPlayer from "react-player";
 
 export default function Hero() {
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -59,7 +60,7 @@ export default function Hero() {
 
                 {/* Video with Custom Controls */}
                 <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-[0_0_25px_rgba(99,102,241,0.3)] hover:shadow-[0_0_40px_rgba(99,102,241,0.5)] transition-all duration-500 mx-auto backdrop-blur-md">
-                    <video
+                    {/* <video
                         ref={videoRef}
                         className="w-full h-[350px] md:h-[480px]"
                         src="./Final.mp4"
@@ -67,34 +68,22 @@ export default function Hero() {
                         loop
                         playsInline
                         muted // ✅ must stay muted for autoplay to work
-                    />
-
-                    {/* Custom Controls — Always Visible */}
-                    <div className="absolute bottom-5 left-0 right-0 flex justify-center items-center gap-5">
-                        {/* Play / Pause Button */}
-                        <button
-                            onClick={togglePlay}
-                            className="p-3 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-lg border border-white/20 transition shadow-lg"
-                        >
-                            {isPlaying ? (
-                                <Pause className="w-6 h-6 text-white" />
-                            ) : (
-                                <Play className="w-6 h-6 text-white" />
-                            )}
-                        </button>
-
-                        {/* Mute / Unmute Button */}
-                        <button
-                            onClick={toggleMute}
-                            className="p-3 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-lg border border-white/20 transition shadow-lg"
-                        >
-                            {isMuted ? (
-                                <VolumeX className="w-6 h-6 text-white" />
-                            ) : (
-                                <Volume2 className="w-6 h-6 text-white" />
-                            )}
-                        </button>
+                    /> */}
+                    <div className="w-full h-[350px] md:h-[480px]">
+                        <iframe
+                            className="w-full h-full"
+                            src="https://www.youtube.com/embed/knZVTMCcpJg?autoplay=1&mute=1&loop=1&playlist=knZVTMCcpJg"
+                            title="YouTube video"
+                            allow="autoplay"
+                            allowFullScreen
+                        ></iframe>
                     </div>
+
+                    {/* <iframe width="623" height="358" title="Final" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+ */}
+
+
+
                 </div>
             </div>
         </section>

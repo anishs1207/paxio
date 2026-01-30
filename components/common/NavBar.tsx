@@ -49,8 +49,8 @@ export default function Navbar() {
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-8">
-                    {menuItems.map((item) => (
+                {/* <nav className="hidden md:flex items-center gap-8"> */}
+                {/* {menuItems.map((item) => (
                         <Link
                             key={item.name}
                             href={item.href}
@@ -59,7 +59,7 @@ export default function Navbar() {
                             {item.name}
                         </Link>
                     ))}
-                </nav>
+                </nav> */}
 
                 {/* Desktop Actions */}
                 <div className=" hidden md:flex items-center gap-3">
@@ -105,7 +105,7 @@ export default function Navbar() {
                         className="md:hidden bg-black border-t border-zinc-800 px-6 py-6"
                     >
                         <div className="flex flex-col gap-5">
-                            {menuItems.map((item) => (
+                            {/* {menuItems.map((item) => (
                                 <Link
                                     key={item.name}
                                     href={item.href}
@@ -115,7 +115,7 @@ export default function Navbar() {
                                     {item.icon}
                                     {item.name}
                                 </Link>
-                            ))}
+                            ))} */}
 
                             <Button
                                 onClick={() => {
