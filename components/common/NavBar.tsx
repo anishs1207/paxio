@@ -62,7 +62,7 @@ export default function Navbar() {
                 </nav> */}
 
                 {/* Desktop Actions */}
-                <div className=" hidden md:flex items-center gap-3">
+                <div className="flex items-center gap-3">
                     <Button
                         onClick={handleScrollToWaitlist}
                         className="cursor-pointer bg-white text-black hover:bg-zinc-200 rounded-xl font-medium flex gap-2"
@@ -86,12 +86,12 @@ export default function Navbar() {
                 </div>
 
                 {/* Mobile Toggle */}
-                <button
+                {/* <button
                     onClick={() => setMobileOpen(!mobileOpen)}
                     className="cursor-pointer md:hidden text-zinc-300 hover:text-white"
                 >
                     {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-                </button>
+                </button> */}
             </div>
 
             {/* Mobile Menu */}
@@ -102,7 +102,7 @@ export default function Navbar() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="md:hidden bg-black border-t border-zinc-800 px-6 py-6"
+                        className="bg-black border-t border-zinc-800 px-6 py-6"
                     >
                         <div className="flex flex-col gap-5">
                             {/* {menuItems.map((item) => (
