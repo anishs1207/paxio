@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, email } = body;
 
-    // Basic validation
+    // Basic validatio
     if (!name || !email) {
       return NextResponse.json(
         { error: "Name and email are required." },
