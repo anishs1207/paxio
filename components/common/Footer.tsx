@@ -3,6 +3,8 @@
 import { Twitter, Linkedin } from "lucide-react";
 import { motion } from "framer-motion";
 
+import Link from "next/link";
+
 const Footer = () => {
     const currentYear = new Date().getFullYear();
 
@@ -63,7 +65,6 @@ const Footer = () => {
                 {/* Divider */}
                 <div className="w-full border-t border-zinc-800 mt-10 pt-6" />
 
-                {/* Copyright */}
                 <motion.p
                     className="text-zinc-500 text-sm"
                     initial={{ opacity: 0 }}
@@ -73,6 +74,25 @@ const Footer = () => {
                 >
                     © {currentYear} Paxio. All rights reserved.
                 </motion.p>
+
+                {/* Legal Links */}
+                <motion.div
+                    className="flex flex-wrap justify-center gap-6"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    viewport={{ once: true }}
+                >
+                    <Link href="/terms-of-service" className="text-zinc-500 hover:text-white transition-colors text-sm">
+                        Terms of Service
+                    </Link>
+                    <Link href="/public-privacy-policy" className="text-zinc-500 hover:text-white transition-colors text-sm">
+                        Privacy Policy
+                    </Link>
+                </motion.div>
+
+                {/* Copyright */}
+
             </div>
         </footer>
     );
