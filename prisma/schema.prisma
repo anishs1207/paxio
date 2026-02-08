@@ -17,6 +17,12 @@ datasource db {
 model WaitListUser {
   id        String   @id @default(uuid())
   name      String
+  plan      PlanEnum @default(FREE)
   email     String
   createdAt DateTime @default(now())
+}
+
+enum PlanEnum {
+  FREE
+  PRO
 }
