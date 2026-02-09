@@ -1,6 +1,6 @@
 // apps/backend/src/nodes/outreach/gmail/credential.ts
 import { google } from "googleapis";
-import { getValidGmailAccessToken } from "@/backend/global.credentials"; // import your function
+import { getValidGmailAccessToken } from "@/lib/tokenHelpers"; // import your function
 
 let gmail: any;
 
