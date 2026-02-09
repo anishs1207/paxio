@@ -13,6 +13,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface DoomscrollResult {
   id: string;
@@ -41,6 +43,11 @@ interface DoomscrollSessionsProps {
 }
 
 const platformEmojis: Record<string, string> = {
+  google: "🔍",
+  bbc: "📺",
+  reuters: "📰",
+  apnews: "📡",
+  techcrunch: "💻",
   reddit: "🔴",
   linkedin: "💼",
   x: "𝕏",
@@ -285,10 +292,25 @@ export const DoomscrollSessions: React.FC<DoomscrollSessionsProps> = ({
                                 </button>
 
                                 {expandedResult === result.id && (
-                                  <div className="p-3 pt-0 border-t border-zinc-800">
-                                    <pre className="text-xs text-zinc-300 whitespace-pre-wrap max-h-64 overflow-y-auto">
-                                      {result.rawOutput}
-                                    </pre>
+                                  <div className="p-3 pt-3 border-t border-zinc-800 max-h-96 overflow-y-auto">
+                                    <div className="prose prose-invert prose-sm max-w-none
+                                      prose-headings:text-zinc-100 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2
+                                      prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
+                                      prose-p:text-zinc-300 prose-p:leading-relaxed prose-p:my-2
+                                      prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+                                      prose-strong:text-zinc-200 prose-strong:font-semibold
+                                      prose-ul:text-zinc-300 prose-ul:my-2 prose-ul:pl-4
+                                      prose-ol:text-zinc-300 prose-ol:my-2 prose-ol:pl-4
+                                      prose-li:my-0.5 prose-li:marker:text-zinc-500
+                                      prose-code:text-amber-400 prose-code:bg-zinc-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                                      prose-pre:bg-zinc-800 prose-pre:border prose-pre:border-zinc-700 prose-pre:rounded-lg prose-pre:p-3 prose-pre:overflow-x-auto
+                                      prose-blockquote:border-l-2 prose-blockquote:border-zinc-600 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-zinc-400
+                                      prose-hr:border-zinc-700
+                                    ">
+                                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {result.rawOutput}
+                                      </ReactMarkdown>
+                                    </div>
                                   </div>
                                 )}
 

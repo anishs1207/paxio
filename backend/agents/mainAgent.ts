@@ -1856,12 +1856,16 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
 }
 
 /* ============================================================
-   DOOMSCROLLER - Social Media Research Tool
+   DOOMSCROLLER - Web Research Tool (No Login Required)
 ============================================================ */
 
+// Supported platforms - prioritize no-login sources
+type DoomscrollPlatform = "google" | "bbc" | "reuters" | "apnews" | "techcrunch" | "reddit" | "x";
+
 interface DoomscrollFinding {
-  platform: "reddit" | "linkedin" | "x";
+  platform: DoomscrollPlatform;
   rawOutput: string;
+  aiSummary?: string; // AI-generated summary (full context, not shortened)
   timestamp: Date;
 }
 
@@ -1889,19 +1893,42 @@ function getResearchDir(): string {
   return dir;
 }
 
-// Google auth for platforms
-const DOOMSCROLL_GOOGLE_AUTH = {
-  email: "paxiodoom@gmail.com",
-  password: "paxio.67"
-};
+// AI Summarization helper - summarizes but preserves full context
+async function summarizeWithAI(rawOutput: string, platform: string, topic: string): Promise<string> {
+  try {
+    const llm = getGeminiLLM();
+    const result = await llm.invoke([
+      new SystemMessage(`You are a research assistant. Your task is to summarize web research findings in a comprehensive way.
 
-// Persistent profile for doomscroller - saves cookies/login state
+IMPORTANT RULES:
+1. DO NOT shorten or truncate the information - include ALL key details
+2. Organize the information logically with clear sections
+3. Highlight key insights, trends, and important facts
+4. Include relevant quotes, statistics, and sources
+5. Maintain the full context and nuance of the original content
+6. Add analysis and connections between different pieces of information
+7. Format with markdown for readability
+
+You are summarizing research from ${platform} about the topic: "${topic}"`),
+      new HumanMessage(`Please provide a comprehensive, well-organized summary of the following research findings. Remember: DO NOT shorten - expand and organize with full context:
+
+${rawOutput}`),
+    ]);
+
+    return typeof result.content === 'string' ? result.content : JSON.stringify(result.content);
+  } catch (error) {
+    console.log(`⚠️ AI summarization failed: ${error}`);
+    return ""; // Return empty string on failure, raw output will still be saved
+  }
+}
+
+// Persistent profile for doomscroller - saves cookies/state
 const DOOMSCROLL_PROFILE_NAME = "doomscroller_paxio";
 let cachedDoomscrollProfileId: string | null = null;
 
 /**
  * Gets or creates a persistent browser profile for the doomscroller.
- * This profile stores cookies and auth tokens so login is only needed once.
+ * This profile stores cookies to speed up subsequent sessions.
  */
 async function getOrCreateDoomscrollProfile(client: BrowserUseClient): Promise<string> {
   // Return cached profile ID if available
@@ -1930,77 +1957,109 @@ async function getOrCreateDoomscrollProfile(client: BrowserUseClient): Promise<s
     return newProfile.id;
   } catch (error) {
     console.log(`⚠️ Failed to get/create doomscroll profile: ${error}`);
-    // Return empty string to continue without profile (will require login each time)
     return "";
+  }
+}
+
+/**
+ * Check if a page requires login and skip if it does
+ */
+async function checkForLoginWall(client: BrowserUseClient, sessionId: string): Promise<boolean> {
+  try {
+    const checkTask = await client.tasks.createTask({
+      task: `Check if the current page requires login:
+1. Look for login/sign-in prompts, modals, or overlays
+2. Check if content is blocked behind authentication
+3. Look for "Sign in", "Log in", "Create account" barriers
+4. If the page freely shows content, report: "NO_LOGIN_REQUIRED"
+5. If login is needed to access content, report: "LOGIN_REQUIRED"
+
+Output ONLY: "NO_LOGIN_REQUIRED" or "LOGIN_REQUIRED"`,
+      sessionId,
+    });
+    for await (const step of checkTask.stream()) { /* consume */ }
+    const result = await checkTask.complete();
+    return result.output?.includes("LOGIN_REQUIRED") || false;
+  } catch {
+    return false;
   }
 }
 
 async function doomscrollPlatform(
   client: BrowserUseClient,
   sessionId: string,
-  platform: "reddit" | "linkedin" | "x",
+  platform: DoomscrollPlatform,
   topic: string
 ): Promise<DoomscrollFinding | null> {
   console.log(`\n🔍 DOOMSCROLL - Researching ${platform.toUpperCase()}...`);
 
-  // Smart login: Check if already logged in (from persistent profile), only login if needed
-  const loginTask = await client.tasks.createTask({
-    task: `Check and login to ${platform} if needed:
+  // Platform-specific research prompts (NO LOGIN REQUIRED for most)
+  const prompts: Record<DoomscrollPlatform, string> = {
+    google: `Research "${topic}" on Google:
+1. Go to https://www.google.com/search?q=${encodeURIComponent(topic)}&tbm=nws
+2. This is Google News search - browse through the news results
+3. Find 10-15 relevant news articles about the topic
+4. For each article, collect: Headline, Source name, Publication date, Brief excerpt, Full article URL
+5. Click on a few top articles and read the key points
+6. Look for recent developments, breaking news, and trending stories
+7. Note any patterns, consensus views, or conflicting information
+Output all findings with full URLs and key insights.`,
 
-1. First, go to ${platform === "reddit" ? "https://www.reddit.com" : platform === "linkedin" ? "https://www.linkedin.com" : "https://x.com"}
-2. Check if you are ALREADY LOGGED IN by looking for:
-   - Profile icon, avatar, or username in the header
-   - "Create Post" button (Reddit)
-   - "Start a post" or profile picture (LinkedIn)
-   - Profile icon or tweet button (X/Twitter)
+    bbc: `Research "${topic}" on BBC News:
+1. Go to https://www.bbc.com/search?q=${encodeURIComponent(topic)}
+2. Browse through the search results
+3. Find 5-10 relevant BBC articles about the topic
+4. For each article, collect: Headline, Publication date, Brief summary, Full article URL
+5. Click on the top 2-3 articles and extract key information
+6. Note the BBC's perspective and any expert quotes
+Output all findings with full BBC URLs.`,
 
-3. IF ALREADY LOGGED IN: Report "Already authenticated, skipping login" and stop
-4. IF NOT LOGGED IN: Perform Google authentication:
-   - Look for "Sign in with Google" or "Continue with Google" button and click it
-   - If a Google login page appears:
-     * Enter email: ${DOOMSCROLL_GOOGLE_AUTH.email}
-     * Click Next
-     * Enter password: ${DOOMSCROLL_GOOGLE_AUTH.password}
-     * Click Next
-   - If there are any permission prompts, accept them
-   - Wait for the login to complete
+    reuters: `Research "${topic}" on Reuters:
+1. Go to https://www.reuters.com/search/news?blob=${encodeURIComponent(topic)}
+2. Browse through the news search results
+3. Find 5-10 relevant Reuters articles about the topic
+4. For each article, collect: Headline, Publication date, Brief summary, Full article URL
+5. Click on top articles to read detailed reporting
+6. Focus on facts, data, and official sources cited
+Output all findings with full Reuters URLs.`,
 
-Report whether login was needed or if already authenticated.`,
-    sessionId,
-  });
-  for await (const step of loginTask.stream()) { /* consume */ }
-  const loginResult = await loginTask.complete();
-  console.log(`🔐 Login result: ${loginResult.output?.substring(0, 100) || "completed"}`);
+    apnews: `Research "${topic}" on AP News:
+1. Go to https://apnews.com/search?q=${encodeURIComponent(topic)}
+2. Browse through the search results
+3. Find 5-10 relevant AP News articles about the topic
+4. For each article, collect: Headline, Publication date, Brief summary, Full article URL
+5. Read top articles for factual reporting
+6. Note any breaking news or developing stories
+Output all findings with full AP News URLs.`,
 
-  // Platform-specific research prompts
-  const prompts: Record<string, string> = {
-    reddit: `Research "${topic}" on Reddit:
-1. Go to https://www.reddit.com
-2. Search for "${topic}" using the search bar
-3. Browse through posts in relevant subreddits
-4. Find 5-10 interesting posts/discussions about the topic
-5. For each post, collect: Post title, Subreddit name, Upvote count, Number of comments, Post URL, Top 1-2 comments or key discussion points
-6. Look for AMAs, discussions, or detailed threads
-Output all findings with full Reddit URLs.`,
+    techcrunch: `Research "${topic}" on TechCrunch:
+1. Go to https://techcrunch.com/search/${encodeURIComponent(topic)}
+2. Browse through the search results
+3. Find 5-10 relevant TechCrunch articles about the topic
+4. For each article, collect: Headline, Author, Publication date, Brief summary, Full article URL
+5. Focus on tech industry insights, startup news, and innovation
+6. Note expert opinions and industry trends
+Output all findings with full TechCrunch URLs.`,
 
-    linkedin: `Research "${topic}" on LinkedIn:
-1. Go to https://www.linkedin.com
-2. Search for "${topic}" in the search bar
-3. Filter by Posts or Articles
-4. Find 5-10 interesting posts/articles about the topic
-5. For each post/article, collect: Author name and title, Post content summary, Reaction count, Comment count, Post URL, Key insights
-6. Look for thought leaders discussing this topic
-Output all findings with full LinkedIn URLs and key insights.`,
+    reddit: `Research "${topic}" on Reddit (NO LOGIN - browse only public content):
+1. Go to https://www.reddit.com/search/?q=${encodeURIComponent(topic)}
+2. Browse through the PUBLIC search results (do NOT log in)
+3. If a login popup appears, close it or navigate away
+4. Find 5-10 interesting PUBLIC posts/discussions about the topic
+5. For each post, collect: Post title, Subreddit name, Upvote count, Number of comments, Post URL
+6. Only access content that is publicly visible without login
+7. Skip any content that requires authentication
+Output all findings with full Reddit URLs. SKIP if login is required.`,
 
-    x: `Research "${topic}" on X (Twitter):
-1. Go to https://x.com
-2. Search for "${topic}" in the search bar
-3. Check the "Top" and "Latest" tabs
-4. Find 5-10 interesting tweets about the topic
-5. For each tweet, collect: Author username and display name, Tweet content, Engagement (likes, retweets, replies), Tweet URL, Key discussion points
-6. Look for threads with detailed discussions
-7. Find trending hashtags related to the topic
-Output all findings with full X/Twitter URLs and key insights.`
+    x: `Research "${topic}" on X/Twitter (NO LOGIN - browse only public content):
+1. Go to https://x.com/search?q=${encodeURIComponent(topic)}&src=typed_query
+2. Browse through the PUBLIC search results (do NOT log in)
+3. If a login popup appears, close it or navigate to the public search
+4. Find 5-10 interesting PUBLIC tweets about the topic
+5. For each tweet, collect: Author username, Tweet content preview, Tweet URL
+6. Only access content that is publicly visible without login
+7. Skip any content blocked behind authentication
+Output all findings with full X/Twitter URLs. SKIP completely if login is required.`
   };
 
   const task = await client.tasks.createTask({
@@ -2010,6 +2069,15 @@ Output all findings with full X/Twitter URLs and key insights.`
 
   for await (const step of task.stream()) { /* consume */ }
   const result = await task.complete();
+
+  // Check if this platform requires login (for reddit/x)
+  if (platform === "reddit" || platform === "x") {
+    const needsLogin = await checkForLoginWall(client, sessionId);
+    if (needsLogin) {
+      console.log(`⚠️ ${platform.toUpperCase()} requires login - skipping`);
+      return null;
+    }
+  }
 
   if (result.output) {
     return {
@@ -2022,14 +2090,14 @@ Output all findings with full X/Twitter URLs and key insights.`
 }
 
 function createDoomscrollerTools(userId: string, userPrompt: string) {
-  console.log("✅ Creating Doomscroller tools");
+  console.log("✅ Creating Doomscroller tools (No-Login Research)");
   const tools = [];
 
   tools.push(
     tool(
-      async ({ topic, platforms = ["reddit", "linkedin", "x"], durationHours = 1 }) => {
+      async ({ topic, platforms = ["google", "bbc", "reuters", "apnews"], durationHours = 1 }) => {
         console.log("\n" + "═".repeat(60));
-        console.log("🌀 DOOMSCROLLER - Social Media Research Agent");
+        console.log("🌀 DOOMSCROLLER - Web Research Agent (No Login Required)");
         console.log("═".repeat(60));
         console.log(`📌 Topic: ${topic}`);
         console.log(`🎯 Platforms: ${platforms.join(", ")}`);
@@ -2050,14 +2118,14 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
         });
         console.log(`📝 DB Session created: ${dbSession.id} (RUNNING)`);
 
-        // Create browser session (NO PROXY!)
-        // Get or create persistent profile for saved login state
+        // Create browser session
+        // Get or create persistent profile for cookies
         const doomscrollProfileId = await getOrCreateDoomscrollProfile(browserUseClient);
 
         const browserSession = await browserUseClient.sessions.createSession({
           browserScreenWidth: 1920,
           browserScreenHeight: 1080,
-          profileId: doomscrollProfileId || undefined, // Use profile if available
+          profileId: doomscrollProfileId || undefined,
         });
 
         console.log(`✅ Browser session: ${browserSession.id}`);
@@ -2095,8 +2163,8 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
         };
 
         try {
-          // Research each platform
-          for (const platform of platforms as ("reddit" | "linkedin" | "x")[]) {
+          // Research each platform (no login required for most)
+          for (const platform of platforms as DoomscrollPlatform[]) {
             try {
               const finding = await doomscrollPlatform(
                 browserUseClient,
@@ -2105,6 +2173,11 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
                 topic
               );
               if (finding) {
+                // ===== AI SUMMARIZATION PASS =====
+                console.log(`🤖 Generating AI summary for ${platform}...`);
+                const aiSummary = await summarizeWithAI(finding.rawOutput, platform, topic);
+                finding.aiSummary = aiSummary;
+
                 findings.push(finding);
 
                 // ===== SAVE RESULT TO DB AFTER EACH PLATFORM =====
@@ -2113,10 +2186,10 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
                     sessionId: dbSession.id,
                     platform: finding.platform,
                     rawOutput: finding.rawOutput,
-                    preview: finding.rawOutput.substring(0, 500),
+                    preview: aiSummary || finding.rawOutput.substring(0, 500),
                   },
                 });
-                console.log(`📝 Saved ${platform} results to DB`);
+                console.log(`📝 Saved ${platform} results to DB (with AI summary)`);
               }
             } catch (error) {
               console.log(`⚠️ Error on ${platform}: ${error}`);
@@ -2136,11 +2209,19 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
           content += `\n---\n\n`;
 
           const emojis: Record<string, string> = {
-            reddit: "🔴", linkedin: "💼", x: "𝕏"
+            google: "🔍", bbc: "📺", reuters: "📰", apnews: "📡", techcrunch: "💻", reddit: "🔴", x: "𝕏"
           };
 
           for (const finding of findings) {
             content += `## ${emojis[finding.platform] || "📌"} ${finding.platform.toUpperCase()}\n\n`;
+
+            // Include AI summary if available
+            if (finding.aiSummary) {
+              content += `### 🤖 AI Summary\n\n`;
+              content += finding.aiSummary;
+              content += `\n\n### 📄 Raw Findings\n\n`;
+            }
+
             content += finding.rawOutput;
             content += `\n\n---\n\n`;
           }
@@ -2199,13 +2280,13 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
       {
         name: "doomscroll_research",
         description:
-          "Research a topic across social media platforms (Reddit, LinkedIn, X/Twitter) using automated browser. This tool browses each platform, searches for the topic, and collects posts, discussions, and insights. Great for market research, trend analysis, competitive intelligence, or deep-diving into any subject. The browser session is automatically cleaned up to prevent cloud costs.",
+          "Research a topic across the web using automated browser. Primarily uses Google News, BBC, Reuters, AP News, and TechCrunch - all sources that don't require login. Can optionally try Reddit and X but will skip if login is required. Great for market research, trend analysis, news tracking, competitive intelligence, or deep-diving into any subject. Each finding is enriched with an AI-generated summary (comprehensive, not shortened). The browser session is automatically cleaned up.",
         schema: z.object({
-          topic: z.string().describe("The topic to research across social media platforms"),
+          topic: z.string().describe("The topic to research across web sources"),
           platforms: z
-            .array(z.enum(["reddit", "linkedin", "x"]))
+            .array(z.enum(["google", "bbc", "reuters", "apnews", "techcrunch", "reddit", "x"]))
             .optional()
-            .describe("Which platforms to research. Default: all three (reddit, linkedin, x)"),
+            .describe("Which sources to research. Default: google, bbc, reuters, apnews (no login required). Reddit/X are optional but will be skipped if login is required."),
           durationHours: z
             .number()
             .optional()
@@ -2404,9 +2485,11 @@ CRITICAL TOOL RULES
      you MUST call zepto_order with the otp parameter and the previous order details (location, phone_number, product).
      The sessionId will be auto-resolved server-side, so you can pass it if you have it, or leave it empty.
      NEVER respond with "session expired" - always try calling the tool with the OTP.
-8. If user asks to research a topic on social media (Reddit, LinkedIn, X/Twitter) → use doomscroll_research tool
-   - Great for market research, trend analysis, competitive intelligence
-   - Automatically researches across multiple platforms and generates a report
+8. If user asks to research news, trends, or topics on the web → use doomscroll_research tool
+   - Default platforms: Google News, BBC, Reuters, AP News (NO LOGIN REQUIRED)
+   - Can optionally include Reddit/X but will SKIP them if login is required
+   - Each finding is enriched with AI-generated comprehensive summary
+   - Great for market research, news tracking, trend analysis, competitive intelligence
    - Browser session is automatically cleaned up after completion
 
 ========================
