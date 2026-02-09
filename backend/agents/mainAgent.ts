@@ -2221,7 +2221,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
 
 
 async function getUserContacts(userId: string) {
-  const contacts = await prisma.userList.findMany({
+  const contacts = await prisma.userEmailList.findMany({
     where: { userId },
     select: {
       name: true,

@@ -1,4 +1,4 @@
-import prisma from "../../../web/lib/db";
+import prisma from "../../lib/db";
 import { runMainAgent } from "../agents/mainAgent";
 import { invokeGeminiWithFallback } from "../utils/GeminiChatModel";
 import { streamVoiceMessage } from "../utils/ws";
