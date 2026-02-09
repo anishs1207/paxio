@@ -46,10 +46,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProviders>
-          <Navbar />
+
           <Toaster />
           {children}
-          <Footer />
+
         </SessionProviders>
       </body>
     </html>
