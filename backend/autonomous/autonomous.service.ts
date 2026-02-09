@@ -1,6 +1,6 @@
 import cron, { ScheduledTask } from "node-cron";
-import prisma from "../../../../../../web/lib/db";
-import { runMainAgent } from "../../../../agents/mainAgent";
+import prisma from "@/lib/db";
+import { runMainAgent } from "../agents/mainAgent";
 
 /* ============================================================
    REGISTRIES

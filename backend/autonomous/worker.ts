@@ -1,6 +1,6 @@
 // // apps/backend/src/worker.ts
 // apps/backend/src/worker.ts
-import prisma from "../../../../../../web/lib/db";
+import prisma from "@/lib/db";
 import { registerTask, unregisterTask } from "./autonomous.service";
 
 const POLL_INTERVAL_MS = 5000;

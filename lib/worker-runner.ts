@@ -28,15 +28,10 @@ export async function initWorker() {
   //   });
   // }
 
-//Start the worker
+  //Start the worker
   const { startWorker } = await import(
-    "../../backend/src/app/assistants/personal/autonomous/worker"
+    "../backend/autonomous/worker"
   );
-  const { startMemoryScheduler } = await import(
-    "../../backend/src/app/memory/memory-management/index"
-  );
-
-  startMemoryScheduler();
 
   console.log("[Worker-Runner] Starting worker...");
   startWorker();
