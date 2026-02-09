@@ -38,6 +38,8 @@ export default function PayButton() {
 
                         if (verifyRes.data.success) {
                             toast("Payment successful 🎉");
+                            // Redirect to dashboard after successful payment
+                            window.location.href = "/voice";
                         } else {
                             toast("Payment verification failed");
                         }

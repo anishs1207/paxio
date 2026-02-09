@@ -28,7 +28,8 @@ export async function POST() {
     const order = await razorpay.orders.create({
       amount: amount * 100, // paise
       currency: "INR",
-      receipt: `receipt_${userId}_${Date.now()}`,
+      // add userId here
+      receipt: `receipt_${Date.now()}`,
       notes: {
         userId,
         plan: "monthly_manual",
@@ -42,6 +43,7 @@ export async function POST() {
       key: process.env.RAZORPAY_TEST_KEY_ID,
     });
   } catch (error) {
+    console.error("❌ Create order error:", error);
     return NextResponse.json(
       { error: "Failed to create order" },
       { status: 500 }
