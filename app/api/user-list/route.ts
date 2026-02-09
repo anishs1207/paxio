@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const userList = await prisma.userList.create({
+    const userList = await prisma.userEmailList.create({
       data: {
         name,
         email,
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const userLists = await prisma.userList.findMany({
+    const userLists = await prisma.userEmailList.findMany({
       where: {
         userId,
         ...(name && name.trim() !== ""
@@ -90,7 +90,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
 
-    const updatedUserList = await prisma.userList.update({
+    const updatedUserList = await prisma.userEmailList.update({
       where: { id },
       data: {
         ...(name && { name }),
@@ -120,7 +120,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
 
-    await prisma.userList.delete({
+    await prisma.userEmailList.delete({
       where: { id },
     });
 
