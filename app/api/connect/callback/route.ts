@@ -1,14 +1,9 @@
-// /api/connect/callback/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { google } from "googleapis";
 import { authOptions } from "@/lib/auth";
 import type { User } from "@/generated/prisma";
 import prisma from "@/lib/db";
-
-// // This temporary store should be replaced with a database
-// const userTokens: Record<string, Record<string, any>> = {};
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,20 +16,10 @@ export async function GET(req: NextRequest) {
     }
     const decodedState = JSON.parse(decodeURIComponent(state));
     const { service, userId } = decodedState;
-    // todo use userId sent by the frontend but right now use session.userId
-
-    console.log("decodedState", decodedState);
 
     const session = await getServerSession(authOptions);
-    console.log("Session", session);
-    // if (!session || !session.user || !session.userId) {
-    //   return NextResponse.json(
-    //     { error: "Unauthorized or state mismatch" },
-    //     { status: 401 }
-    //   );
-    // } @anish check this out
 
-    if (!session || !session.user) {
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { error: "Unauthorized or state mismatch" },
         { status: 401 }
@@ -48,16 +33,7 @@ export async function GET(req: NextRequest) {
     );
 
     const { tokens } = await oauth2Client.getToken(code!);
-    console.log("Tokens for testing:", tokens);
-
-    // in memory store (tobe removed here):
-    // if (!userTokens[userId]) {
-    //   userTokens[userId] = {};
-    // }
-    // userTokens[userId][service] = tokens;
-
-    // Map your service to the Prisma fields
-    // Map your service to the Prisma fields
+ 
     const serviceTokenFields: Record<
       string,
       {
@@ -85,10 +61,10 @@ export async function GET(req: NextRequest) {
         accessTokenField: "googleDriveAccessToken",
         refreshTokenField: "googleDriveRefreshToken",
       },
-      forms: {
-        accessTokenField: "googleFormsAccessToken", // add these fields in your User model
-        refreshTokenField: "googleFormsRefreshToken",
-      },
+      // forms: {
+      //   accessTokenField: "googleFormsAccessToken", // add these fields in your User model
+      //   refreshTokenField: "googleFormsRefreshToken",
+      // },
     };
 
     const fields = serviceTokenFields[service];
@@ -96,12 +72,8 @@ export async function GET(req: NextRequest) {
       throw new Error("Invalid service mapping");
     }
 
-    //todo get this from frontend
-    let theUserId = "anushay123";
-
-    // // Save tokens in DB
     await prisma.user.update({
-      where: { id: theUserId },
+      where: { id: session.user.id },
       data: {
         [fields.accessTokenField]: tokens.access_token,
         [fields.refreshTokenField]: tokens.refresh_token ?? undefined,

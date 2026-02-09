@@ -74,6 +74,9 @@ export default function VoicePage() {
     const hasReceivedAudioRef = useRef(false);
     const { data: session, status: userStatus } = useSession();
 
+
+    const userId = session?.user.id;
+
     const [credits, setCredits] = useState<number>(0);
     const [isLoadingCredits, setIsLoadingCredits] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
@@ -101,7 +104,7 @@ export default function VoicePage() {
         { name: "zepto", label: "Zepto", icon: <ShoppingBag size={22} />, status: "disconnected" },
     ]);
 
-    const [userId, setUserId] = useState("anushay123");
+
     const [conversationId, setConversationId] = useState("default")
 
     const shouldShowVisualizer = Boolean(responsePayload);
@@ -119,17 +122,7 @@ export default function VoicePage() {
     const [showWorkflow, setShowWorkflow] = useState(false);
     const [showSessions, setShowSessions] = useState(false);
 
-    const [messages, setMessages] = useState<any[]>([
-        {
-            id: "default-123",
-            conversationId: "default",
-            userId: "anushay123",
-            role: "assistant",
-            message: "How can I help you ?",
-            payload: {},
-            creditsUsed: 0,
-        }
-    ]);
+    const [messages, setMessages] = useState<any[]>([]);
 
     const [activities] = useState<any[]>([]);
 
@@ -149,7 +142,7 @@ export default function VoicePage() {
                 // If error, assume not onboarded
                 setOnboardingState("onboarding");
             });
-    }, [userStatus]);
+    }, [session?.user.id, userStatus]);
 
     useEffect(() => {
         setIsLoadingCredits(true);
@@ -309,7 +302,6 @@ export default function VoicePage() {
             setCredits(0);
         }
     };
-
 
 
     useEffect(() => {
@@ -690,14 +682,14 @@ export default function VoicePage() {
     }
 
     // Show onboarding form if user hasn't completed onboarding
-    // if (onboardingState === "onboarding") {
-    //     return (
-    //         <OnboardingForm
-    //             userId={userId}
-    //             onComplete={handleOnboardingComplete}
-    //         />
-    //     );
-    // }
+    if (onboardingState === "onboarding") {
+        return (
+            <OnboardingForm
+                userId={userId}
+                onComplete={handleOnboardingComplete}
+            />
+        );
+    }
 
     // Main content (onboardingState === "ready")
     return (
@@ -783,6 +775,7 @@ export default function VoicePage() {
             <PeopleOverlay
                 isOpen={showPeople}
                 onClose={() => setShowPeople(false)}
+                userId={userId}
             />
 
             <WorkflowFormBubble

@@ -1,16 +1,22 @@
 import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export async function GET() {
-  const USER_ID = "anushay123";
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+
+  if (!session || !session.user || !userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: USER_ID },
+      where: { id: userId },
       select: { credits: true },
     });
 
-    // ✅ REQUIRED conversion
     const credits =
       user?.credits !== undefined ? Number(user.credits) : 0;
 

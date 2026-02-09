@@ -8,17 +8,17 @@ import { deductCredits, refundCredits } from "@/lib/credit.service";
 const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
 
 export async function POST(req: NextRequest) {
-  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
 
-  // if (!session?.user?.id) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const requestId = crypto.randomUUID();
 
   try {
     // ✅ DEDUCT 100 CREDITS (ONCE PER REQUEST)
-    await deductCredits("anushay123", requestId);
+    await deductCredits(session.user.id, requestId);
 
     const formData = await req.formData();
     const audioFile = formData.get("audio") as File | null;
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     const obj = await routePrompt({
       prompt: text,
-      userId: "anushay123",
+      userId: session.user.id,
       conversationId: "anushay1234",
       socketId,
     });
