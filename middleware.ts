@@ -1,42 +1,42 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-// @@fix iti
-// Toggle manually if needed
-const isProd = false;
-//test3
-
-export default function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const pathname = url.pathname;
 
   console.log("🔍 Running middleware for:", pathname);
 
-  if (isProd) {
-    // Allow homepage to load normally
-    if (pathname === "/") return NextResponse.next();
+  // Protected routes that require authentication
+  const protectedRoutes = ["/payment", "/voice"];
 
-    // Redirect all other routes
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+  // Check if current path is a protected route
+  const isProtectedRoute = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+
+  if (isProtectedRoute) {
+    // Check if user is authenticated
+    const token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token) {
+      // User is not logged in, redirect to home
+      console.log("🚫 Unauthorized access to:", pathname, "- Redirecting to /");
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
+    console.log("✅ Authorized access to:", pathname);
   }
 
   return NextResponse.next();
 }
 
-// ✅ Correct matcher configuration
+// Match protected routes
 export const config = {
-  matcher: [
-    "/admin-dashboard",
-    "/admin-login",
-    "/signin",
-    "/signup",
-    "/c/:path*", // ✅ use :path* to match /c, /c/abc, /c/xyz/123, etc.
-    "/chat",
-    "/use-cases",
-    "/workflows",
-    "/features",
-    "/login",
-    "/onboarding",
-    "/pricing",
-  ],
+  matcher: ["/payment", "/payment/:path*", "/voice", "/voice/:path*"],
 };
+

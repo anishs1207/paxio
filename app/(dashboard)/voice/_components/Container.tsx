@@ -6,7 +6,6 @@ import { NeuralCore } from "./NeuralCore";
 import { VibratingText } from "./VibratingText";
 import { ActivityFeed } from "./ActivityFeed";
 import type { AppState, Message, ActivityLog } from "../VoicePage";
-import IdleVisualizer from "./responses/NeuralCoreSteup";
 
 interface VoiceContentProps {
     appState: AppState;

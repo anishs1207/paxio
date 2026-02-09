@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -11,6 +13,14 @@ export async function POST(req: Request) {
       razorpay_payment_id,
       razorpay_signature,
     } = await req.json();
+
+
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!session || !session.user || !userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -26,21 +36,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await prisma.waitListUser.update({
+    await prisma.user.update({
       where: {
-        // rempve hardcode later here
-        id: "1cb90e53-9ef5-4ae3-94d3-d40c3bbaf579",
-        email: "anishs1207@gmail.com"
+        id: userId,
       },
       data: {
         plan: "PRO",
+        credits: {
+          increment: 1000,
+        },
       },
     });
 
-    console.log("user", user);
-
     // syore the payment stiff related here
-
     // // ✅ Payment verified
     // await activateMonthlyPlan({
     //   userId: "user_123",

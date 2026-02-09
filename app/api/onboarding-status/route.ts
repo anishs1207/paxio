@@ -70,6 +70,18 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Create a default assistant welcome message for the new user
+    await prisma.newChat.create({
+      data: {
+        conversationId: "default",
+        userId: userId,
+        role: "assistant",
+        message: "How can I help you?",
+        payload: {},
+        creditsUsed: 0,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       isOnboardingCompleted: updatedUser.isOnboardingCompleted,

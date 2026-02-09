@@ -1,5 +1,7 @@
 import Razorpay from "razorpay";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -10,13 +12,21 @@ const razorpay = new Razorpay({
 
 export async function POST() {
   try {
-    // TODO: get from auth/session (later here)
-    const userId = "user_123";
+    const session = await getServerSession(authOptions);
 
-    const amount = 1;
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+      
+    const amount = 10;
+
+    const userId = session?.user?.id;
 
     const order = await razorpay.orders.create({
-      amount: amount * 100, 
+      amount: amount * 100, // paise
       currency: "INR",
       receipt: `receipt_${userId}_${Date.now()}`,
       notes: {

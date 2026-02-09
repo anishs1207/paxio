@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const obj = await routePrompt({
       prompt: text,
       userId: session.user.id,
-      conversationId: "anushay1234",
+      conversationId: "default",
       socketId,
     });
 

@@ -14,13 +14,14 @@ export async function GET(req: Request) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { credits: true },
+      select: { credits: true, plan: true },
     });
 
     const credits =
       user?.credits !== undefined ? Number(user.credits) : 0;
+    const plan = user?.plan ?? "FREE";
 
-    return NextResponse.json({ credits });
+    return NextResponse.json({ credits, plan });
   } catch (err) {
     console.error("FINAL CREDITS ERROR:", err);
     return NextResponse.json(
@@ -29,3 +30,4 @@ export async function GET(req: Request) {
     );
   }
 }
+

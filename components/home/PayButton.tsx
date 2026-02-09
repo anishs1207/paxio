@@ -72,7 +72,7 @@ export default function PayButton() {
     focus-visible:bg-white
   "
             >
-                Pay $10
+                Pay ₹10
             </Button>
         </div>
     );

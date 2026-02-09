@@ -78,6 +78,7 @@ export default function VoicePage() {
     const userId = session?.user.id;
 
     const [credits, setCredits] = useState<number>(0);
+    const [plan, setPlan] = useState<string>("FREE");
     const [isLoadingCredits, setIsLoadingCredits] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
@@ -150,9 +151,11 @@ export default function VoicePage() {
             .get("/api/credits")
             .then(({ data }) => {
                 setCredits(data.credits ?? 0);
+                setPlan(data.plan ?? "FREE");
             })
             .catch(() => {
                 setCredits(0);
+                setPlan("FREE");
             })
             .finally(() => {
                 setIsLoadingCredits(false);
@@ -704,6 +707,7 @@ export default function VoicePage() {
                     setIsWorkflowOpen={setShowWorkflow}
                     setIsSessionsOpen={setShowSessions}
                     credits={credits}
+                    plan={plan}
                     isLoadingCredits={isLoadingCredits}
                     showPeople={showPeople}
                     setShowPeople={setShowPeople}

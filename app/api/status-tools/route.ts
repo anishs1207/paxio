@@ -5,20 +5,12 @@ import { authOptions } from "@/lib/auth";
 import { getUserConnectedNodes } from "@/lib/getUserConnectedNodes";
 
 export async function GET(req: NextRequest) {
-  // const session = await getServerSession(authOptions);
-  // if (!session?.user?.email) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
-
-  const userId = req.headers.get("userId");
-  if (!userId) {
-    return NextResponse.json(
-      { error: "userId is not present" },
-      { status: 401 }
-    );
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const status = await getUserConnectedNodes(userId);
+  const status = await getUserConnectedNodes(session.user.id);
   if (!status) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
