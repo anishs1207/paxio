@@ -10,6 +10,9 @@ import IdleVisualizer from "./_components/responses/NeuralCoreSteup"
 import { io, Socket } from "socket.io-client";
 import { WorkflowFormBubble } from "./_components/Workflow"
 import { DoomscrollSessions } from "./_components/DoomscrollSessions"
+import OnboardingForm from "./_components/Onboarding";
+import { useSession } from "next-auth/react";
+
 
 type AppState = "idle" | "listening" | "thinking" | "speaking";
 type MessageRole = "user" | "assistant";
@@ -61,11 +64,15 @@ function decodePCM16(chunk: Uint8Array, audioContext: AudioContext) {
 
 
 export default function VoicePage() {
+    // Onboarding state: "loading" | "onboarding" | "ready"
+    const [onboardingState, setOnboardingState] = useState<"loading" | "onboarding" | "ready">("loading");
+
     const [appState, setAppState] = useState<AppState>("idle");
     const [activeResponse, setActiveResponse] = useState("");
     const [inputText, setInputText] = useState("");
     const silenceCleanupRef = useRef<(() => void) | null>(null);
     const hasReceivedAudioRef = useRef(false);
+    const { data: session, status: userStatus } = useSession();
 
     const [credits, setCredits] = useState<number>(0);
 
@@ -124,6 +131,23 @@ export default function VoicePage() {
 
     const [activities] = useState<any[]>([]);
 
+    // Check onboarding status on mount
+    useEffect(() => {
+        if (userStatus !== "authenticated") return;
+        axios
+            .get("/api/onboarding-status", { headers: { userId: session?.user.id } })
+            .then(({ data }) => {
+                if (data.isOnboardingCompleted) {
+                    setOnboardingState("ready");
+                } else {
+                    setOnboardingState("onboarding");
+                }
+            })
+            .catch(() => {
+                // If error, assume not onboarded
+                setOnboardingState("onboarding");
+            });
+    }, [userStatus]);
 
     useEffect(() => {
         axios
@@ -644,6 +668,29 @@ export default function VoicePage() {
         recorder.stop();
     };
 
+    // Handler for when onboarding is completed
+    const handleOnboardingComplete = () => {
+        setOnboardingState("ready");
+    };
+
+    // Show blank black screen while checking onboarding status
+    if (onboardingState === "loading") {
+        return (
+            <div className="h-screen w-screen bg-black" />
+        );
+    }
+
+    // Show onboarding form if user hasn't completed onboarding
+    if (onboardingState === "onboarding") {
+        return (
+            <OnboardingForm
+                userId={userId}
+                onComplete={handleOnboardingComplete}
+            />
+        );
+    }
+
+    // Main content (onboardingState === "ready")
     return (
         <div className="relative flex h-screen bg-black text-zinc-100 overflow-hidden">
             <div className="flex-1 flex flex-col relative">

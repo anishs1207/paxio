@@ -35,13 +35,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  isOnboardingCompleted Boolean @default(false)
+  onboardingName        String?
+  onboardingCountry     String?
+  onboardingSource      String?
+
   transactions CreditTransaction[]
 
   plan          PlanEnum  @default(FREE)
   planStartedAt DateTime?
   planExpiresAt DateTime?
 
+  // see here
   credits BigInt @default(0)
+  // it shows 1000 by defualt hwy
 
   gmailAccessToken  String?
   gmailRefreshToken String?

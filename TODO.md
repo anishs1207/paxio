@@ -1,1 +1,7 @@
 - skelton loading (chats loading) and chat update
+- remove hard coded session ids here
+- add payments for special credits and also 
+- show the payments plans for pro and free etc here
+- logout button to be added here
+- make the middleware.ts file work
+- add links for localhost in notion and gmail, claendar insgration links there

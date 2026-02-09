@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -10,12 +9,18 @@ import {
     CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
-export default function OnboardingForm() {
-    const router = useRouter();
+interface OnboardingFormProps {
+    userId: string;
+    onComplete: () => void;
+}
+
+export default function OnboardingForm({ userId, onComplete }: OnboardingFormProps) {
     const [step, setStep] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState({
         name: "",
         country: "",
@@ -34,13 +39,33 @@ export default function OnboardingForm() {
         }, 200);
     };
 
-    const handleSelect = (field: string, value: string) => {
+    const handleSelect = async (field: string, value: string) => {
         const updatedForm = { ...form, [field]: value };
         setForm(updatedForm);
 
         if (field === "source") {
-            console.log("User Onboarding Data:", updatedForm);
-            router.push("/voice");
+            // Last step - save data and call onComplete
+            setIsSubmitting(true);
+            try {
+                await axios.post(
+                    "/api/onboarding-status",
+                    {
+                        name: updatedForm.name,
+                        country: updatedForm.country,
+                        source: value,
+                    },
+                    {
+                        headers: { userId },
+                    }
+                );
+                onComplete();
+            } catch (error) {
+                console.error("Failed to save onboarding data:", error);
+                // Still call onComplete even if save fails
+                onComplete();
+            } finally {
+                setIsSubmitting(false);
+            }
             return;
         }
 
@@ -198,7 +223,8 @@ export default function OnboardingForm() {
                                         <Button
                                             key={source.name}
                                             onClick={() => handleSelect("source", source.name)}
-                                            className="group relative overflow-hidden rounded-xl border-0 hover:opacity-90 transition-all duration-300 h-12 sm:h-14 text-sm sm:text-base font-medium hover:scale-[1.02] active:scale-[0.98] shadow-md"
+                                            disabled={isSubmitting}
+                                            className="group relative overflow-hidden rounded-xl border-0 hover:opacity-90 transition-all duration-300 h-12 sm:h-14 text-sm sm:text-base font-medium hover:scale-[1.02] active:scale-[0.98] shadow-md disabled:opacity-50"
                                             style={{ backgroundColor: "white", color: "black", animationDelay: `${index * 50}ms` }}
                                         >
 
@@ -206,6 +232,9 @@ export default function OnboardingForm() {
                                         </Button>
                                     ))}
                                 </div>
+                                {isSubmitting && (
+                                    <p className="text-center text-zinc-500 text-sm">Saving your preferences...</p>
+                                )}
                             </div>
                         )}
                     </CardContent>
