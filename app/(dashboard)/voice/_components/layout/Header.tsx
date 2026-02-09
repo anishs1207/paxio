@@ -25,6 +25,7 @@ interface HeaderProps {
     setIsSessionsOpen: (value: boolean) => void;
 
     credits?: number;
+    isLoadingCredits?: boolean;
 
     showPeople: boolean;
     setShowPeople: (value: boolean) => void;
@@ -37,6 +38,7 @@ const Header: React.FC<HeaderProps> = ({
     setIsWorkflowOpen,
     setIsSessionsOpen,
     credits = 100,
+    isLoadingCredits = false,
     setShowPeople,
 }) => {
     const baseBtn =
@@ -115,7 +117,11 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="flex h-11 items-center gap-2 px-4 rounded-full
                         bg-zinc-900 border border-zinc-800 text-xs font-semibold">
                     <Sparkles size={14} className="text-emerald-400" />
-                    {credits} Credits
+                    {isLoadingCredits ? (
+                        <div className="h-4 w-16 bg-zinc-700 rounded animate-pulse" />
+                    ) : (
+                        <span>{credits} Credits</span>
+                    )}
                 </div>
             </div>
         </header>

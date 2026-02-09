@@ -75,6 +75,8 @@ export default function VoicePage() {
     const { data: session, status: userStatus } = useSession();
 
     const [credits, setCredits] = useState<number>(0);
+    const [isLoadingCredits, setIsLoadingCredits] = useState(true);
+    const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
     const [showBriefing, setShowBriefing] = useState(true);
     const [showHistory, setShowHistory] = useState(true);
@@ -150,6 +152,7 @@ export default function VoicePage() {
     }, [userStatus]);
 
     useEffect(() => {
+        setIsLoadingCredits(true);
         axios
             .get("/api/credits")
             .then(({ data }) => {
@@ -157,6 +160,9 @@ export default function VoicePage() {
             })
             .catch(() => {
                 setCredits(0);
+            })
+            .finally(() => {
+                setIsLoadingCredits(false);
             });
     }, []);
 
@@ -273,13 +279,14 @@ export default function VoicePage() {
         conversationId,
     }: any) {
         try {
+            setIsLoadingMessages(true);
             const res = await axios.get<any[]>("/api/new-chat", {
                 params: {
                     userId,
                     conversationId,
                 },
             });
-            console.log("gettibg messafes")
+            console.log("getting messages")
             setMessages(prev => [...prev, ...res.data]);
 
         } catch (error: any) {
@@ -289,6 +296,8 @@ export default function VoicePage() {
                 error?.response?.data ??
                 new Error("Failed to fetch messages")
             );
+        } finally {
+            setIsLoadingMessages(false);
         }
     }
 
@@ -681,14 +690,14 @@ export default function VoicePage() {
     }
 
     // Show onboarding form if user hasn't completed onboarding
-    if (onboardingState === "onboarding") {
-        return (
-            <OnboardingForm
-                userId={userId}
-                onComplete={handleOnboardingComplete}
-            />
-        );
-    }
+    // if (onboardingState === "onboarding") {
+    //     return (
+    //         <OnboardingForm
+    //             userId={userId}
+    //             onComplete={handleOnboardingComplete}
+    //         />
+    //     );
+    // }
 
     // Main content (onboardingState === "ready")
     return (
@@ -703,6 +712,7 @@ export default function VoicePage() {
                     setIsWorkflowOpen={setShowWorkflow}
                     setIsSessionsOpen={setShowSessions}
                     credits={credits}
+                    isLoadingCredits={isLoadingCredits}
                     showPeople={showPeople}
                     setShowPeople={setShowPeople}
                 />
@@ -728,6 +738,7 @@ export default function VoicePage() {
                                 showHistory={showHistory}
                                 messages={messages}
                                 activities={activities}
+                                isLoadingMessages={isLoadingMessages}
                                 response={response}
                                 //@ts-expect-error
                                 scrollRef={scrollRef}

@@ -14,6 +14,7 @@ interface VoiceContentProps {
     showHistory: boolean;
     messages: Message[];
     activities: ActivityLog[];
+    isLoadingMessages?: boolean;
     scrollRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -23,6 +24,7 @@ export default function VoiceContent({
     showHistory,
     messages,
     activities,
+    isLoadingMessages = false,
     scrollRef,
 }: VoiceContentProps) {
     return (
@@ -67,6 +69,7 @@ export default function VoiceContent({
                             <ActivityFeed
                                 messages={messages}
                                 activities={activities}
+                                isLoading={isLoadingMessages}
                             />
                         </div>
                     </motion.div>
