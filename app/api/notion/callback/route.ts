@@ -10,7 +10,8 @@ export async function GET(req: NextRequest) {
     const code = searchParams.get("code");
     const state = searchParams.get("state");
 
-    let userId = "anushay123";
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
 
     if (!code) {
       return NextResponse.json({ error: "Missing code" }, { status: 400 });
@@ -19,9 +20,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing state" }, { status: 400 });
     }
 
-    JSON.parse(decodeURIComponent(state)); // not used but decode to validate
+    JSON.parse(decodeURIComponent(state));
 
-    const session = await getServerSession(authOptions);
     if (!session || !session.user || !userId) {
       return NextResponse.json(
         { error: "Unauthorized or state mismatch" },

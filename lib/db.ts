@@ -9,10 +9,10 @@ const prisma =
             maxWait: 5000, // 5 seconds max wait to acquire a transaction slot
             timeout: 10000, // 10 seconds max for the entire transaction
         },
-        log:
-            process.env.NODE_ENV === "development"
-                ? ["query", "error", "warn"]
-                : ["error"],
+        // log:
+        //     process.env.NODE_ENV === "development"
+        //         ? ["query", "error", "warn"]
+        //         : ["error"],
     });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

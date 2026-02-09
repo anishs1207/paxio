@@ -1,9 +1,7 @@
-//apps/web/app/api/connect/[service]/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { google } from "googleapis";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const serviceScopes: Record<string, string[]> = {
   gmail: [
@@ -66,15 +64,10 @@ export async function GET(
   { params }: { params: Promise<{ service: string }> }
 ) {
   try {
-    // const session = await getServerSession(authOptions);
-    // if (!session || !session.user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
-    const session = {
-      user: {
-        id: "anushay123",
-      },
-    };
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const resolvedParams = await params;
     const { service } = resolvedParams;

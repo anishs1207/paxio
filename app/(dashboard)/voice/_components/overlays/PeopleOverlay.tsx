@@ -22,15 +22,15 @@ export interface Person {
 interface PeopleOverlayProps {
     isOpen: boolean;
     onClose: () => void;
+    userId: string | undefined;
 }
 
 const PeopleOverlay: React.FC<PeopleOverlayProps> = ({
     isOpen,
     onClose,
+    userId,
 }) => {
     const [people, setPeople] = useState<Person[]>([]);
-
-    const userId = "anushay123";
 
     const [search, setSearch] = useState("");
     const [editingId, setEditingId] = useState<string | null>(null);

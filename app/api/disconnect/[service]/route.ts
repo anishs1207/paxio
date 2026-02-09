@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import type { User } from "@/generated/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
@@ -8,9 +10,13 @@ export async function POST(
 ) {
   try {
     const { service } = params;
-    console.log("disconnect service:", service);
 
-    const userId = "anushay123";
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    if (!session || !session.user || !userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const dbUser = await prisma.user.findUnique({
       where: { id: userId },
