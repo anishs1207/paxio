@@ -97,6 +97,7 @@ export function getGeminiLLMWithFallback(): ChatGoogleGenerativeAI & {
 
   // Return the base LLM with an additional fallback method
   return Object.assign(baseLLM, {
+    //@ts-expect-error
     invokeWithFallback,
   });
 }

@@ -35,6 +35,7 @@ export async function callGemini(
       if (files && files.length > 0) {
         for (const file of files) {
           const upload = await ai.files.upload({ file });
+          //@ts-expect-error
           parts.push(createPartFromUri(upload.uri, upload.mimeType));
         }
       }

@@ -1,7 +1,20 @@
 // apps/backend/src/utils/ws.ts
 import axios from "axios";
-import type { Service } from "@/src/types";
 
+export type Service =
+  | "gmail"
+  | "google-docs"
+  | "sheets"
+  | "calendar"
+  | "drive"
+  | "outlook"
+  | "slack"
+  | "notion"
+  | "google-forms"
+  | "twitter"
+  | "calendly"
+  | "reddit";
+  
 const WS_URL = process.env.WS_URL || "http://localhost:3002";
 
 export interface Question {

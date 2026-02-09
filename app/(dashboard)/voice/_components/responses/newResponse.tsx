@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import SmallNeuralCore from "../SmallNeuralCore";
+// import SmallNeuralCore from "../SmallNeuralCore";
 import EmailMessage from "./EmailMessage";
 import CalendarPreview from "./Calendar";
-import ConfirmEditableInput from "./ConfirmEditableInput";
-import ConfirmMessagePill from "./ConfirmMessagePill";
-import { NeuralCore } from "../NeuralCore";
+// import ConfirmEditableInput from "./ConfirmEditableInput";
+// import ConfirmMessagePill from "./ConfirmMessagePill";
+// import { NeuralCore } from "../NeuralCore";
 import SubredditSentimentSummary from "./SubredditSummary";
-import TodoPanel from "./TodoPanel";
-import VoiceNotesOrganizer from "./VoiceNotes";
+// import TodoPanel from "./TodoPanel";
+// import VoiceNotesOrganizer from "./VoiceNotes";
 import NotionPersonPage from "./Notion";
 import Graph from "../graphs/Graph";
 

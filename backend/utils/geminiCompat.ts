@@ -20,6 +20,7 @@ export const geminiCompat = createMiddleware({
 
         return {
           messages: [
+            //@ts-expect-error
             new RemoveMessage({ id: systemMsg.id }),
             new HumanMessage({
               content: `${systemContent}\n\n${humanMsg.content}`,

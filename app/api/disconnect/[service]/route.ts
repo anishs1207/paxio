@@ -6,10 +6,15 @@ import { authOptions } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { service: string } }
+  context: { params: Promise<{ service: string }> }
+  // { params }: { params: { service: string } }
 ) {
   try {
-    const { service } = params;
+    const { service } = await context.params;
+
+    if (!service) {
+      return NextResponse.json({ error: "Service not specified" }, { status: 400 });
+    }
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;

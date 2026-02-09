@@ -1,5 +1,4 @@
 import {
-  RunContext,
   createContext,
   pushMemory,
   saveStepResult,
@@ -28,7 +27,6 @@ import {
 import { streamMessage, streamQuestions, streamNodesToBePermitted } from "./ws";
 
 export {
-  RunContext,
   createContext,
   pushMemory,
   saveStepResult,

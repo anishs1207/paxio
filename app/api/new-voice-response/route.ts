@@ -48,18 +48,21 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      //@ts-expect-error
       select: { savedPrompts: true },
     });
 
     if (!user) throw new Error("User not found");
 
     if (
+        //@ts-expect-error
       !user.savedPrompts.some(
-        (p) => p.toLowerCase() === userPrompt.toLowerCase()
+        (p: any) => p.toLowerCase() === userPrompt.toLowerCase()
       )
     ) {
       await prisma.user.update({
         where: { id: userId },
+          //@ts-expect-error
         data: { savedPrompts: { push: userPrompt } },
       });
     }

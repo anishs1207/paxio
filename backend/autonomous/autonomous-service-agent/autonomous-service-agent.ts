@@ -1,7 +1,5 @@
-// //apps\backend\src\agents\autonomous\autonomous-service-agent\autonomous-service-agent.ts
-// apps/backend/src/agents/autonomous/autonomous-service-agent/autonomous-service-agent.ts
-import prisma from "../../../../../../../web/lib/db";
-import { callGemini } from "../../../../../utils/geminiClient";
+import prisma from "@/lib/db";
+import { callGemini } from "../../utils/geminiClient";
 
 function getSummaryPrompt(results: any[]) {
   return `

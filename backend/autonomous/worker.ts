@@ -1,5 +1,3 @@
-// // apps/backend/src/worker.ts
-// apps/backend/src/worker.ts
 import prisma from "@/lib/db";
 import { registerTask, unregisterTask } from "./autonomous.service";
 

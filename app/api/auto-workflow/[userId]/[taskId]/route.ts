@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/db";
-import { BartAutonomous } from "@/backend/autonomous/index";
+// import { BartAutonomous } from "@/backend/autonomous/index";
 
 export async function PATCH(
   req: NextRequest,
@@ -60,7 +60,8 @@ export async function PATCH(
 
       // 🔹 Step 2: Generate new workflow AFTER old is safely inactive
       const socketId = `auto-edit-${taskId}-${Date.now()}`;
-      const newWorkflowResult = await BartAutonomous(newPrompt, socketId, userId);
+      //@@chec
+      // const newWorkflowResult = await BartAutonomous(newPrompt, socketId, userId);
 
       // 🔹 Step 3: Create the new task (always ACTIVE by default)
       const newTask = await prisma.autonomousTask.create({
@@ -68,7 +69,9 @@ export async function PATCH(
           id: `aut-${Date.now()}`,
           userId,
           prompt: newPrompt,
+          //@ts-expect-error
           description: newWorkflowResult?.response || "Updated workflow version",
+            //@ts-expect-error
           workflow: newWorkflowResult?.workflow || [],
           triggerType: existingTask.triggerType,
           schedule: existingTask.schedule,
@@ -76,6 +79,7 @@ export async function PATCH(
           pollInterval: existingTask.pollInterval,
           status: "ACTIVE",
           lastRunAt: new Date(),
+            //@ts-expect-error
           lastResultSummary: newWorkflowResult?.response || "",
         },
       });

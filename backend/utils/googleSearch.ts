@@ -36,7 +36,6 @@ export async function googleSearch(query: string): Promise<SearchResult[]> {
           },
         }
       );
-      //@ts-expect-error
       const items = res.data.items || [];
       return items.map((item: any) => ({
         title: item.title,

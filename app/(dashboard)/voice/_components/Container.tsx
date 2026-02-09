@@ -5,7 +5,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { NeuralCore } from "./NeuralCore";
 import { VibratingText } from "./VibratingText";
 import { ActivityFeed } from "./ActivityFeed";
-import type { AppState, Message, ActivityLog } from "../VoicePage";
+
+type AppState = "idle" | "listening" | "thinking" | "speaking";
+type MessageRole = "user" | "assistant";
+
+interface Message {
+    id: string;
+    role: MessageRole;
+    content: string;
+    timestamp: Date;
+    isVoice?: boolean;
+}
+
+interface ActivityLog {
+    id: string;
+    type: "tool" | "system" | "sync";
+    description: string;
+    timestamp: Date;
+}
 
 interface VoiceContentProps {
     appState: AppState;
