@@ -37,8 +37,8 @@ ${JSON.stringify(eventPayload, null, 2)}
       prompt: finalPrompt,
     });
 
-    // Extract summary from either result.response or result.parsed.response
-    const summary = (result as any).response || (result as any).parsed?.response || "Task executed successfully.";
+    // Extract summary from result - runMainAgent returns { parsed: { response: "..." } }
+    const summary = (result as any)?.parsed?.response || (result as any)?.response || "Task executed successfully.";
 
     await prisma.autonomousTaskRun.create({
       data: {

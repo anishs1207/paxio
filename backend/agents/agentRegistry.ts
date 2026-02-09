@@ -1,5 +1,5 @@
-import { GmailNode } from "../app/nodes/outreach/gmail/gmail";
-import { GoogleDocsNode } from "../app/nodes/other-tools/google-docs/google-docs";
+import { GmailNode } from "../gmail/gmail";
+import { GoogleDocsNode } from "../google-docs/google-docs";
 import { SharedMemory } from "./sharedMemory";
 
 export type SubAgent = {

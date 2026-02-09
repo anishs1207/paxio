@@ -9,6 +9,7 @@ import VoiceContent from "./_components/Container";
 import IdleVisualizer from "./_components/responses/NeuralCoreSteup"
 import { io, Socket } from "socket.io-client";
 import { WorkflowFormBubble } from "./_components/Workflow"
+import { DoomscrollSessions } from "./_components/DoomscrollSessions"
 
 type AppState = "idle" | "listening" | "thinking" | "speaking";
 type MessageRole = "user" | "assistant";
@@ -107,6 +108,7 @@ export default function VoicePage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [socketId, setSocketId] = useState<string | null>(null);
     const [showWorkflow, setShowWorkflow] = useState(false);
+    const [showSessions, setShowSessions] = useState(false);
 
     const [messages, setMessages] = useState<any[]>([
         {
@@ -652,6 +654,7 @@ export default function VoicePage() {
                     setShowHistory={setShowHistory}
                     setIsNexusOpen={setIsNexusOpen}
                     setIsWorkflowOpen={setShowWorkflow}
+                    setIsSessionsOpen={setShowSessions}
                     credits={credits}
                     showPeople={showPeople}
                     setShowPeople={setShowPeople}
@@ -727,6 +730,12 @@ export default function VoicePage() {
             <WorkflowFormBubble
                 isOpen={showWorkflow}
                 onClose={() => setShowWorkflow(false)}
+                userId={userId}
+            />
+
+            <DoomscrollSessions
+                isOpen={showSessions}
+                onClose={() => setShowSessions(false)}
                 userId={userId}
             />
 

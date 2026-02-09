@@ -2,6 +2,12 @@ import prisma from "../../../web/lib/db";
 import { runMainAgent } from "../agents/mainAgent";
 import { invokeGeminiWithFallback } from "../utils/GeminiChatModel";
 import { streamVoiceMessage } from "../utils/ws";
+import {
+  getShortTermMemory,
+  saveShortTermMemory,
+  getRelevantLongTermMemory,
+  containsLongTermInfo,
+} from "../memory/memory";
 
 /* ============================================================
    TYPES
@@ -11,132 +17,213 @@ type PromptIntent =
   | "DIRECT_EXECUTION"
   | "AUTOMATION_CREATE"
   | "AUTOMATION_CANCEL"
-  | "AUTOMATION_MODIFY";
+  | "AUTOMATION_MODIFY"
+  | "GENERAL_QUERY";
+
+/* ============================================================
+   DOOMSCROLL DETECTION
+============================================================ */
+
+/**
+ * Detects if a prompt is requesting social media research/doomscrolling
+ */
+function isDoomscrollPrompt(prompt: string): boolean {
+  const lowerPrompt = prompt.toLowerCase();
+
+  // Keywords that indicate doomscrolling/research requests
+  const doomscrollKeywords = [
+    "doomscroll",
+    "research on reddit",
+    "research on linkedin",
+    "research on twitter",
+    "research on x",
+    "research across social",
+    "social media research",
+    "find out about",
+    "look up on reddit",
+    "look up on linkedin",
+    "check reddit for",
+    "check linkedin for",
+    "what are people saying about",
+    "sentiment on",
+    "trends on reddit",
+    "trends on linkedin",
+  ];
+
+  return doomscrollKeywords.some(keyword => lowerPrompt.includes(keyword));
+}
 
 /* ============================================================
    INTENT CLASSIFIER (FAST, LOW LATENCY)
 ============================================================ */
-async function classifyIntent(prompt: string): Promise<{
+async function classifyIntent(
+  prompt: string,
+  userId: string,
+  conversationId?: string
+): Promise<{
   intent: PromptIntent;
   response: string;
 }> {
+  // Fetch memory context
+  const shortTermMemory = await getShortTermMemory(userId, conversationId);
+  const longTermMemory = await getRelevantLongTermMemory(userId, prompt);
+
+  // Build memory context string
+  let memoryContext = "";
+  if (shortTermMemory.length > 0) {
+    memoryContext += "\n\nRECENT CONVERSATION:\n";
+    for (const mem of shortTermMemory) {
+      memoryContext += `${mem.role.toUpperCase()}: ${mem.content}\n`;
+    }
+  }
+  if (longTermMemory.length > 0) {
+    memoryContext += "\n\nUSER KNOWLEDGE:\n";
+    for (const mem of longTermMemory) {
+      memoryContext += `- ${mem.key}: ${mem.value}\n`;
+    }
+  }
+
   const res = await invokeGeminiWithFallback(`
 SYSTEM:
-You are an intent-classification and confirmation generator
-for a personal automation and voice assistant platform.
+You are Paxio, a personal voice AI assistant built to help users be more productive.
+You classify intents and generate natural spoken responses.
 
-AGENT IDENTITY:
-- You are a Personal Voice Assistant to help the users
-- You can help the user with with Gmail (Read, Write, Draft), Calendar(to list & create events), Reddit (for analysing the sentiment of subreddits), Notion (to get info of their pages & storing information)
-
+PAXIO IDENTITY:
+- Name: Paxio
+- Role: Personal AI Assistant & Voice Agent
+- Capabilities: Gmail (Read, Write, Draft), Google Calendar (list & create events), 
+  Reddit sentiment analysis, Notion (pages & storage), Social Media Research (doomscrolling),
+  Shopping/Orders (Zepto)
+- Personality: Friendly, helpful, concise, professional
+- When asked "who are you", "what can you do", "tell me about yourself" → answer naturally as Paxio
 
 MUST FOLLOW:
-- Never Reveal any information about the model used,
-You are Paxio, a personal voice assistant to help the users when asked anything related to how your are
-- 
+- Never reveal the underlying model (Gemini, GPT, etc.)
+- Always identify as Paxio when asked about identity
+- Be warm and conversational
+${memoryContext}
 
 Your job:
 1. Classify the user's intent
-2. Generate a short, natural spoken confirmation message
+2. Generate a short, natural spoken response
 
 INTENTS:
-1. DIRECT_EXECUTION
-2. AUTOMATION_CREATE
-3. AUTOMATION_CANCEL
-4. AUTOMATION_MODIFY
+1. DIRECT_EXECUTION - Requires IMMEDIATE tool/action execution (do it NOW)
+2. AUTOMATION_CREATE - Future/scheduled/recurring task (do it LATER at a specific time)
+3. AUTOMATION_CANCEL - Stop existing automation
+4. AUTOMATION_MODIFY - Change existing automation
+5. GENERAL_QUERY - Conversational questions that YOU can answer directly (no tools needed)
 
-INTENT DEFINITIONS:
+CRITICAL TIMING DISTINCTION:
+- If user says "send email NOW" or just "send email" (no time specified) → DIRECT_EXECUTION
+- If user says "send email AT 10pm" or "at 11:23pm" or "tonight" or "tomorrow" → AUTOMATION_CREATE
+- Any mention of a SPECIFIC TIME or FUTURE TIME = AUTOMATION_CREATE
 
-DIRECT_EXECUTION:
-- Immediate, one-time action
-- Executed now
-- OTP/verification codes for ongoing orders
-Examples:
-- "Send an email to Anushay"
+GENERAL_QUERY EXAMPLES (answer these yourself, NO execution):
+- "Who are you?"
+- "What can you do?"
+- "Hello" / "Hi" / "Hey"
+- "How are you?"
+- "Tell me about yourself"
+- "Thanks" / "Thank you"
+- "Good morning/evening"
+- General knowledge questions
+- Casual conversation
+
+DIRECT_EXECUTION EXAMPLES (IMMEDIATE execution, no time specified):
+- "Send an email to Anushay" (no time = NOW)
 - "What meetings do I have today?"
-- "Create a Google Doc"
-- "492983" (just a number = likely OTP)
-- "the otp is 123456"
-- "otp 029405"
 - "Order milk from zepto"
+- "492983" (OTP codes)
+- "Research AI trends on Reddit"
+- "Check my emails"
 
-AUTOMATION_CREATE:
-- Task should happen in the future or repeatedly
-Examples:
-- "Every day at 9am send me unread emails"
-- "Remind me to pay rent on the 1st"
-- "When I get an email from HR notify me"
-
-AUTOMATION_CANCEL:
-- Stop or delete an existing automation
-Examples:
-- "Cancel my daily summary"
-- "Stop my workout reminders"
-
-AUTOMATION_MODIFY:
-- Change timing, frequency, or behavior of an automation
-Examples:
-- "Change my reminder to 8am"
-- "Make the report weekly"
+AUTOMATION_CREATE EXAMPLES (SCHEDULED execution, time specified):
+- "Every day at 9am send me unread emails" (recurring)
+- "Remind me to pay rent on the 1st" (recurring)
+- "Send an email to Anushay at 10pm" (one-time, scheduled)
+- "At 11:23pm send a birthday email" (one-time, scheduled)
+- "Tonight at 8 remind me to call mom" (one-time, scheduled)
+- "Tomorrow morning send the report" (one-time, scheduled)
 
 PRIORITY RULES:
-- OTP or numeric codes (4-6 digits) → DIRECT_EXECUTION
-- Shopping/ordering requests → DIRECT_EXECUTION
-- Repetition or future scheduling → AUTOMATION_CREATE
-- Reference to existing automation → CANCEL or MODIFY
-- Ambiguous → DIRECT_EXECUTION
+1. Greetings, identity questions, casual chat → GENERAL_QUERY
+2. OTP or numeric codes (4-6 digits) → DIRECT_EXECUTION
+3. **SCHEDULED TASKS with specific times** (at Xpm, tonight, tomorrow, every day) → AUTOMATION_CREATE
+4. Immediate shopping/ordering/email/calendar requests (NO time specified) → DIRECT_EXECUTION
+5. Research requests → DIRECT_EXECUTION
+6. Repetition keywords (every, daily, weekly, monthly) → AUTOMATION_CREATE
+7. Reference to existing automation → CANCEL or MODIFY
+8. **USER SHARING PERSONAL INFO** → DIRECT_EXECUTION
+   - "I prefer...", "My name is...", "Call me...", "I work at...", "My email is..."
+   - "I always...", "I use...", "Remember that I..."
+   - This info will be saved to memory by the main agent
+9. General questions you can answer → GENERAL_QUERY
+10. Ambiguous actions (no time) → DIRECT_EXECUTION
 
-VOICE RESPONSE RULES:
-- Response must sound natural when spoken aloud
-- Response must confirm what will happen
-- Response must NOT ask questions
-- Response must NOT mention technical terms
-- Keep it under 2 sentences
+RESPONSE RULES:
+- Sound natural when spoken aloud
+- For GENERAL_QUERY: provide a complete, helpful answer
+- For other intents: confirm what will happen
+- Keep responses under 2-3 sentences
+- Never ask follow-up questions
 
 OUTPUT FORMAT:
 Return ONLY valid JSON.
 
 {
-  "intent": "DIRECT_EXECUTION | AUTOMATION_CREATE | AUTOMATION_CANCEL | AUTOMATION_MODIFY",
+  "intent": "DIRECT_EXECUTION | AUTOMATION_CREATE | AUTOMATION_CANCEL | AUTOMATION_MODIFY | GENERAL_QUERY",
   "response": "string"
 }
 
 EXAMPLES:
 
+User: "Who are you?"
+{
+  "intent": "GENERAL_QUERY",
+  "response": "I'm Paxio, your personal AI assistant. I can help you with emails, calendar, social media research, shopping, and much more!"
+}
+
+User: "Hello"
+{
+  "intent": "GENERAL_QUERY",
+  "response": "Hey there! How can I help you today?"
+}
+
+User: "What can you do?"
+{
+  "intent": "GENERAL_QUERY",
+  "response": "I can send emails, manage your calendar, research topics on social media, order from Zepto, and work with your Notion pages. Just ask!"
+}
+
 User: "Send an email to Anushay"
 {
   "intent": "DIRECT_EXECUTION",
-  "response": "Okay, I’m sending the email to Anushay now."
+  "response": "Okay, I'm sending the email to Anushay now."
 }
 
 User: "Every day at 9am send me my unread emails"
 {
   "intent": "AUTOMATION_CREATE",
-  "response": "Got it. I’ll send you your unread emails every day at 9am."
+  "response": "Got it. I'll send you your unread emails every day at 9am."
 }
 
-User: "Cancel my daily summary"
+User: "Send an email to Anushay at 11:23 PM wishing happy birthday"
 {
-  "intent": "AUTOMATION_CANCEL",
-  "response": "Alright, I’ve stopped your daily summary."
+  "intent": "AUTOMATION_CREATE",
+  "response": "Got it, I'll schedule the birthday email to Anushay for 11:23 PM."
 }
 
-User: "Change my reminder to 8am"
+User: "Tonight at 10pm remind me to call mom"
 {
-  "intent": "AUTOMATION_MODIFY",
-  "response": "Sure. I’ve updated your reminder to 8am."
+  "intent": "AUTOMATION_CREATE",
+  "response": "Alright, I'll remind you to call mom at 10 PM tonight."
 }
 
 User: "029405"
 {
   "intent": "DIRECT_EXECUTION",
   "response": "Got it. Processing that code now."
-}
-
-User: "otp is 158196"
-{
-  "intent": "DIRECT_EXECUTION",
-  "response": "Got it. Completing your order now."
 }
 
 USER INSTRUCTION:
@@ -157,7 +244,7 @@ USER INSTRUCTION:
   } catch {
     return {
       intent: "DIRECT_EXECUTION",
-      response: "Okay, I’m taking care of that now."
+      response: "Okay, I'm taking care of that now."
     };
   }
 }
@@ -324,12 +411,60 @@ export async function routePrompt(input: {
   assistant?: string;
   prompt: string;
 }) {
-  const intent = await classifyIntent(input.prompt);
+  // Pass userId and conversationId for memory context
+  const intent = await classifyIntent(input.prompt, input.userId, input.conversationId);
 
   console.log(intent)
 
+  // Override: If user is sharing personal info, force DIRECT_EXECUTION so mainAgent saves it
+  const hasLongTermInfo = containsLongTermInfo(input.prompt);
+  if (hasLongTermInfo && intent.intent === "GENERAL_QUERY") {
+    console.log("[promptRouter] Detected long-term memory info, routing to mainAgent");
+    intent.intent = "DIRECT_EXECUTION";
+    intent.response = "Got it, I'll remember that.";
+  }
+
+  /* ---------------- GENERAL QUERY (No execution needed) ---------------- */
+  if (intent.intent === "GENERAL_QUERY") {
+    // Stream the response to user - no main agent execution needed
+    if (input.socketId) {
+      streamVoiceMessage(intent.response, input.socketId).catch((err) => {
+        console.error("[promptRouter] Failed to stream voice message:", err.message);
+      });
+    }
+
+    // Save conversation to memory
+    if (input.conversationId) {
+      await saveShortTermMemory(input.userId, input.conversationId, "user", input.prompt);
+      await saveShortTermMemory(input.userId, input.conversationId, "assistant", intent.response);
+    }
+
+    return { response: intent.response };
+  }
+
   /* ---------------- DIRECT ---------------- */
   if (intent.intent === "DIRECT_EXECUTION") {
+    // Check if this is a doomscroll/research request
+    const isDoomscrollRequest = isDoomscrollPrompt(input.prompt);
+
+    if (isDoomscrollRequest) {
+      // Stream message about doomscrolling
+      const doomscrollResponse = "Ok, I'm doomscrolling now. You can see live results in the Sessions menu.";
+      if (input.socketId) {
+        streamVoiceMessage(doomscrollResponse, input.socketId).catch((err) => {
+          console.error("[promptRouter] Failed to stream voice message:", err.message);
+        });
+      }
+
+      // Run main agent WITHOUT await (fire-and-forget)
+      runMainAgent(input).catch((err) => {
+        console.error("[promptRouter] Doomscroll task failed:", err.message);
+      });
+
+      // Return immediately
+      return { response: doomscrollResponse };
+    }
+
     // Stream the confirmation message before executing (non-blocking)
     if (input.socketId) {
       streamVoiceMessage(intent.response, input.socketId).catch((err) => {

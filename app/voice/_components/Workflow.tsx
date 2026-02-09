@@ -245,6 +245,13 @@ export const WorkflowFormBubble: React.FC<
                                 )
                               )}
                             </div>
+                            {/* Run Summary - What was done */}
+                            {wf.runs?.[0]?.summary && (
+                              <div className="mt-2 p-2 rounded-lg bg-zinc-900 border border-zinc-800">
+                                <p className="text-[11px] text-zinc-400 mb-1">Last run result:</p>
+                                <p className="text-xs text-zinc-300">{wf.runs[0].summary}</p>
+                              </div>
+                            )}
                           </div>
                           
                           {/* Toggle Switch */}

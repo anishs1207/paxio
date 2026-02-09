@@ -7,7 +7,8 @@ import {
     ChevronDown,
     History,
     Users,
-    Workflow
+    Workflow,
+    Search
 } from "lucide-react";
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -20,6 +21,8 @@ interface HeaderProps {
     setShowHistory: (value: boolean) => void;
 
     setIsNexusOpen: (value: boolean) => void;
+    setIsWorkflowOpen: (value: boolean) => void;
+    setIsSessionsOpen: (value: boolean) => void;
 
     credits?: number;
 
@@ -31,9 +34,10 @@ const Header: React.FC<HeaderProps> = ({
     showHistory,
     setShowHistory,
     setIsNexusOpen,
+    setIsWorkflowOpen,
+    setIsSessionsOpen,
     credits = 100,
     setShowPeople,
-    setIsWorkflowOpen,
 }) => {
     const baseBtn =
         "cursor-pointer h-11 flex items-center gap-2 px-3 sm:px-4 rounded-full " +
@@ -67,12 +71,19 @@ const Header: React.FC<HeaderProps> = ({
                 {/* <Switch className="mb-3" id="airplane-mode" />
                     <Label htmlFor="airplane-mode">Safe Mode</Label>
                 </div> */}
-                 <button
+                <button
                     onClick={() => setIsWorkflowOpen(true)}
                     className={baseBtn}
                 >
                     <Workflow size={16} />
                     <span className={label}>Workflows</span>
+                </button>
+                <button
+                    onClick={() => setIsSessionsOpen(true)}
+                    className={baseBtn}
+                >
+                    <Search size={16} />
+                    <span className={label}>Sessions</span>
                 </button>
                 <button
                     onClick={() => setShowHistory(!showHistory)}

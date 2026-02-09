@@ -1895,6 +1895,46 @@ const DOOMSCROLL_GOOGLE_AUTH = {
   password: "paxio.67"
 };
 
+// Persistent profile for doomscroller - saves cookies/login state
+const DOOMSCROLL_PROFILE_NAME = "doomscroller_paxio";
+let cachedDoomscrollProfileId: string | null = null;
+
+/**
+ * Gets or creates a persistent browser profile for the doomscroller.
+ * This profile stores cookies and auth tokens so login is only needed once.
+ */
+async function getOrCreateDoomscrollProfile(client: BrowserUseClient): Promise<string> {
+  // Return cached profile ID if available
+  if (cachedDoomscrollProfileId) {
+    console.log(`🔐 Using cached doomscroll profile: ${cachedDoomscrollProfileId}`);
+    return cachedDoomscrollProfileId;
+  }
+
+  try {
+    // Check for existing profile
+    const profiles = await client.profiles.listProfiles();
+    const existingProfile = profiles.profiles?.find((p: any) => p.name === DOOMSCROLL_PROFILE_NAME);
+
+    if (existingProfile) {
+      console.log(`🔐 Found existing doomscroll profile: ${existingProfile.id}`);
+      cachedDoomscrollProfileId = existingProfile.id;
+      return existingProfile.id;
+    }
+
+    // Create new profile
+    const newProfile = await client.profiles.createProfile({
+      name: DOOMSCROLL_PROFILE_NAME,
+    });
+    console.log(`🔐 Created new doomscroll profile: ${newProfile.id}`);
+    cachedDoomscrollProfileId = newProfile.id;
+    return newProfile.id;
+  } catch (error) {
+    console.log(`⚠️ Failed to get/create doomscroll profile: ${error}`);
+    // Return empty string to continue without profile (will require login each time)
+    return "";
+  }
+}
+
 async function doomscrollPlatform(
   client: BrowserUseClient,
   sessionId: string,
@@ -1903,21 +1943,34 @@ async function doomscrollPlatform(
 ): Promise<DoomscrollFinding | null> {
   console.log(`\n🔍 DOOMSCROLL - Researching ${platform.toUpperCase()}...`);
 
-  // Login with Google first
+  // Smart login: Check if already logged in (from persistent profile), only login if needed
   const loginTask = await client.tasks.createTask({
-    task: `Login to ${platform} using Google authentication:
-1. Look for "Sign in with Google" or "Continue with Google" button and click it
-2. If a Google login page appears:
-   - Enter email: ${DOOMSCROLL_GOOGLE_AUTH.email}
-   - Click Next
-   - Enter password: ${DOOMSCROLL_GOOGLE_AUTH.password}
-   - Click Next
-3. If there are any permission prompts, accept them
-4. Wait for the login to complete`,
+    task: `Check and login to ${platform} if needed:
+
+1. First, go to ${platform === "reddit" ? "https://www.reddit.com" : platform === "linkedin" ? "https://www.linkedin.com" : "https://x.com"}
+2. Check if you are ALREADY LOGGED IN by looking for:
+   - Profile icon, avatar, or username in the header
+   - "Create Post" button (Reddit)
+   - "Start a post" or profile picture (LinkedIn)
+   - Profile icon or tweet button (X/Twitter)
+
+3. IF ALREADY LOGGED IN: Report "Already authenticated, skipping login" and stop
+4. IF NOT LOGGED IN: Perform Google authentication:
+   - Look for "Sign in with Google" or "Continue with Google" button and click it
+   - If a Google login page appears:
+     * Enter email: ${DOOMSCROLL_GOOGLE_AUTH.email}
+     * Click Next
+     * Enter password: ${DOOMSCROLL_GOOGLE_AUTH.password}
+     * Click Next
+   - If there are any permission prompts, accept them
+   - Wait for the login to complete
+
+Report whether login was needed or if already authenticated.`,
     sessionId,
   });
   for await (const step of loginTask.stream()) { /* consume */ }
-  await loginTask.complete();
+  const loginResult = await loginTask.complete();
+  console.log(`🔐 Login result: ${loginResult.output?.substring(0, 100) || "completed"}`);
 
   // Platform-specific research prompts
   const prompts: Record<string, string> = {
@@ -1968,7 +2021,7 @@ Output all findings with full X/Twitter URLs and key insights.`
   return null;
 }
 
-function createDoomscrollerTools() {
+function createDoomscrollerTools(userId: string, userPrompt: string) {
   console.log("✅ Creating Doomscroller tools");
   const tools = [];
 
@@ -1984,10 +2037,27 @@ function createDoomscrollerTools() {
         const startTime = Date.now();
         const findings: DoomscrollFinding[] = [];
 
+        // ===== CREATE DB SESSION WITH RUNNING STATUS =====
+        const dbSession = await prisma.doomscrollSession.create({
+          data: {
+            userId,
+            prompt: userPrompt,
+            topic,
+            platforms: platforms as string[],
+            status: "RUNNING",
+            shareUrl: null,
+          },
+        });
+        console.log(`📝 DB Session created: ${dbSession.id} (RUNNING)`);
+
         // Create browser session (NO PROXY!)
+        // Get or create persistent profile for saved login state
+        const doomscrollProfileId = await getOrCreateDoomscrollProfile(browserUseClient);
+
         const browserSession = await browserUseClient.sessions.createSession({
           browserScreenWidth: 1920,
           browserScreenHeight: 1080,
+          profileId: doomscrollProfileId || undefined, // Use profile if available
         });
 
         console.log(`✅ Browser session: ${browserSession.id}`);
@@ -2000,6 +2070,12 @@ function createDoomscrollerTools() {
           });
           shareUrl = share.shareUrl || "";
           console.log(`🌐 Public URL: ${shareUrl}`);
+
+          // Update DB session with share URL
+          await prisma.doomscrollSession.update({
+            where: { id: dbSession.id },
+            data: { shareUrl },
+          });
         } catch (e) {
           console.log("⚠️ Could not create public share");
         }
@@ -2030,6 +2106,17 @@ function createDoomscrollerTools() {
               );
               if (finding) {
                 findings.push(finding);
+
+                // ===== SAVE RESULT TO DB AFTER EACH PLATFORM =====
+                await prisma.doomscrollResult.create({
+                  data: {
+                    sessionId: dbSession.id,
+                    platform: finding.platform,
+                    rawOutput: finding.rawOutput,
+                    preview: finding.rawOutput.substring(0, 500),
+                  },
+                });
+                console.log(`📝 Saved ${platform} results to DB`);
               }
             } catch (error) {
               console.log(`⚠️ Error on ${platform}: ${error}`);
@@ -2061,6 +2148,16 @@ function createDoomscrollerTools() {
           fs.writeFileSync(filepath, content);
           console.log(`\n📄 Report saved: ${filepath}`);
 
+          // ===== UPDATE DB SESSION TO DONE =====
+          await prisma.doomscrollSession.update({
+            where: { id: dbSession.id },
+            data: {
+              status: "DONE",
+              duration,
+            },
+          });
+          console.log(`📝 DB Session ${dbSession.id} marked DONE`);
+
           const result: DoomscrollResult = {
             topic,
             findings,
@@ -2070,6 +2167,7 @@ function createDoomscrollerTools() {
 
           return JSON.stringify({
             success: true,
+            sessionId: dbSession.id,
             topic,
             platformsResearched: findings.map(f => f.platform),
             findingsCount: findings.length,
@@ -2082,6 +2180,17 @@ function createDoomscrollerTools() {
             }))
           });
 
+        } catch (error) {
+          // ===== UPDATE DB SESSION TO ERROR =====
+          await prisma.doomscrollSession.update({
+            where: { id: dbSession.id },
+            data: {
+              status: "ERROR",
+              duration: formatDuration(Date.now() - startTime),
+            },
+          });
+          console.log(`📝 DB Session ${dbSession.id} marked ERROR`);
+          throw error;
         } finally {
           // ALWAYS stop the browser session to prevent cloud costs!
           await stopSession();
@@ -2108,6 +2217,8 @@ function createDoomscrollerTools() {
 
   return tools;
 }
+
+
 
 async function getUserContacts(userId: string) {
   const contacts = await prisma.userList.findMany({
@@ -2157,7 +2268,7 @@ export async function runMainAgent(
     ...createGmailTools(creds.gmail),
     ...createRedditTools(),
     ...createShoppingTools(input.userId),
-    ...createDoomscrollerTools(),
+    ...createDoomscrollerTools(input.userId, input.prompt),
   ];
 
   console.log(
@@ -2297,6 +2408,103 @@ CRITICAL TOOL RULES
    - Great for market research, trend analysis, competitive intelligence
    - Automatically researches across multiple platforms and generates a report
    - Browser session is automatically cleaned up after completion
+
+========================
+AUTONOMOUS BEHAVIOR (BE PROACTIVE)
+========================
+
+**NEVER ask user for information you can generate or infer yourself.**
+
+GMAIL:
+- Subject missing? → Generate a concise, professional subject line from the email content
+- Body incomplete? → Craft a complete, professional email based on context and intent
+- Greeting/signature missing? → Add appropriate "Hi [Name]," and "Best regards,"
+- CC/BCC unclear? → Skip them unless explicitly requested
+
+CALENDAR:
+- Duration missing? → Default to 30 minutes for meetings, 1 hour for events
+- End time missing? → Calculate from start time + default duration
+- Location missing? → Skip it unless user mentions a place
+- Reminder missing? → Use default reminders
+
+NOTION:
+- Page title unclear? → Infer from content or context
+- Database to use unclear? → Search and pick the most relevant one
+
+GENERAL:
+- If you CAN figure it out → DO IT, don't ask
+- If info is in LONG-TERM MEMORY or CONTACTS → USE IT
+- If user says "send email to Anush" → Look up Anush in contacts, generate subject/body
+- Only ask when info is TRULY ambiguous and critical (e.g., "which Anush?" if multiple exist)
+
+EXAMPLES OF WHAT TO DO:
+✅ "Send email to Nishant about the project" → Generate subject "Project Update", compose body, send
+✅ "Schedule meeting with team tomorrow" → Pick reasonable time (10am), 1 hour duration, create event
+✅ "Create a note about today's discussion" → Generate title "Discussion Notes - [Date]", create page
+
+EXAMPLES OF WHAT NOT TO DO:
+❌ "What should the subject be?" → NEVER ask, generate it
+❌ "When should I schedule it?" → NEVER ask, pick a reasonable default
+❌ "Which database should I use?" → NEVER ask, find the right one
+
+========================
+LONG-TERM MEMORY SAVING (IMPORTANT)
+========================
+
+When user shares personal information, SAVE IT to longTermMemory array.
+This is CRITICAL for personalization.
+
+WHAT TO SAVE (Categories):
+1. "preference" - User preferences
+   - "I prefer dark mode", "I like short emails", "I prefer morning meetings"
+   
+2. "personal" - Personal info
+   - "My name is...", "Call me...", "My birthday is..."
+   - "I work at...", "My job is...", "I live in..."
+
+3. "contact" - Contact information
+   - "My email is...", "Reach me at...", "Anushay's email is..."
+   
+4. "habit" - User habits/routines
+   - "I usually...", "I always...", "Every morning I..."
+   
+5. "project" - Current projects
+   - "I'm working on...", "I'm building...", "My current project is..."
+   
+6. "tool" - Tools/apps user uses
+   - "I use Notion for...", "I prefer Slack over..."
+   
+7. "instruction" - Standing instructions
+   - "Always CC me on...", "Never send emails after 6pm"
+   - "Whenever I ask for..., also include..."
+
+FORMAT for longTermMemory:
+[
+  {
+    "category": "preference|personal|contact|habit|project|tool|instruction",
+    "key": "short_identifier_like_email_preference_or_name",
+    "value": "the actual information to remember"
+  }
+]
+
+EXAMPLES:
+User: "I prefer shorter emails"
+→ longTermMemory: [{"category": "preference", "key": "email_length", "value": "User prefers shorter, concise emails"}]
+
+User: "My name is Anush, call me that"
+→ longTermMemory: [{"category": "personal", "key": "name", "value": "User's name is Anush"}]
+
+User: "Nishant's email is nishant@example.com"
+→ longTermMemory: [{"category": "contact", "key": "nishant_email", "value": "nishant@example.com"}]
+
+User: "Always send me calendar reminders 30 minutes before"
+→ longTermMemory: [{"category": "instruction", "key": "calendar_reminder_time", "value": "Send calendar reminders 30 minutes before event"}]
+
+RULES:
+- Only save NEW information, not repeats
+- Use lowercase_with_underscores for keys
+- Value should be a clear, complete sentence
+- If NO personal info to save, return empty array: []
 
 ========================
 FINAL RESPONSE FORMAT (MANDATORY)
