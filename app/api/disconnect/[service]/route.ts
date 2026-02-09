@@ -51,14 +51,14 @@ export async function POST(
         accessTokenField: "notionAccessToken",
         refreshTokenField: "notionAccessToken",
       },
-      outlook: {
-        accessTokenField: "outlookAccessToken",
-        refreshTokenField: "outlookRefreshToken",
-      },
-      slack: {
-        accessTokenField: "slackAccessToken",
-        refreshTokenField: "slackRefreshToken",
-      },
+      // outlook: {
+      //   accessTokenField: "outlookAccessToken",
+      //   refreshTokenField: "outlookRefreshToken",
+      // },
+      // slack: {
+      //   accessTokenField: "slackAccessToken",
+      //   refreshTokenField: "slackRefreshToken",
+      // },
       cal: {
         accessTokenField: "calAccessToken" as keyof User,
         refreshTokenField: "calRefreshToken" as keyof User,

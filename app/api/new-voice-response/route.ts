@@ -1,9 +1,19 @@
 import { NextResponse, NextRequest } from "next/server";
-import { runMainAgent } from "../../../../backend/src/agents/mainAgent";
-import { Assistant } from "../../../../backend/src/types";
+import { runMainAgent } from "@/backend/agents/mainAgent";
 import prisma from "@/lib/db";
 import fs from "fs";
 import path from "path";
+
+export enum Assistant {
+  Personal = "AI Personal Assistant",
+  Finance = "AI Financial Expert",
+  HealthAndFitness = "AI Health & Fitness Assistant",
+  LifeCoach = "AI Life Coach",
+  Shopping = "AI Shopping",
+  autonomous = "autonomous",
+  Legal = "AI Legal Expert",
+  Research = "AI Research Expert",
+}
 
 type FinalReturnType = {
   response: string;

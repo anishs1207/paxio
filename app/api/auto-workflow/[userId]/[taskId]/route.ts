@@ -1,8 +1,6 @@
-// // apps/web/app/api/auto-workflow/[userId]/[taskId]/route.ts
-// apps/web/app/api/auto-workflow/[userId]/[taskId]/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/db";
-import { BartAutonomous } from "../../../../../../backend/src/app/index";
+import { BartAutonomous } from "@/backend/autonomous/index";
 
 export async function PATCH(
   req: NextRequest,
