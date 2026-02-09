@@ -1,4 +1,4 @@
-import { routePrompt } from "../../../../backend/src/agents/promptRouter";
+import { routePrompt } from "@/backend/agents/promptRouter";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@deepgram/sdk";
 import { getServerSession } from "next-auth";
@@ -82,7 +82,6 @@ export async function POST(req: NextRequest) {
     const responseData = obj.parsed || { response: responseText, data: {} };
 
     const response = await deepgram.speak.request(
-      // @ts-expect-error
       { text: responseText },
       {
         model: "aura-2-thalia-en",

@@ -53,7 +53,7 @@ export default function PricingPage() {
                     {/* Price */}
                     <div className="text-center">
                         <div className="flex items-end justify-center gap-1">
-                            <span className="text-5xl font-bold tracking-tight">$10</span>
+                            <span className="text-5xl font-bold tracking-tight">  ₹ 10</span>
                             <span className="pb-1 text-zinc-400 text-sm">/ per month</span>
                         </div>
                     </div>

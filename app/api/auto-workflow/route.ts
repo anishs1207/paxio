@@ -1,8 +1,17 @@
-//apps\web\app\api\auto-workflow\route.ts
-//this is not in use for anything
 import { NextResponse, NextRequest } from "next/server";
-import { BartAutonomous } from "../../../../backend/src/app/index";
-import { Assistant } from "../../../../backend/src/types";
+//@fix this
+import { BartAutonomous } from "@/backend/autonomous/index";
+
+export enum Assistant {
+  Personal = "AI Personal Assistant",
+  Finance = "AI Financial Expert",
+  HealthAndFitness = "AI Health & Fitness Assistant",
+  LifeCoach = "AI Life Coach",
+  Shopping = "AI Shopping",
+  autonomous = "autonomous",
+  Legal = "AI Legal Expert",
+  Research = "AI Research Expert",
+}
 
 type FinalReturnType = {
   response: string;
