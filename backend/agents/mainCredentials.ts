@@ -4,7 +4,7 @@ import {
   getValidGoogleCalendarAccessToken,
   getValidGmailAccessToken,
   getValidNotionAccessToken,
-} from "../app/nodes/global.credentials";
+} from "@/lib/tokenHelpers";
 import { Client as NotionClient } from "@notionhq/client";
 
 type ServiceResult<T> = T | false;

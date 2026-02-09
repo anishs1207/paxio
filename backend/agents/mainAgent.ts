@@ -14,7 +14,7 @@ import {
   saveLongTermMemory,
 } from "../memory/memory";
 import { streamVoiceMessage } from "../utils/ws";
-import prisma from "../../../web/lib/db";
+import prisma from "@/lib/db";
 import { BrowserUseClient } from "browser-use-sdk";
 import * as fs from "fs";
 import * as path from "path";
