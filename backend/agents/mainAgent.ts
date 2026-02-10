@@ -1512,7 +1512,23 @@ interface ZeptoSessionInfo {
   createdAt: string;
 }
 
-function createShoppingTools(userId: string) {
+interface ZeptoSessionInfo {
+  sessionId: string;
+  shareUrl: string;
+  liveUrl?: string;
+  product: string;
+  location: string;
+  phoneNumber: string;
+  createdAt: string;
+}
+
+type DeliveryDetails = {
+  phone: string;
+  address: string;
+  upiId: string;
+};
+
+function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
   console.log("✅ Creating Shopping tools (Zepto)");
   const tools: any[] = [];
 
@@ -1527,7 +1543,7 @@ function createShoppingTools(userId: string) {
         // Auto-lookup session and fill missing params when OTP is provided
         let resolvedSessionId = existingSessionId;
         let resolvedLocation = location;
-        let resolvedPhoneNumber = phone_number;
+        let resolvedPhoneNumber = phone_number || deliveryDetails.phone;
         let resolvedProduct = product;
 
         if (otp) {
@@ -1553,6 +1569,14 @@ function createShoppingTools(userId: string) {
           } else {
             console.log(`⚠️ OTP provided but no stored session in DB for user ${userId}`);
           }
+        }
+
+        // Default to DB delivery details if not provided and not in session
+        if (!resolvedLocation && deliveryDetails.address) {
+          resolvedLocation = deliveryDetails.address;
+        }
+        if (!resolvedPhoneNumber && deliveryDetails.phone) {
+          resolvedPhoneNumber = deliveryDetails.phone;
         }
 
         // Helper function to stop the browser session
@@ -1610,7 +1634,7 @@ function createShoppingTools(userId: string) {
             });
             //@ts-expect-error
             session = newSession;
-//@ts-expect-error
+            //@ts-expect-error
             console.log(`✅ Session created! ID: ${session.id}`);
 
             // Step 2: Create a PUBLIC share URL
@@ -1634,7 +1658,7 @@ function createShoppingTools(userId: string) {
 7. STOP immediately after the OTP is sent and the OTP input field is visible.
 
 IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
-//@ts-expect-error
+              //@ts-expect-error
               sessionId: session.id,
             });
 
@@ -1694,7 +1718,7 @@ IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
 5. Confirm you are logged in successfully.
 
 STOP after login is confirmed.`,
-//@ts-expect-error
+            //@ts-expect-error
             sessionId: session.id,
           });
 
@@ -1719,7 +1743,7 @@ STOP after login is confirmed.`,
 6. Confirm the product is in the cart.
 
 STOP after confirming product is in cart. Return the screenshot.`,
-//@ts-expect-error
+            //@ts-expect-error
             sessionId: session.id,
           });
 
@@ -1752,19 +1776,18 @@ STOP after confirming product is in cart. Return the screenshot.`,
 2. Click "Add Address" or proceed to checkout.
 3. Click "Confirm and Continue".
 4. Enter address details:
-   - Flat/House number: m-3
-   - Building name: anish ki building
+   - Address: ${deliveryDetails.address}
 5. Click "Save Address".
 6. Proceed to payment.
 7. Select UPI as payment method.
-8. Enter UPI ID: 9911033988@pthdfc
+8. Enter UPI ID: ${deliveryDetails.upiId}
 9. Click "Verify and Pay" or "Pay" button.
 10. Wait for the payment to be processed.
 11. If there is a UPI payment request, proceed with it.
 12. Take a screenshot of the final payment confirmation or order confirmation screen.
 
 FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
-//@ts-expect-error
+            //@ts-expect-error
             sessionId: session.id,
           });
 
@@ -1871,7 +1894,7 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
 ============================================================ */
 
 // Supported platforms - prioritize no-login sources (youtube first for shorts)
-type DoomscrollPlatform = "youtube" | "google" | "bbc" | "reuters" | "apnews" | "techcrunch" | "reddit" | "x";
+type DoomscrollPlatform = "google" | "bbc" | "reuters" | "apnews" | "techcrunch" | "reddit" | "x";
 
 interface DoomscrollFinding {
   platform: DoomscrollPlatform;
@@ -2007,21 +2030,6 @@ async function doomscrollPlatform(
 
   // Platform-specific research prompts (NO LOGIN REQUIRED for most)
   const prompts: Record<DoomscrollPlatform, string> = {
-    youtube: `Research "${topic}" on YouTube Shorts:
-1. Go to https://www.youtube.com/results?search_query=${encodeURIComponent(topic)}+shorts
-2. Look for Shorts related to the topic (vertical videos with "Shorts" label)
-3. Click on 5-10 relevant Shorts about the topic
-4. For EACH Short:
-   a. Click the three dots menu (⋮) in the bottom right
-   b. Click "Show transcript" or enable "Captions/CC"
-   c. If captions option appears, select "English" captions
-   d. Read and extract the full caption/transcript text
-   e. Collect: Video title, Channel name, View count, Caption/transcript content, Video URL
-5. If captions are auto-generated, that's fine - extract them anyway
-6. Focus on informative shorts with spoken content about the topic
-7. Skip shorts that are purely music or have no relevant speech
-Output all findings with full YouTube URLs and the complete caption text for each short.`,
-
     google: `Research "${topic}" on Google:
 1. Go to https://www.google.com/search?q=${encodeURIComponent(topic)}&tbm=nws
 2. This is Google News search - browse through the news results
@@ -2122,7 +2130,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
 
   tools.push(
     tool(
-      async ({ topic, platforms = ["youtube", "google", "bbc", "reuters", "apnews"], durationHours = 1 }) => {
+      async ({ topic, platforms = ["google", "bbc", "reuters", "apnews"], durationHours = 1 }) => {
         console.log("\n" + "═".repeat(60));
         console.log("🌀 DOOMSCROLLER - Web Research Agent (No Login Required)");
         console.log("═".repeat(60));
@@ -2156,6 +2164,9 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
         });
 
         console.log(`✅ Browser session: ${browserSession.id}`);
+        console.log(`🎥 LIVE VIEW: https://browser-use.com/session/${browserSession.id}`);
+        // @ts-ignore
+        if (browserSession.liveUrl) console.log(`🎥 LIVE URL (Direct): ${browserSession.liveUrl}`);
 
         // Get public share URL
         let shareUrl = "";
@@ -2368,6 +2379,49 @@ export async function runMainAgent(
     gmail: !!creds.gmail ? "✅ Connected" : "❌ Not connected",
   });
 
+  // Fetch delivery details for Zepto context
+  const userHelper = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: {
+      quickDeliveryPhoneNuber: true,
+      quickDeliveryAddress: true,
+      quickDeliveryUpiId: true
+    }
+  });
+
+  const delivery = {
+    phone: userHelper?.quickDeliveryPhoneNuber,
+    address: userHelper?.quickDeliveryAddress,
+    upi: userHelper?.quickDeliveryUpiId
+  };
+
+  const zeptoConfigured = !!(delivery.phone && delivery.address && delivery.upi);
+
+  let deliveryContext = "";
+  if (zeptoConfigured) {
+    deliveryContext = `
+=== ZEPTO DELIVERY CONTEXT ===
+The user has configured the following delivery details for Zepto. 
+Use these values automatically when calling the zepto_order tool. DO NOT ask the user for them.
+- Address: "${delivery.address}"
+- Phone: "${delivery.phone}"
+- UPI ID: "${delivery.upi}"
+==============================
+`;
+  } else {
+    deliveryContext = `
+=== ZEPTO DELIVERY CONTEXT ===
+⚠️ ZEPTO NOT CONFIGURED.
+The user has NOT set up their delivery address or phone number in the database.
+If the user asks to order/buy something from Zepto:
+1. DO NOT call the zepto_order tool.
+2. DO NOT ask them for address/phone details.
+3. REPLY: "Please configure your Zepto delivery details (Address, Phone, UPI) in the tools menu first."
+==============================
+`;
+  }
+
+
   // Flatten all tools into a single array
   // Using explicit type to avoid "Type instantiation is excessively deep" error
   const allTools: any[] = [
@@ -2375,8 +2429,16 @@ export async function runMainAgent(
     ...createCalendarTools(creds.calendar),
     ...createGmailTools(creds.gmail),
     ...createRedditTools(),
-    ...createShoppingTools(input.userId),
+
+
+    // Zepto tools - use the already fetched delivery details if available
+    ...(zeptoConfigured ? createShoppingTools(input.userId, {
+      phone: delivery.phone!,
+      address: delivery.address!,
+      upiId: delivery.upi!
+    }) : []),
     ...createDoomscrollerTools(input.userId, input.prompt),
+
   ];
 
   console.log(
@@ -2489,6 +2551,8 @@ ${shortTermContext || "None"}
 
 CONTACTS (use them to fetch emailId by name):
 ${contactsText}
+
+${deliveryContext}
 
 ========================
 CRITICAL TOOL RULES
