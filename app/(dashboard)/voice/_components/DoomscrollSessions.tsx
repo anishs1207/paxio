@@ -43,6 +43,7 @@ interface DoomscrollSessionsProps {
 }
 
 const platformEmojis: Record<string, string> = {
+  youtube: "▶️",
   google: "🔍",
   bbc: "📺",
   reuters: "📰",

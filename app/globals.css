@@ -44,6 +44,54 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* New Landing App Theme */
+  --color-brand-primary: #1313ec;
+  --color-background-light: #f6f6f8;
+  --color-background-dark: #050505;
+  --color-card-dark: #0f0f11;
+
+  --background-image-orb-glow: radial-gradient(circle at center, rgba(255, 255, 255, 0.15) 0%, rgba(19, 19, 236, 0.05) 30%, transparent 70%);
+  --background-image-orb-surface: radial-gradient(circle at 30% 30%, #ffffff 0%, #a0a0a0 20%, #404040 50%, #000000 100%);
+
+  --animate-float: float 6s ease-in-out infinite;
+
+  --font-display: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+}
+
+@layer utilities {
+  .bg-background-dark {
+    background-color: #050505;
+  }
+
+  .bg-orb-glow {
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.15) 0%, rgba(19, 19, 236, 0.05) 30%, transparent 70%);
+  }
+
+  .bg-orb-surface {
+    background-image: radial-gradient(circle at 30% 30%, #ffffff 0%, #a0a0a0 20%, #404040 50%, #000000 100%);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .font-display {
+    font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  }
+}
+
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 :root {
@@ -119,6 +167,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

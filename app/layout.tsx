@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/common/NavBar";
 import Footer from "@/components/common/Footer";
@@ -24,6 +24,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Paxio - Your AI Crew",
   description: "Paxio: Boost productivity, eliminate manual work, and scale faster — powered by cutting-edge AI automation.",
@@ -41,9 +46,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <SessionProviders>
 

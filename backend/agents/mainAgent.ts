@@ -1859,8 +1859,8 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
    DOOMSCROLLER - Web Research Tool (No Login Required)
 ============================================================ */
 
-// Supported platforms - prioritize no-login sources
-type DoomscrollPlatform = "google" | "bbc" | "reuters" | "apnews" | "techcrunch" | "reddit" | "x";
+// Supported platforms - prioritize no-login sources (youtube first for shorts)
+type DoomscrollPlatform = "youtube" | "google" | "bbc" | "reuters" | "apnews" | "techcrunch" | "reddit" | "x";
 
 interface DoomscrollFinding {
   platform: DoomscrollPlatform;
@@ -1995,6 +1995,21 @@ async function doomscrollPlatform(
 
   // Platform-specific research prompts (NO LOGIN REQUIRED for most)
   const prompts: Record<DoomscrollPlatform, string> = {
+    youtube: `Research "${topic}" on YouTube Shorts:
+1. Go to https://www.youtube.com/results?search_query=${encodeURIComponent(topic)}+shorts
+2. Look for Shorts related to the topic (vertical videos with "Shorts" label)
+3. Click on 5-10 relevant Shorts about the topic
+4. For EACH Short:
+   a. Click the three dots menu (⋮) in the bottom right
+   b. Click "Show transcript" or enable "Captions/CC"
+   c. If captions option appears, select "English" captions
+   d. Read and extract the full caption/transcript text
+   e. Collect: Video title, Channel name, View count, Caption/transcript content, Video URL
+5. If captions are auto-generated, that's fine - extract them anyway
+6. Focus on informative shorts with spoken content about the topic
+7. Skip shorts that are purely music or have no relevant speech
+Output all findings with full YouTube URLs and the complete caption text for each short.`,
+
     google: `Research "${topic}" on Google:
 1. Go to https://www.google.com/search?q=${encodeURIComponent(topic)}&tbm=nws
 2. This is Google News search - browse through the news results
@@ -2095,7 +2110,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
 
   tools.push(
     tool(
-      async ({ topic, platforms = ["google", "bbc", "reuters", "apnews"], durationHours = 1 }) => {
+      async ({ topic, platforms = ["youtube", "google", "bbc", "reuters", "apnews"], durationHours = 1 }) => {
         console.log("\n" + "═".repeat(60));
         console.log("🌀 DOOMSCROLLER - Web Research Agent (No Login Required)");
         console.log("═".repeat(60));
@@ -2284,9 +2299,9 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
         schema: z.object({
           topic: z.string().describe("The topic to research across web sources"),
           platforms: z
-            .array(z.enum(["google", "bbc", "reuters", "apnews", "techcrunch", "reddit", "x"]))
+            .array(z.enum(["youtube", "google", "bbc", "reuters", "apnews", "techcrunch", "reddit", "x"]))
             .optional()
-            .describe("Which sources to research. Default: google, bbc, reuters, apnews (no login required). Reddit/X are optional but will be skipped if login is required."),
+            .describe("Which sources to research. Default: youtube (shorts with captions), google, bbc, reuters, apnews (no login required). Reddit/X are optional but will be skipped if login is required."),
           durationHours: z
             .number()
             .optional()
