@@ -14,8 +14,9 @@ export type Service =
   | "twitter"
   | "calendly"
   | "reddit";
-  
-const WS_URL = process.env.WS_URL || "http://localhost:3002";
+
+// change if when using locally
+const WS_URL = process.env.WS_URL || "https://api.paxio.tech";
 
 export interface Question {
   q: string;

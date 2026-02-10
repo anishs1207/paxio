@@ -179,7 +179,8 @@ export default function VoicePage() {
     }, []);
 
     useEffect(() => {
-        const socket = io("http://localhost:3002");
+        // add https://localhost:3002 for local testing
+        const socket = io("https://api.paxio.tech");
         socketRef.current = socket;
         audioContextRef.current = new AudioContext();
 
