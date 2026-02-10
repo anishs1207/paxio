@@ -27,7 +27,7 @@ const AgentsSection: React.FC = () => {
   ];
 
   return (
-    <section id="agents" className="w-full max-w-7xl px-4 py-24 mb-24 relative">
+    <section id="agents" className="w-full max-w-7xl px-4 py-24 mb-24 relative scroll-mt-28">
        <div className="flex flex-col md:flex-row-reverse gap-16 items-start">
         
         {/* Visual Side (Abstract Interface) */}

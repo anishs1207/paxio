@@ -16,8 +16,8 @@ const ConnectServiceCard: React.FC<ConnectServiceCardProps> = ({ service }) => {
     };
 
     return (
-        <div className="w-full max-w-md mx-auto my-4 p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl backdrop-blur-sm">
-            <div className="flex flex-col items-center text-center space-y-4">
+        <div className="w-full max-w-md my-4 ml-2 p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl backdrop-blur-sm">
+            <div className="flex flex-col items-start text-left space-y-4">
                 <div className="p-3 bg-zinc-800 rounded-full">
                     <img 
                         src={`/icons/${service.toLowerCase()}.svg`} 

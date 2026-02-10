@@ -11,4 +11,6 @@
 - paypal for pro (monthly)
 
 
+- make rizer bigger
+
 (cater) => qr code added

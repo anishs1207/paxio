@@ -8,8 +8,8 @@ const Footer: React.FC = () => {
       <div className="w-full max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2 text-white/50 hover:text-white transition-colors cursor-pointer">
-          <span className="material-symbols-outlined text-[20px]">circle</span>
-          <span className="text-sm font-medium font-display">Paxio Inc.</span>
+          {/* <span className="material-symbols-outlined text-[20px]">circle</span> */}
+          <span className="text-sm font-medium font-display">Paxio</span>
         </Link>
 
         {/* Links */}
@@ -26,7 +26,7 @@ const Footer: React.FC = () => {
 
         {/* Copyright */}
         <div className="text-gray-600 text-sm font-display">
-          &copy; {new Date().getFullYear()} Paxio Inc. All rights reserved.
+          &copy; {new Date().getFullYear()} Paxio. All rights reserved.
         </div>
       </div>
     </footer>
