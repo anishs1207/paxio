@@ -11,10 +11,10 @@ export default function Home() {
     return (
         <>
             <Hero />
-            
+
             {/* Divider */}
             <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
-            
+
             <Features />
 
             {/* Divider */}
@@ -23,16 +23,15 @@ export default function Home() {
             <MemorySection />
 
             {/* Divider */}
-            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
+            {/* <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div> */}
 
-            <AgentsSection />
+            {/* <AgentsSection /> */}
 
             {/* Divider */}
-            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
+            {/* <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div> */}
 
-            <ControlSection />
-            
-            <InterfacePreview />
+            {/* <ControlSection /> */}
+
         </>
     );
 }

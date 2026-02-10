@@ -64,19 +64,22 @@ const Header: React.FC<HeaderProps> = ({
 
     const isPro = plan === "PRO";
 
-    // Base button styles - bigger on mobile (h-10 w-10)
+    // Base button styles - premium glassmorphism
     const iconBtn =
         "cursor-pointer h-10 w-10 flex items-center justify-center rounded-full " +
-        "bg-zinc-900 border border-zinc-800 text-zinc-400 " +
-        "hover:text-white hover:border-zinc-600 transition";
+        "bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-zinc-400 " +
+        "hover:text-white hover:border-white/20 hover:bg-white/[0.1] hover:shadow-[0_0_15px_rgba(255,255,255,0.06)] " +
+        "active:scale-95 transition-all duration-200";
 
     const desktopBtn =
         "cursor-pointer h-10 flex items-center gap-2 px-4 rounded-full " +
-        "bg-zinc-900 border border-zinc-800 text-zinc-400 " +
-        "hover:text-white hover:border-zinc-600 transition whitespace-nowrap";
+        "bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-zinc-400 " +
+        "hover:text-white hover:border-white/20 hover:bg-white/[0.1] hover:shadow-[0_0_15px_rgba(255,255,255,0.06)] " +
+        "active:scale-[0.97] transition-all duration-200 whitespace-nowrap";
 
     const mobileMenuItem =
-        "flex items-center gap-3 px-4 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800/50 transition rounded-lg";
+        "flex items-center gap-3 px-4 py-3 text-zinc-300 hover:text-white " +
+        "hover:bg-white/[0.06] transition-all duration-200 rounded-xl";
 
     // All menu items for desktop
     const allMenuItems = [
@@ -146,11 +149,12 @@ const Header: React.FC<HeaderProps> = ({
                     <button
                         onClick={() => router.push("/payment")}
                         className="cursor-pointer flex h-10 items-center gap-2 px-4 rounded-full
-                            bg-zinc-900 border border-zinc-800 text-xs font-semibold
-                            hover:border-emerald-500/50 hover:bg-zinc-800 transition"
+                            bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
+                            hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] hover:shadow-[0_0_20px_rgba(52,211,153,0.08)]
+                            active:scale-[0.97] transition-all duration-200"
                     >
                         <PlanBadge />
-                        <div className="w-px h-4 bg-zinc-700" />
+                        <div className="w-px h-4 bg-white/10" />
                         <Sparkles size={14} className="text-emerald-400" />
                         {isLoadingCredits ? (
                             <div className="h-4 w-10 bg-zinc-700 rounded animate-pulse" />
@@ -163,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({
                     <button
                         onClick={handleSignOut}
                         disabled={isSigningOut}
-                        className={`${iconBtn} hover:text-red-400 hover:border-red-500/50`}
+                        className={`${iconBtn} hover:!text-red-400 hover:!border-red-500/30 hover:!bg-red-500/[0.08] hover:!shadow-[0_0_15px_rgba(239,68,68,0.08)]`}
                     >
                         {isSigningOut ? (
                             <Loader2 size={16} className="animate-spin" />
@@ -190,8 +194,9 @@ const Header: React.FC<HeaderProps> = ({
                     <button
                         onClick={() => router.push("/payment")}
                         className="cursor-pointer flex h-10 items-center gap-1.5 px-2.5 rounded-full
-                            bg-zinc-900 border border-zinc-800 text-xs font-semibold
-                            hover:border-emerald-500/50 hover:bg-zinc-800 transition"
+                            bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
+                            hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] hover:shadow-[0_0_15px_rgba(52,211,153,0.08)]
+                            active:scale-95 transition-all duration-200"
                     >
                         <PlanBadge compact />
                         <Sparkles size={12} className="text-emerald-400" />
