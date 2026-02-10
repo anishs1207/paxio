@@ -27,11 +27,11 @@ const Navbar: React.FC = () => {
         </Link>
 
         {/* Desktop Menu */}
-        {/* <div className="hidden md:flex items-center gap-8">
-          <Link href="#memory" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Memory</Link>
+        <div className="hidden md:flex items-center gap-8">
+          <Link href="#features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Features</Link>
           <Link href="#agents" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Agents</Link>
-          <Link href="#control" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Control</Link>
-        </div> */}
+          <Link href="#memory" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Memory</Link>
+        </div>
 
         {/* CTA */}
         <button
