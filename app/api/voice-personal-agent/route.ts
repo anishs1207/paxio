@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@deepgram/sdk";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { deductCredits, refundCredits } from "@/lib/credit.service";
+// import { deductCredits, refundCredits } from "@/lib/credit.service";
 
 const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
 
@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
   const requestId = crypto.randomUUID();
 
   try {
-    // ✅ DEDUCT 100 CREDITS (ONCE PER REQUEST)
-    await deductCredits(session.user.id, requestId);
+    // ✅ DEDUCT CREDITS MOVED TO PROMPT ROUTER FOR GRATULARITY
+    // await deductCredits(session.user.id, requestId);
 
     const formData = await req.formData();
     const audioFile = formData.get("audio") as File | null;

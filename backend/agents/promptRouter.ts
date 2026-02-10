@@ -1,4 +1,13 @@
 import prisma from "../../lib/db";
+import {
+  COST_AUTONOMOUS,
+  COST_DOOMSCROLL,
+  COST_NORMAL_APP,
+  COST_ORDER_REQUEST,
+  COST_OTP,
+  COST_GENERAL_QUERY,
+} from "../../lib/credits";
+import { deductCredits } from "../../lib/credit.service";
 import { runMainAgent } from "../agents/mainAgent";
 import { invokeGeminiWithFallback } from "../utils/GeminiChatModel";
 import { streamVoiceMessage } from "../utils/ws";
@@ -68,6 +77,12 @@ async function classifyIntent(
   const shortTermMemory = await getShortTermMemory(userId, conversationId);
   const longTermMemory = await getRelevantLongTermMemory(userId, prompt);
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { onboardingName: true, onboardingCountry: true },
+  });
+
+
   // Build memory context string
   let memoryContext = "";
   if (shortTermMemory.length > 0) {
@@ -102,6 +117,11 @@ MUST FOLLOW:
 - Always identify as Paxio when asked about identity
 - Be warm and conversational
 ${memoryContext}
+
+USER CONTEXT:
+Name: ${user?.onboardingName || "User"}
+Location: ${user?.onboardingCountry || "Unknown"}
+
 
 Your job:
 1. Classify the user's intent
@@ -244,7 +264,10 @@ USER INSTRUCTION:
   } catch {
     return {
       intent: "DIRECT_EXECUTION",
-      response: "Okay, I'm taking care of that now."
+      response: await generateSpokenResponse(
+        "You failed to classify the user's intent. Just say something like 'Okay, I'm on it' or 'I'll handle that' in a natural way.",
+        prompt
+      )
     };
   }
 }
@@ -399,6 +422,28 @@ ${task}
 `;
 }
 
+/* ============================================================
+   HELPER: GENERATE SPOKEN RESPONSE
+   ============================================================ */
+
+async function generateSpokenResponse(systemInstruction: string, userPrompt: string): Promise<string> {
+  const res = await invokeGeminiWithFallback(`
+SYSTEM:
+You are Paxio, a personal voice AI assistant.
+${systemInstruction}
+
+USER PROMPT:
+"${userPrompt}"
+
+YOUR GOAL:
+Generate a single, natural, concise spoken sentence acknowledging the user's request.
+Do NOT be robotic. Be helpful and friendly.
+  `);
+
+  return res.content.trim().replace(/^"|"$/g, '');
+}
+
+
 
 /* ============================================================
    PUBLIC ENTRY (USE THIS EVERYWHERE)
@@ -414,24 +459,69 @@ export async function routePrompt(input: {
   // Pass userId and conversationId for memory context
   const intent = await classifyIntent(input.prompt, input.userId, input.conversationId);
 
+  // Calculate cost based on intent and prompt
+  let cost = 0;
+  if (intent.intent === "AUTOMATION_CREATE") {
+    cost = COST_AUTONOMOUS;
+  } else if (intent.intent === "DIRECT_EXECUTION") {
+    if (isDoomscrollPrompt(input.prompt)) {
+      cost = COST_DOOMSCROLL;
+    } else if (input.prompt.match(/^\d+$/)) {
+      cost = COST_OTP;
+    } else if (
+      input.prompt.toLowerCase().includes("order") ||
+      input.prompt.toLowerCase().includes("zepto") ||
+      input.prompt.toLowerCase().includes("amazon") ||
+      input.prompt.toLowerCase().includes("swiggy") ||
+      input.prompt.toLowerCase().includes("zomato") ||
+      input.prompt.toLowerCase().includes("blinkit")
+    ) {
+      cost = COST_ORDER_REQUEST;
+    } else {
+      cost = COST_NORMAL_APP;
+    }
+  } else if (intent.intent === "GENERAL_QUERY") {
+    cost = COST_GENERAL_QUERY;
+  }
+
+  // Deduct credits if cost > 0
+  if (cost > 0) {
+    try {
+      await deductCredits(input.userId, cost, crypto.randomUUID());
+    } catch (error) {
+      console.error("Credit deduction failed:", error);
+      return {
+        response: await generateSpokenResponse(
+          "The user has insufficient credits. Politely inform them they need to recharge to perform this action.",
+          input.prompt
+        )
+      }
+    }
+  }
+
+
   console.log(intent)
 
   // Override: If user is sharing personal info, force DIRECT_EXECUTION so mainAgent saves it
   const hasLongTermInfo = containsLongTermInfo(input.prompt);
   if (hasLongTermInfo && intent.intent === "GENERAL_QUERY") {
     console.log("[promptRouter] Detected long-term memory info, routing to mainAgent");
+    console.log("[promptRouter] Detected long-term memory info, routing to mainAgent");
     intent.intent = "DIRECT_EXECUTION";
-    intent.response = "Got it, I'll remember that.";
+    intent.response = await generateSpokenResponse(
+      "The user just shared personal information that you need to remember. Confirm that you have noted it down.",
+      input.prompt
+    );
   }
 
   /* ---------------- GENERAL QUERY (No execution needed) ---------------- */
   if (intent.intent === "GENERAL_QUERY") {
     // Stream the response to user - no main agent execution needed
-    if (input.socketId) {
-      streamVoiceMessage(intent.response, input.socketId).catch((err) => {
-        console.error("[promptRouter] Failed to stream voice message:", err.message);
-      });
-    }
+    // if (input.socketId) {
+    //   streamVoiceMessage(intent.response, input.socketId).catch((err) => {
+    //     console.error("[promptRouter] Failed to stream voice message:", err);
+    //   });
+    // }
 
     // Save conversation to memory
     if (input.conversationId) {
@@ -449,7 +539,11 @@ export async function routePrompt(input: {
 
     if (isDoomscrollRequest) {
       // Stream message about doomscrolling
-      const doomscrollResponse = "Ok, I'm doomscrolling now. You can see live results in the Sessions menu.";
+      // Stream message about doomscrolling
+      const doomscrollResponse = await generateSpokenResponse(
+        "The user wants you to research/doomscroll on a topic. Confirm that you are starting the research process now and mention they can check the live status.",
+        input.prompt
+      );
       if (input.socketId) {
         streamVoiceMessage(doomscrollResponse, input.socketId).catch((err) => {
           console.error("[promptRouter] Failed to stream voice message:", err.message);
@@ -508,5 +602,5 @@ export async function routePrompt(input: {
     };
   }
 
-  return { response: "Automation updated." };
+  return { response: intent.response || "Automation updated." };
 }

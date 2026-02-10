@@ -13,6 +13,7 @@ import SubredditSentimentSummary from "./SubredditSummary";
 // import VoiceNotesOrganizer from "./VoiceNotes";
 import NotionPersonPage from "./Notion";
 import Graph from "../graphs/Graph";
+import ConnectServiceCard from "./ConnectServiceCard";
 
 const NewResponse: React.FC<any> = ({
     data
@@ -108,6 +109,10 @@ const NewResponse: React.FC<any> = ({
                         {data?.notion?.pages?.map((page: any, index: number) => (
                             <NotionPersonPage key={index} page={page} />
                         ))}
+
+                        {data?.connect?.service && (
+                            <ConnectServiceCard service={data.connect.service} />
+                        )}
 
 
                         {/* 

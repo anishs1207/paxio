@@ -16,7 +16,7 @@ export type Service =
   | "reddit";
 
 // change if when using locally
-const WS_URL = process.env.WS_URL || "https://api.paxio.tech";
+const WS_URL = "https://api.paxio.tech";
 
 export interface Question {
   q: string;

@@ -1,8 +1,8 @@
-import prisma  from "./db";
-import { FIXED_DEDUCTION } from "./credits";
+import prisma from "./db";
 
 export async function deductCredits(
   userId: string,
+  amount: number,
   requestId: string
 ) {
   return prisma.$transaction(async (tx) => {
@@ -11,15 +11,15 @@ export async function deductCredits(
       select: { credits: true }
     });
 
-    if (!user || user.credits < FIXED_DEDUCTION) {
+    if (!user || user.credits < amount) {
       throw new Error("INSUFFICIENT_CREDITS");
     }
 
-    console.log("credits:",user.credits)
+    console.log("credits:", user.credits)
 
     const updated = await tx.user.update({
       where: { id: userId },
-      data: { credits: { decrement: FIXED_DEDUCTION } }
+      data: { credits: { decrement: amount } }
     });
 
     const balance = Number(updated.credits);
@@ -28,7 +28,7 @@ export async function deductCredits(
       data: {
         userId,
         type: "DEBIT",
-        amount: FIXED_DEDUCTION,
+        amount: amount,
         balanceAfter: balance,
         requestId
       }
@@ -40,12 +40,13 @@ export async function deductCredits(
 
 export async function refundCredits(
   userId: string,
+  amount: number,
   requestId: string
 ) {
   return prisma.$transaction(async (tx) => {
     const updated = await tx.user.update({
       where: { id: userId },
-      data: { credits: { increment: FIXED_DEDUCTION } }
+      data: { credits: { increment: amount } }
     });
 
     const balance = Number(updated.credits);
@@ -54,7 +55,7 @@ export async function refundCredits(
       data: {
         userId,
         type: "REFUND",
-        amount: FIXED_DEDUCTION,
+        amount: amount,
         balanceAfter: balance,
         requestId
       }
