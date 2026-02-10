@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@deepgram/sdk": "^4.11.3",
+    "@google/genai": "^1.40.0",
     "@langchain/core": "^1.1.19",
     "@langchain/google-genai": "^2.1.15",
     "@langchain/langgraph": "^1.1.4",

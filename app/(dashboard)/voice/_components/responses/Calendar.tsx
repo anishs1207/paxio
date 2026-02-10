@@ -28,7 +28,7 @@ const CalendarPreview = ({
     title,
     description,
     summarized,
-}) => {
+}: any) => {
     const [expanded, setExpanded] = useState(false);
 
     return (

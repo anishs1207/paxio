@@ -95,6 +95,7 @@ export default async function TestAllCredentials(userId: string): Promise<{
         const notionClient = new NotionClient({ auth: notionToken });
 
         // Test call
+        //@ts-expect-error
         await notionClient.users.me();
 
         notion = notionClient;

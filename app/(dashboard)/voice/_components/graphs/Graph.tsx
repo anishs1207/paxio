@@ -45,13 +45,13 @@ export default function Graph({ type, title, description, chartData, chartConfig
         //         chartData={chartData}
         //         chartConfig={chartConfig}
         //     />
-        case "tooltip":
-            return <ChartTooltipDefault
-                title={title}
-                description={description}
-                chartData={chartData}
-                chartConfig={chartConfig}
-            />
+        // case "tooltip":
+        //     return <ChartTooltipDefault
+        //         title={title}
+        //         description={description}
+        //         chartData={chartData}
+        //         chartConfig={chartConfig}
+        //     />
         case "area":
             return <ChartAreaAxes
                 title={title}
@@ -60,52 +60,52 @@ export default function Graph({ type, title, description, chartData, chartConfig
                 chartConfig={chartConfig}
             />
         case "table":
-             <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeRaw]}
-                        components={{
-                            table: (props) => (
-                                <div className="my-3 overflow-auto">
-                                    <table
-                                        {...props}
-                                        className="min-w-full table-auto border-collapse border border-zinc-700 text-xs text-left"
-                                    />
-                                </div>
-                            ),
-                            th: (props) => (
-                                <th
-                                    {...props}
-                                    className="px-4 py-2 font-medium bg-zinc-800 border-b border-zinc-700 text-white"
-                                />
-                            ),
-                            td: (props) => (
-                                <td
-                                    {...props}
-                                    className="px-4 py-2 border-b border-zinc-700 text-zinc-300"
-                                />
-                            ),
-                           
-                            hr: () => (
-                                <hr className="my-3 border-zinc-700 opacity-70 border" />
-                            ),
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+                components={{
+                    table: (props) => (
+                        <div className="my-3 overflow-auto">
+                            <table
+                                {...props}
+                                className="min-w-full table-auto border-collapse border border-zinc-700 text-xs text-left"
+                            />
+                        </div>
+                    ),
+                    th: (props) => (
+                        <th
+                            {...props}
+                            className="px-4 py-2 font-medium bg-zinc-800 border-b border-zinc-700 text-white"
+                        />
+                    ),
+                    td: (props) => (
+                        <td
+                            {...props}
+                            className="px-4 py-2 border-b border-zinc-700 text-zinc-300"
+                        />
+                    ),
 
-                            p: (props) => (
-                                <p
-                                    {...props}
-                                    className="my-1 leading-relaxed whitespace-pre-line"
-                                />
-                            ),
-                            strong: (props) => (
-                                <strong
-                                    {...props}
-                                    className="font-semibold text-zinc-100"
-                                />
-                            ),
-                        }}
-                    >
-                        {title}
-                    </ReactMarkdown>
-            
+                    hr: () => (
+                        <hr className="my-3 border-zinc-700 opacity-70 border" />
+                    ),
+
+                    p: (props) => (
+                        <p
+                            {...props}
+                            className="my-1 leading-relaxed whitespace-pre-line"
+                        />
+                    ),
+                    strong: (props) => (
+                        <strong
+                            {...props}
+                            className="font-semibold text-zinc-100"
+                        />
+                    ),
+                }}
+            >
+                {title}
+            </ReactMarkdown>
+
         default:
             return <p>Error</p>
     }

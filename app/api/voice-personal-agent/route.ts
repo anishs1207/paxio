@@ -78,7 +78,9 @@ export async function POST(req: NextRequest) {
     // Handle different response shapes from routePrompt
     // For automation: { response, autonomousTaskId }
     // For direct execution: { parsed: { response, data } }
+    //@ts-expect-error
     const responseText = obj.response || obj.parsed?.response || "Task completed.";
+    //@ts-expect-error
     const responseData = obj.parsed || { response: responseText, data: {} };
 
     const response = await deepgram.speak.request(
