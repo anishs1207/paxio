@@ -24,10 +24,10 @@ const Hero: React.FC = () => {
       {/* Hero Text */}
       <div className="relative z-20 flex flex-col gap-6 max-w-3xl">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500 font-display">
-          A Buddy that works<br />with you.
+          AI that works<br />with you.
         </h1>
         <p className="text-lg md:text-xl text-gray-400 font-light max-w-xl mx-auto leading-relaxed font-display">
-          Your Voice First Assistant.
+          Paxio. Your Voice First Assistant.
         </p>
       </div>
 
