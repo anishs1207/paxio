@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { Mail, Calendar, Share2, ShoppingBag } from "lucide-react";
+import { Mail, Calendar, Share2, ShoppingBag, X } from "lucide-react";
 import { Header, Footer } from "./_components/layout";
 import { PeopleOverlay, ToolsOverlay } from "./_components/overlays";
 import VoiceContent from "./_components/Container";
@@ -767,7 +767,12 @@ export default function VoicePage() {
 
                     /> :
                     doomscrollUrl ? (
-                         <div className="flex-1 flex flex-col items-center justify-center p-4">
+                         <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+                             <div className="bg-red-500/90 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse shadow-lg flex items-center gap-2">
+                                 <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+                                 LIVE AGENT VIEW
+                             </div>
+
                              <div className="w-full max-w-6xl h-[80vh] bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative">
                                  {/* Block interactions */}
                                  <div className="absolute inset-0 z-10 bg-transparent" />
@@ -781,18 +786,10 @@ export default function VoicePage() {
                                  {/* Close Button */}
                                  <button 
                                      onClick={() => setShowStopModal(true)}
-                                     className="absolute top-4 right-4 z-20 bg-zinc-900/80 hover:bg-zinc-800 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                                     className="absolute top-4 right-4 z-50 bg-white hover:bg-zinc-200 text-black p-2 rounded-full shadow-xl transition-all hover:scale-105"
                                  >
-                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                         <line x1="18" y1="6" x2="6" y2="18"></line>
-                                         <line x1="6" y1="6" x2="18" y2="18"></line>
-                                     </svg>
+                                    <X size={24} />
                                  </button>
-
-                                 <div className="absolute top-4 left-4 bg-red-500/90 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-2 z-20">
-                                     <div className="w-2 h-2 bg-white rounded-full animate-ping" />
-                                     LIVE AGENT VIEW
-                                 </div>
 
                                  {/* Confirmation Modal */}
                                  {showStopModal && (
