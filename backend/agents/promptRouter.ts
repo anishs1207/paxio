@@ -22,55 +22,37 @@ import {
    TYPES
 ============================================================ */
 
-type PromptIntent =
+export type PromptIntent =
   | "DIRECT_EXECUTION"
   | "AUTOMATION_CREATE"
   | "AUTOMATION_CANCEL"
   | "AUTOMATION_MODIFY"
   | "GENERAL_QUERY";
 
+export type RequestType =
+  | "DOOMSCROLL_RESEARCH"
+  | "ORDER_REQUEST"
+  | "OTP_SUBMISSION"
+  | "NORMAL_APP_ACTION"
+  | "AUTOMATION_CREATE"
+  | "GENERAL_QUERY";
+
 /* ============================================================
    DOOMSCROLL DETECTION
 ============================================================ */
 
-/**
- * Detects if a prompt is requesting social media research/doomscrolling
- */
-function isDoomscrollPrompt(prompt: string): boolean {
-  const lowerPrompt = prompt.toLowerCase();
 
-  // Keywords that indicate doomscrolling/research requests
-  const doomscrollKeywords = [
-    "doomscroll",
-    "research on reddit",
-    "research on linkedin",
-    "research on twitter",
-    "research on x",
-    "research across social",
-    "social media research",
-    "find out about",
-    "look up on reddit",
-    "look up on linkedin",
-    "check reddit for",
-    "check linkedin for",
-    "what are people saying about",
-    "sentiment on",
-    "trends on reddit",
-    "trends on linkedin",
-  ];
-
-  return doomscrollKeywords.some(keyword => lowerPrompt.includes(keyword));
-}
 
 /* ============================================================
    INTENT CLASSIFIER (FAST, LOW LATENCY)
 ============================================================ */
-async function classifyIntent(
+async function classifyRequest(
   prompt: string,
   userId: string,
   conversationId?: string
 ): Promise<{
   intent: PromptIntent;
+  requestType: RequestType;
   response: string;
 }> {
   // Fetch memory context
@@ -101,7 +83,7 @@ async function classifyIntent(
   const res = await invokeGeminiWithFallback(`
 SYSTEM:
 You are Paxio, a personal voice AI assistant built to help users be more productive.
-You classify intents and generate natural spoken responses.
+You classify intents, identify request types, and generate natural spoken responses.
 
 PAXIO IDENTITY:
 - Name: Paxio
@@ -124,62 +106,56 @@ Location: ${user?.onboardingCountry || "Unknown"}
 
 
 Your job:
-1. Classify the user's intent
-2. Generate a short, natural spoken response
+1. Classify the user's intent (Execution vs Automation vs Query)
+2. Classify the COMPONENT/REQUEST TYPE (Research, Order, OTP, App Action, etc.)
+3. Generate a short, natural spoken response
 
 INTENTS:
 1. DIRECT_EXECUTION - Requires IMMEDIATE tool/action execution (do it NOW)
 2. AUTOMATION_CREATE - Future/scheduled/recurring task (do it LATER at a specific time)
 3. AUTOMATION_CANCEL - Stop existing automation
 4. AUTOMATION_MODIFY - Change existing automation
-5. GENERAL_QUERY - Conversational questions that YOU can answer directly (no tools needed)
+5. GENERAL_QUERY - Conversational questions or simple requests YOU can answer directly
+
+REQUEST TYPES (Crucial for credit calculation):
+1. DOOMSCROLL_RESEARCH:
+   - Any request to "research", "find out about", "check reddit/twitter/linkedin", "doomscroll", "look up", "sentiment analysis", "trends".
+   - Involves BROWSING or SEARCHING external information.
+
+2. ORDER_REQUEST:
+   - Requests to buy, order, or checkout items.
+   - Keywords: "order", "buy", "get me", "purchase" from Zepto, Amazon, Swiggy, Zomato, Blinkit.
+
+3. OTP_SUBMISSION:
+   - User provides a numeric code (4-8 digits) typically for 2FA or login.
+   - Example: "492983", "here is the code 123456".
+
+4. NORMAL_APP_ACTION:
+   - Interacting with productive apps: Gmail, Calendar, Notion, Linear, Slack.
+   - Sending emails, checking schedule, creating pages, writing notes.
+   - NOT research/browsing.
+
+5. AUTOMATION_CREATE:
+   - Creating a scheduled task (maps to AUTOMATION_CREATE intent).
+
+6. GENERAL_QUERY:
+   - Casual conversation, identity questions, general knowledge (not requiring deep research tools).
+
 
 CRITICAL TIMING DISTINCTION:
 - If user says "send email NOW" or just "send email" (no time specified) → DIRECT_EXECUTION
 - If user says "send email AT 10pm" or "at 11:23pm" or "tonight" or "tomorrow" → AUTOMATION_CREATE
 - Any mention of a SPECIFIC TIME or FUTURE TIME = AUTOMATION_CREATE
 
-GENERAL_QUERY EXAMPLES (answer these yourself, NO execution):
-- "Who are you?"
-- "What can you do?"
-- "Hello" / "Hi" / "Hey"
-- "How are you?"
-- "Tell me about yourself"
-- "Thanks" / "Thank you"
-- "Good morning/evening"
-- General knowledge questions
-- Casual conversation
-
-DIRECT_EXECUTION EXAMPLES (IMMEDIATE execution, no time specified):
-- "Send an email to Anushay" (no time = NOW)
-- "What meetings do I have today?"
-- "Order milk from zepto"
-- "492983" (OTP codes)
-- "Research AI trends on Reddit"
-- "Check my emails"
-
-AUTOMATION_CREATE EXAMPLES (SCHEDULED execution, time specified):
-- "Every day at 9am send me unread emails" (recurring)
-- "Remind me to pay rent on the 1st" (recurring)
-- "Send an email to Anushay at 10pm" (one-time, scheduled)
-- "At 11:23pm send a birthday email" (one-time, scheduled)
-- "Tonight at 8 remind me to call mom" (one-time, scheduled)
-- "Tomorrow morning send the report" (one-time, scheduled)
-
 PRIORITY RULES:
-1. Greetings, identity questions, casual chat → GENERAL_QUERY
-2. OTP or numeric codes (4-6 digits) → DIRECT_EXECUTION
-3. **SCHEDULED TASKS with specific times** (at Xpm, tonight, tomorrow, every day) → AUTOMATION_CREATE
-4. Immediate shopping/ordering/email/calendar requests (NO time specified) → DIRECT_EXECUTION
-5. Research requests → DIRECT_EXECUTION
-6. Repetition keywords (every, daily, weekly, monthly) → AUTOMATION_CREATE
-7. Reference to existing automation → CANCEL or MODIFY
-8. **USER SHARING PERSONAL INFO** → DIRECT_EXECUTION
-   - "I prefer...", "My name is...", "Call me...", "I work at...", "My email is..."
-   - "I always...", "I use...", "Remember that I..."
-   - This info will be saved to memory by the main agent
-9. General questions you can answer → GENERAL_QUERY
-10. Ambiguous actions (no time) → DIRECT_EXECUTION
+1. Greetings, identity questions, casual chat → GENERAL_QUERY / GENERAL_QUERY
+2. OTP or numeric codes (4-6 digits) → DIRECT_EXECUTION / OTP_SUBMISSION
+3. **SCHEDULED TASKS with specific times** → AUTOMATION_CREATE / AUTOMATION_CREATE
+4. "Research", "Find out", "Check social media", "Trends" → DIRECT_EXECUTION / DOOMSCROLL_RESEARCH
+5. "Order", "Buy" → DIRECT_EXECUTION / ORDER_REQUEST
+6. Email, Calendar, Notion → DIRECT_EXECUTION / NORMAL_APP_ACTION
+7. **USER SHARING PERSONAL INFO** → DIRECT_EXECUTION / NORMAL_APP_ACTION
+   - "I prefer...", "My name is...", "Call me...", "My email is..." (Save to memory)
 
 RESPONSE RULES:
 - Sound natural when spoken aloud
@@ -193,6 +169,7 @@ Return ONLY valid JSON.
 
 {
   "intent": "DIRECT_EXECUTION | AUTOMATION_CREATE | AUTOMATION_CANCEL | AUTOMATION_MODIFY | GENERAL_QUERY",
+  "requestType": "DOOMSCROLL_RESEARCH | ORDER_REQUEST | OTP_SUBMISSION | NORMAL_APP_ACTION | AUTOMATION_CREATE | GENERAL_QUERY",
   "response": "string"
 }
 
@@ -201,48 +178,42 @@ EXAMPLES:
 User: "Who are you?"
 {
   "intent": "GENERAL_QUERY",
+  "requestType": "GENERAL_QUERY",
   "response": "I'm Paxio, your personal AI assistant. I can help you with emails, calendar, social media research, shopping, and much more!"
 }
 
-User: "Hello"
+User: "Research AI trends on Reddit"
 {
-  "intent": "GENERAL_QUERY",
-  "response": "Hey there! How can I help you today?"
+  "intent": "DIRECT_EXECUTION",
+  "requestType": "DOOMSCROLL_RESEARCH",
+  "response": "I'm on it. Starting a research session on Reddit for AI trends."
 }
 
-User: "What can you do?"
+User: "Order milk from zepto"
 {
-  "intent": "GENERAL_QUERY",
-  "response": "I can send emails, manage your calendar, research topics on social media, order from Zepto, and work with your Notion pages. Just ask!"
+  "intent": "DIRECT_EXECUTION",
+  "requestType": "ORDER_REQUEST",
+  "response": "Okay, ordering milk from Zepto for you now."
 }
 
 User: "Send an email to Anushay"
 {
   "intent": "DIRECT_EXECUTION",
+  "requestType": "NORMAL_APP_ACTION",
   "response": "Okay, I'm sending the email to Anushay now."
 }
 
-User: "Every day at 9am send me my unread emails"
+User: "Every day at 9am send me unread emails"
 {
   "intent": "AUTOMATION_CREATE",
+  "requestType": "AUTOMATION_CREATE",
   "response": "Got it. I'll send you your unread emails every day at 9am."
-}
-
-User: "Send an email to Anushay at 11:23 PM wishing happy birthday"
-{
-  "intent": "AUTOMATION_CREATE",
-  "response": "Got it, I'll schedule the birthday email to Anushay for 11:23 PM."
-}
-
-User: "Tonight at 10pm remind me to call mom"
-{
-  "intent": "AUTOMATION_CREATE",
-  "response": "Alright, I'll remind you to call mom at 10 PM tonight."
 }
 
 User: "029405"
 {
   "intent": "DIRECT_EXECUTION",
+  "requestType": "OTP_SUBMISSION",
   "response": "Got it. Processing that code now."
 }
 
@@ -260,10 +231,16 @@ USER INSTRUCTION:
     if (jsonMatch) {
       content = jsonMatch[1].trim();
     }
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+    return {
+      intent: parsed.intent || "DIRECT_EXECUTION",
+      requestType: parsed.requestType || "NORMAL_APP_ACTION",
+      response: parsed.response || "Okay, processing that."
+    };
   } catch {
     return {
       intent: "DIRECT_EXECUTION",
+      requestType: "NORMAL_APP_ACTION",
       response: await generateSpokenResponse(
         "You failed to classify the user's intent. Just say something like 'Okay, I'm on it' or 'I'll handle that' in a natural way.",
         prompt
@@ -457,31 +434,37 @@ export async function routePrompt(input: {
   prompt: string;
 }) {
   // Pass userId and conversationId for memory context
-  const intent = await classifyIntent(input.prompt, input.userId, input.conversationId);
+  const classification = await classifyRequest(input.prompt, input.userId, input.conversationId);
 
-  // Calculate cost based on intent and prompt
+  // Calculate cost based on classification
   let cost = 0;
-  if (intent.intent === "AUTOMATION_CREATE") {
+
+  if (classification.intent === "AUTOMATION_CREATE") {
     cost = COST_AUTONOMOUS;
-  } else if (intent.intent === "DIRECT_EXECUTION") {
-    if (isDoomscrollPrompt(input.prompt)) {
-      cost = COST_DOOMSCROLL;
-    } else if (input.prompt.match(/^\d+$/)) {
-      cost = COST_OTP;
-    } else if (
-      input.prompt.toLowerCase().includes("order") ||
-      input.prompt.toLowerCase().includes("zepto") ||
-      input.prompt.toLowerCase().includes("amazon") ||
-      input.prompt.toLowerCase().includes("swiggy") ||
-      input.prompt.toLowerCase().includes("zomato") ||
-      input.prompt.toLowerCase().includes("blinkit")
-    ) {
-      cost = COST_ORDER_REQUEST;
-    } else {
-      cost = COST_NORMAL_APP;
+  } else {
+    // Use the explicit request type from classification
+    switch (classification.requestType) {
+      case "DOOMSCROLL_RESEARCH":
+        cost = COST_DOOMSCROLL;
+        break;
+      case "ORDER_REQUEST":
+        cost = COST_ORDER_REQUEST;
+        break;
+      case "OTP_SUBMISSION":
+        cost = COST_OTP;
+        break;
+      case "NORMAL_APP_ACTION":
+        cost = COST_NORMAL_APP;
+        break;
+      case "GENERAL_QUERY":
+        cost = COST_GENERAL_QUERY;
+        break;
+      case "AUTOMATION_CREATE":
+        cost = COST_AUTONOMOUS;
+        break;
+      default:
+        cost = COST_NORMAL_APP;
     }
-  } else if (intent.intent === "GENERAL_QUERY") {
-    cost = COST_GENERAL_QUERY;
   }
 
   // Deduct credits if cost > 0
@@ -500,55 +483,42 @@ export async function routePrompt(input: {
   }
 
 
-  console.log(intent)
+  console.log("Classification:", classification);
 
   // Override: If user is sharing personal info, force DIRECT_EXECUTION so mainAgent saves it
   const hasLongTermInfo = containsLongTermInfo(input.prompt);
-  if (hasLongTermInfo && intent.intent === "GENERAL_QUERY") {
+  if (hasLongTermInfo && classification.intent === "GENERAL_QUERY") {
     console.log("[promptRouter] Detected long-term memory info, routing to mainAgent");
-    console.log("[promptRouter] Detected long-term memory info, routing to mainAgent");
-    intent.intent = "DIRECT_EXECUTION";
-    intent.response = await generateSpokenResponse(
+    classification.intent = "DIRECT_EXECUTION";
+    classification.requestType = "NORMAL_APP_ACTION";
+    classification.response = await generateSpokenResponse(
       "The user just shared personal information that you need to remember. Confirm that you have noted it down.",
       input.prompt
     );
   }
 
   /* ---------------- GENERAL QUERY (No execution needed) ---------------- */
-  if (intent.intent === "GENERAL_QUERY") {
-    // Stream the response to user - no main agent execution needed
-    // if (input.socketId) {
-    //   streamVoiceMessage(intent.response, input.socketId).catch((err) => {
-    //     console.error("[promptRouter] Failed to stream voice message:", err);
-    //   });
-    // }
-
+  if (classification.intent === "GENERAL_QUERY" && classification.requestType === "GENERAL_QUERY") {
     // Save conversation to memory
     if (input.conversationId) {
       await saveShortTermMemory(input.userId, input.conversationId, "user", input.prompt);
-      await saveShortTermMemory(input.userId, input.conversationId, "assistant", intent.response);
+      await saveShortTermMemory(input.userId, input.conversationId, "assistant", classification.response);
     }
 
-    return { response: intent.response };
+    return { response: classification.response };
   }
 
   /* ---------------- DIRECT ---------------- */
-  if (intent.intent === "DIRECT_EXECUTION") {
+  if (classification.intent === "DIRECT_EXECUTION") {
     // Check if this is a doomscroll/research request
-    const isDoomscrollRequest = isDoomscrollPrompt(input.prompt);
+    const isDoomscrollRequest = classification.requestType === "DOOMSCROLL_RESEARCH";
 
     if (isDoomscrollRequest) {
-      // Stream message about doomscrolling
       // Stream message about doomscrolling
       const doomscrollResponse = await generateSpokenResponse(
         "The user wants you to research/doomscroll on a topic. Confirm that you are starting the research process now and mention they can check the live status.",
         input.prompt
       );
-      // if (input.socketId) {
-      //   streamVoiceMessage(doomscrollResponse, input.socketId).catch((err) => {
-      //     console.error("[promptRouter] Failed to stream voice message:", err.message);
-      //   });
-      // }
 
       // Run main agent WITHOUT await (fire-and-forget)
       runMainAgent(input).then((res) => {
@@ -572,7 +542,7 @@ export async function routePrompt(input: {
 
     // Stream the confirmation message before executing (non-blocking)
     if (input.socketId) {
-      streamVoiceMessage(intent.response, input.socketId).catch((err) => {
+      streamVoiceMessage(classification.response, input.socketId).catch((err) => {
         console.error("[promptRouter] Failed to stream voice message:", err.message);
       });
     }
@@ -580,7 +550,7 @@ export async function routePrompt(input: {
   }
 
   /* ---------------- AUTOMATION CREATE ---------------- */
-  if (intent.intent === "AUTOMATION_CREATE") {
+  if (classification.intent === "AUTOMATION_CREATE") {
     const extracted = await extractAutomation(input.prompt);
 
     const task = await prisma.autonomousTask.create({
@@ -608,10 +578,10 @@ export async function routePrompt(input: {
     });
 
     return {
-      response: intent.response,
+      response: classification.response,
       autonomousTaskId: task.id,
     };
   }
 
-  return { response: intent.response || "Automation updated." };
+  return { response: classification.response || "Automation updated." };
 }

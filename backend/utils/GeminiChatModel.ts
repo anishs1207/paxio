@@ -11,7 +11,7 @@ if (apiKeys.length === 0) {
   throw new Error("❌ No GEMINI_API_KEY_X found in environment variables.");
 }
 
-let currentKeyIndex = Math.floor(Math.random() * apiKeys.length);
+let currentKeyIndex = 0;
 
 // Cache of LLM instances per API key
 const llmCache = new Map<string, ChatGoogleGenerativeAI>();
@@ -34,48 +34,36 @@ function getLLMForKey(apiKey: string): ChatGoogleGenerativeAI {
 }
 
 /**
- * Get the current LLM instance (randomly selected)
+ * Get the current LLM instance (for simple use cases)
  */
 export function getGeminiLLM(): ChatGoogleGenerativeAI {
-  // Pick a random key each time for better distribution
-  const randomIndex = Math.floor(Math.random() * apiKeys.length);
-  return getLLMForKey(apiKeys[randomIndex]);
+  return getLLMForKey(apiKeys[currentKeyIndex]);
 }
 
 /**
  * Invoke Gemini with automatic API key rotation on failure.
- * Tries keys in RANDOM order until one succeeds.
+ * Tries each key in sequence until one succeeds.
  */
 export async function invokeGeminiWithFallback(
   prompt: string | any[]
 ): Promise<any> {
   let lastError: any;
 
-  // Create a pool of remaining indices to try
-  const remainingIndices = Array.from({ length: apiKeys.length }, (_, i) => i);
-
-  // Shuffle indices (Fisher-Yates shuffle)
-  for (let i = remainingIndices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [remainingIndices[i], remainingIndices[j]] = [remainingIndices[j], remainingIndices[i]];
-  }
-
-  for (let i = 0; i < remainingIndices.length; i++) {
-    const keyIndex = remainingIndices[i];
+  for (let i = 0; i < apiKeys.length; i++) {
+    const keyIndex = (currentKeyIndex + i) % apiKeys.length;
     const key = apiKeys[keyIndex];
     const llm = getLLMForKey(key);
 
     try {
       const result = await llm.invoke(prompt);
 
-      // Success - update current index logic mostly for tracking if needed,
-      // but strictly we just return the result here.
+      // Success - rotate to this key for next use
       currentKeyIndex = keyIndex;
 
       return result;
     } catch (err: any) {
       console.warn(
-        `[GeminiLLM] API key index ${keyIndex} failed:`,
+        `[GeminiLLM] API key ${keyIndex + 1}/${apiKeys.length} failed:`,
         err.message || err
       );
       lastError = err;
@@ -130,8 +118,8 @@ export function getGeminiLLMByIndex(index: number): ChatGoogleGenerativeAI {
 }
 
 /**
- * Rotate to a random API key
+ * Rotate to the next API key
  */
 export function rotateApiKey(): void {
-  currentKeyIndex = Math.floor(Math.random() * apiKeys.length);
+  currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
 }
