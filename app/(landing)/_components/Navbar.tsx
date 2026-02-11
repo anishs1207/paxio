@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { signIn } from "next-auth/react";
 import Link from 'next/link';
 import { FcGoogle } from "react-icons/fc";
-import { FaTwitter } from "react-icons/fa";
+// import { FaTwitter } from "react-icons/fa";
+import { FaXTwitter } from 'react-icons/fa6';
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -46,6 +47,18 @@ const Navbar: React.FC = () => {
 
         {/* CTA */}
         <div className='flex flex-row gap-2'>
+
+          <button
+            onClick={() => {
+              const text = "I want paxio.tech to have <feedback> @codewithrobu @anishs1207";
+              const encodedText = encodeURIComponent(text);
+              window.open(`https://twitter.com/intent/tweet?text=${encodedText}`, "_blank")
+            }}
+            className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2"
+          >
+            <FaXTwitter className="text-lg" />
+            Share on X
+          </button>
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
@@ -58,21 +71,10 @@ const Navbar: React.FC = () => {
             )}
             {isSigningIn ? "Signing in..." : "Sign In"}
           </button>
-          <button
-            onClick={() => {
-              const text = "I want paxio.tech to have <feedback> @codewithrobu @anishs1207";
-              const encodedText = encodeURIComponent(text);
-              window.open(`https://twitter.com/intent/tweet?text=${encodedText}`, "_blank")
-            }}
-            className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2"
-          >
-            <FaTwitter className="text-lg text-blue-400" />
-            Share on X
-          </button>
         </div>
 
       </nav>
-    </header >
+    </header>
   );
 };
 
