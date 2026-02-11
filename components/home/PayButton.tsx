@@ -11,53 +11,61 @@ export default function PayButton() {
         try {
             setLoading(true);
             const { data } = await axios.post("/api/payments/create-order");
+            
+            if (data.checkout_url) {
+                window.location.href = data.checkout_url;
+            } else {
+                toast("Failed to create checkout session");
+                setLoading(false);
+            }
 
-            const options = {
-                key: data.key,
-                order_id: data.orderId,
-                amount: data.amount,
-                currency: data.currency,
+            // const options = {
+            //     key: data.key,
+            //     order_id: data.orderId,
+            //     amount: data.amount,
+            //     currency: data.currency,
+            //
+            //     name: "Paxio",
+            //     description: "30 days access",
+            //     image: logo.src,
+            //
+            //     handler: async function (response: any) {
+            //         try {
+            //             const verifyRes = await axios.post(
+            //                 "/api/payments/verify",
+            //                 {
+            //                     razorpay_order_id: response.razorpay_order_id,
+            //                     razorpay_payment_id: response.razorpay_payment_id,
+            //                     razorpay_signature: response.razorpay_signature,
+            //                 },
+            //                 {
+            //                     headers: { "Content-Type": "application/json" },
+            //                 }
+            //             );
+            //
+            //             if (verifyRes.data.success) {
+            //                 toast("Payment successful 🎉");
+            //                 // Redirect to dashboard after successful payment
+            //                 window.location.href = "/voice";
+            //             } else {
+            //                 toast("Payment verification failed");
+            //             }
+            //         } catch (err) {
+            //             toast("Verification error");
+            //         }
+            //     },
+            //
+            //     theme: {
+            //         color: "#18181B",
+            //
+            //     },
+            // };
 
-                name: "Paxio",
-                description: "30 days access",
-                image: logo.src,
-
-                handler: async function (response: any) {
-                    try {
-                        const verifyRes = await axios.post(
-                            "/api/payments/verify",
-                            {
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature,
-                            },
-                            {
-                                headers: { "Content-Type": "application/json" },
-                            }
-                        );
-
-                        if (verifyRes.data.success) {
-                            toast("Payment successful 🎉");
-                            // Redirect to dashboard after successful payment
-                            window.location.href = "/voice";
-                        } else {
-                            toast("Payment verification failed");
-                        }
-                    } catch (err) {
-                        toast("Verification error");
-                    }
-                },
-
-                theme: {
-                    color: "#18181B",
-
-                },
-            };
-
-            const rzp = new (window as any).Razorpay(options);
-            rzp.open();
+            // const rzp = new (window as any).Razorpay(options);
+            // rzp.open();
         } catch (error) {
             toast("Unable to initiate payment");
+            setLoading(false);
         }
     };
 

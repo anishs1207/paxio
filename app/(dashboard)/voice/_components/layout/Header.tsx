@@ -94,7 +94,7 @@ const Header: React.FC<HeaderProps> = ({
     // Always visible on mobile (outside hamburger) - bigger icons (18px instead of 16px)
     const mobileVisibleItems = [
         { icon: <Workflow size={18} />, action: () => setIsWorkflowOpen(true) },
-        { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
+        // { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
         { icon: showHistory ? <ChevronDown size={18} /> : <History size={18} />, action: () => setShowHistory(!showHistory) },
     ];
 

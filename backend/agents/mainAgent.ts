@@ -13,7 +13,7 @@ import {
     extractLongTermMemoryFromText,
     saveLongTermMemory,
 } from "../memory/memory";
-import { streamVoiceMessage } from "../utils/ws";
+import { streamVoiceMessage, streamMessage } from "../utils/ws";
 import prisma from "@/lib/db";
 import { BrowserUseClient } from "browser-use-sdk";
 import * as fs from "fs";
@@ -1468,7 +1468,7 @@ function createRedditTools() {
 
 // Browser Use Client for shopping automation
 const browserUseClient = new BrowserUseClient({
-    apiKey: "bu_Pwmb6xRzUl6XPiZyyWm811nvZZ3e82-4ratEViestsE",
+    apiKey: process.env.BROWSER_USE_API_KEY,
 });
 
 // Helper function to save screenshot from base64 or URL
@@ -2124,7 +2124,7 @@ Output all findings with full X/Twitter URLs. SKIP completely if login is requir
     return null;
 }
 
-function createDoomscrollerTools(userId: string, userPrompt: string) {
+function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: string) {
     console.log("✅ Creating Doomscroller tools (No-Login Research)");
     const tools = [];
 
@@ -2166,7 +2166,23 @@ function createDoomscrollerTools(userId: string, userPrompt: string) {
                 console.log(`✅ Browser session: ${browserSession.id}`);
                 console.log(`🎥 LIVE VIEW: https://browser-use.com/session/${browserSession.id}`);
                 // @ts-ignore
-                if (browserSession.liveUrl) console.log(`🎥 LIVE URL (Direct): ${browserSession.liveUrl}`);
+                if (browserSession.liveUrl) {
+                    console.log(`🎥 LIVE URL (Direct): ${browserSession.liveUrl}`);
+
+                    // Stream the live URL to the client
+                    if (socketId) {
+                        try {
+                            await streamMessage(
+                                "Doomscrolling started",
+                                "streaming",
+                                socketId,
+                                JSON.stringify({ type: "doomscroll_start", url: browserSession.liveUrl })
+                            );
+                        } catch (e) {
+                            console.error("Failed to stream doomscroll start:", e);
+                        }
+                    }
+                }
 
                 // Get public share URL
                 let shareUrl = "";
@@ -2437,7 +2453,7 @@ If the user asks to order/buy something from Zepto:
             address: delivery.address!,
             upiId: delivery.upi!
         }) : []),
-        ...createDoomscrollerTools(input.userId, input.prompt),
+        ...createDoomscrollerTools(input.userId, input.prompt, input.socketId),
 
     ];
 
@@ -3261,6 +3277,19 @@ DO NOT return data.graphs as a direct array!
             "assistant",
             finalResponse,
         );
+
+        if (input.socketId) {
+            await streamMessage(
+                finalResponse,
+                "done",
+                input.socketId,
+                JSON.stringify({
+                    type: "assistant_response",
+                    message: finalResponse,
+                    data: parsed
+                })
+            );
+        }
 
         return {
             //@ts-expect-error
