@@ -36,18 +36,8 @@ const MemorySection: React.FC = () => {
         {/* Visual Side */}
         <div className="w-full md:w-1/2 flex justify-center">
           <div className="relative w-80 h-80 md:w-96 md:h-96">
-            {/* Central Core */}
-            {/* <div className="absolute inset-0 m-auto w-48 h-48 bg-black border border-[#333] rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(19,19,236,0.3)] z-20">
-              <span className="material-symbols-outlined text-6xl text-white">psychology</span>
-            </div> */}
-
-            {/* Orbiting Nodes (Static for now, could be animated) */}
-            {/* <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full border border-white/5 rounded-full animate-[spin_20s_linear_infinite]"></div>
-            <div className="absolute top-12 left-12 w-4 h-4 bg-white/20 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
-            <div className="absolute bottom-12 right-12 w-6 h-6 bg-brand-primary/40 rounded-full shadow-[0_0_15px_rgba(19,19,236,0.5)]"></div> */}
             <NeuralCore state="thinking" />
 
-            {/* <div className="absolute inset-4 border border-white /5 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div> */}
           </div>
         </div>
 

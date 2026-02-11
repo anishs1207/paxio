@@ -21,19 +21,6 @@ export default function Home() {
             <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
             <AgentsSection />
 
-            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
-            <MemorySection />
-
-            {/* Divider */}
-            {/* <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div> */}
-
-
-
-            {/* Divider */}
-            {/* <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div> */}
-
-            {/* <ControlSection /> */}
-
         </>
     );
 }

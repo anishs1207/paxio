@@ -26,26 +26,28 @@ const Features: React.FC = () => {
   const features = [
     {
       icon: "mic",
-      title: "Zero-Latency Voice",
-      description: "Real-time conversation with no delay. Talk to Paxio as naturally as you would a human."
+      title: "Order on Quick Commerce",
+      description: "Connect your Zepto account, tell Paxio what you want, review the order and securely confirm the payment via UPI at the end. Blinkit, Zomato, Swiggy, and more coming soon. "
     },
     {
       icon: "psychology",
-      title: "Structured Memory",
-      description: "Total recall of every interaction and data point. Paxio remembers context so you don't have to repeat yourself."
-    },
+      title: "Connect Your Favourite Tools",
+      description: "Connect Gmail, Calendar, and Notion to Paxio and let it handle emails scheduling, and notes in the background—so you can stay focused on high-intensity work without breaking flow."
+    }
+    ,
     {
       icon: "currency_bitcoin",
-      title: "Autonomous Commerce",
-      description: "Agents that negotiate and purchase on your behalf. Secure, authenticated, and optimized for your preferences."
+      title: "Autonomous Workflows",
+      description: "Schedule intelligent workflows to run at specific times or recurring intervals. Paxio can search the internet, take actions, and integrate seamlessly with Gmail, Calendar, and Notion—automatically, on your behalf."
     }
+
   ];
 
   return (
-    <section className="w-full max-w-7xl px-4 mb-24 scroll-mt-28" id="features">
+    <section className="w-full max-w-7xl px-4 mb-10 scroll-mt-28" id="features">
       <div className="flex flex-col items-center text-center gap-3 mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-white font-display">Core Capabilities</h2>
-        <p className="text-gray-500 text-sm max-w-md font-display">Powered by neural architecture designed for zero-latency interaction.</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-white font-display">Core Features</h2>
+        <p className="text-gray-500 text-sm max-w-md font-display">Why is Paxio Better than the rest ? </p>
       </div>
 
       <div className="cursor-pointer grid grid-cols-1 md:grid-cols-3 gap-6">
