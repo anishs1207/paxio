@@ -18,6 +18,7 @@ import {
 import { signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface HeaderProps {
     showBriefing: boolean;
@@ -132,9 +133,20 @@ const Header: React.FC<HeaderProps> = ({
         <header className="relative">
             <div className="flex items-center justify-between px-4 md:px-10 py-4">
                 {/* Logo */}
-                <h1 className="flex items-center gap-2">
-                    <span className="text-xl font-bold tracking-tight text-zinc-100">Paxio</span>
-                </h1>
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <span className="text-xl font-bold tracking-tight font-display">
+                        Paxio
+                    </span>
+
+                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full 
+                   bg-white/10 text-white/70 border border-white/20">
+                        Beta
+                    </span>
+                </Link>
+
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-2">

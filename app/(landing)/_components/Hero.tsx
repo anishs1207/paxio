@@ -24,10 +24,10 @@ const Hero: React.FC = () => {
       {/* Hero Text */}
       <div className="relative z-20 flex flex-col gap-6 max-w-3xl">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500 font-display">
-          The Agent that thinks<br />with you.
+          A Buddy that works<br />with you.
         </h1>
         <p className="text-lg md:text-xl text-gray-400 font-light max-w-xl mx-auto leading-relaxed font-display">
-          Paxio: Your AI-first personal assistant.
+          Your Voice First Assistant.
         </p>
       </div>
 
@@ -37,9 +37,10 @@ const Hero: React.FC = () => {
           onClick={() => signIn("google")}
           className="cursor-pointer group relative flex items-center justify-center gap-3 bg-white hover:bg-gray-200 text-black font-bold text-base md:text-lg px-8 py-4 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 font-display"
         >
-          <span>Initialize Paxio</span>
+          <span>Try Paxio with Free Credits</span>
           <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
         </button>
+
 
       </div>
     </section>
