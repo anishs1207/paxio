@@ -544,11 +544,11 @@ export async function routePrompt(input: {
         "The user wants you to research/doomscroll on a topic. Confirm that you are starting the research process now and mention they can check the live status.",
         input.prompt
       );
-      if (input.socketId) {
-        streamVoiceMessage(doomscrollResponse, input.socketId).catch((err) => {
-          console.error("[promptRouter] Failed to stream voice message:", err.message);
-        });
-      }
+      // if (input.socketId) {
+      //   streamVoiceMessage(doomscrollResponse, input.socketId).catch((err) => {
+      //     console.error("[promptRouter] Failed to stream voice message:", err.message);
+      //   });
+      // }
 
       // Run main agent WITHOUT await (fire-and-forget)
       runMainAgent(input).then((res) => {

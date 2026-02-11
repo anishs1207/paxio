@@ -1468,7 +1468,7 @@ function createRedditTools() {
 
 // Browser Use Client for shopping automation
 const browserUseClient = new BrowserUseClient({
-    apiKey: "bu_Pwmb6xRzUl6XPiZyyWm811nvZZ3e82-4ratEViestsE",
+    apiKey: process.env.BROWSER_USE_API_KEY,
 });
 
 // Helper function to save screenshot from base64 or URL
@@ -3277,6 +3277,19 @@ DO NOT return data.graphs as a direct array!
             "assistant",
             finalResponse,
         );
+
+        if (input.socketId) {
+            await streamMessage(
+                finalResponse,
+                "done",
+                input.socketId,
+                JSON.stringify({
+                    type: "assistant_response",
+                    message: finalResponse,
+                    data: parsed
+                })
+            );
+        }
 
         return {
             //@ts-expect-error

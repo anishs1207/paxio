@@ -123,6 +123,7 @@ export default function VoicePage() {
     const [showWorkflow, setShowWorkflow] = useState(false);
     const [showSessions, setShowSessions] = useState(false);
     const [doomscrollUrl, setDoomscrollUrl] = useState<string | null>(null);
+    const [showStopModal, setShowStopModal] = useState(false);
 
     const [messages, setMessages] = useState<any[]>([]);
 
@@ -256,28 +257,32 @@ export default function VoicePage() {
 
 
         socket.on("streamMessage", (data: any) => {
-             console.log("Stream message received:", data);
-             if (data.type === "doomscroll_start" && data.url) {
-                 setDoomscrollUrl(data.url);
+             console.log("Stream message received raw:", data);
+
+             // Handle nested JSON in stepData
+             let processedData = data;
+             if (data.stepData && typeof data.stepData === 'string') {
+                 try {
+                     const parsed = JSON.parse(data.stepData);
+                     processedData = { ...data, ...parsed };
+                 } catch (e) {
+                     console.error("Failed to parse stepData JSON:", e);
+                 }
+             }
+             
+             console.log("Processed stream message:", processedData);
+
+             if (processedData.type === "doomscroll_start" && processedData.url) {
+                 console.log("Setting doomscroll URL:", processedData.url);
+                 setDoomscrollUrl(processedData.url);
+                 setResponsePayload(null); // Clear any previous visualizer payload
                  setAppState("thinking"); 
                  setActiveResponse("Researching...");
-             } else if (data.type === "assistant_response") {
+             } else if (processedData.type === "assistant_response") {
+                  console.log("Assistant response received, clearing doomscroll URL");
                   setDoomscrollUrl(null);
-                  setActiveResponse(data.message);
+                  setActiveResponse(processedData.message); 
                   setAppState("speaking");
-                  // Trigger TTS manually if needed, or rely on normal flow if audio is sent separately.
-                  // For now, we assume the text response comes here. 
-                  // If we need audio, we might need to handle that via streamVoiceMessage or similar.
-                  // However, the promptRouter sends streamVoiceMessage for the initial confirmation.
-                  // The FINAL response usually comes via the HTTP response of the mainAgent call.
-                  // But since we are doing fire-and-forget in promptRouter for doomscrolling,
-                  // we need to handle the final response here or via another socket event.
-                  
-                  // Actually, promptRouter.ts uses streamVoiceMessage to speak the confirmation.
-                  // Then it calls runMainAgent without await. 
-                  // runMainAgent returns a JSON object with response.
-                  // We need to make sure promptRouter emits ANY final result via socket if it's running in background.
-                  // The plan says: "On fulfillment, call streamMessage with type: 'assistant_response' and the agent's response."
              }
         });
 
@@ -764,15 +769,70 @@ export default function VoicePage() {
                     doomscrollUrl ? (
                          <div className="flex-1 flex flex-col items-center justify-center p-4">
                              <div className="w-full max-w-6xl h-[80vh] bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative">
+                                 {/* Block interactions */}
+                                 <div className="absolute inset-0 z-10 bg-transparent" />
+                                 
                                  <iframe 
                                      src={doomscrollUrl} 
                                      className="w-full h-full" 
                                      allow="clipboard-read; clipboard-write"
                                  />
-                                 <div className="absolute top-4 right-4 bg-red-500/90 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-2">
+                                 
+                                 {/* Close Button */}
+                                 <button 
+                                     onClick={() => setShowStopModal(true)}
+                                     className="absolute top-4 right-4 z-20 bg-zinc-900/80 hover:bg-zinc-800 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                                 >
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                         <line x1="18" y1="6" x2="6" y2="18"></line>
+                                         <line x1="6" y1="6" x2="18" y2="18"></line>
+                                     </svg>
+                                 </button>
+
+                                 <div className="absolute top-4 left-4 bg-red-500/90 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-2 z-20">
                                      <div className="w-2 h-2 bg-white rounded-full animate-ping" />
                                      LIVE AGENT VIEW
                                  </div>
+
+                                 {/* Confirmation Modal */}
+                                 {showStopModal && (
+                                     <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+                                         <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-xl max-w-md w-full mx-4 shadow-2xl">
+                                             <h3 className="text-xl font-bold mb-2">Stop viewing?</h3>
+                                             <p className="text-zinc-400 mb-6"> The agent will continue researching in the background.</p>
+                                             
+                                             <div className="flex flex-col gap-3">
+                                                 <button
+                                                     onClick={() => {
+                                                         setDoomscrollUrl(null);
+                                                         setShowStopModal(false);
+                                                     }}
+                                                     className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg font-medium transition-colors"
+                                                 >
+                                                     Continue in background
+                                                 </button>
+                                                 <button
+                                                     onClick={() => {
+                                                         // TODO: implement actual stop signal to backend
+                                                         setDoomscrollUrl(null);
+                                                         setShowStopModal(false);
+                                                         setAppState("idle");
+                                                         setActiveResponse("Doomscrolling stopped.");
+                                                     }}
+                                                     className="w-full py-3 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/50 rounded-lg font-medium transition-colors"
+                                                 >
+                                                     Stop Doomscrolling
+                                                 </button>
+                                                 <button
+                                                     onClick={() => setShowStopModal(false)}
+                                                     className="mt-2 text-zinc-500 hover:text-zinc-300 text-sm"
+                                                 >
+                                                     Cancel
+                                                 </button>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 )}
                              </div>
                              <div className="mt-6 text-zinc-400 font-mono text-sm animate-pulse">
                                   Paxio is researching your topic...
