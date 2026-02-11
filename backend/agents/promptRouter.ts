@@ -10,7 +10,7 @@ import {
 import { deductCredits } from "../../lib/credit.service";
 import { runMainAgent } from "../agents/mainAgent";
 import { invokeGeminiWithFallback } from "../utils/GeminiChatModel";
-import { streamVoiceMessage } from "../utils/ws";
+import { streamVoiceMessage, streamMessage } from "../utils/ws";
 import {
   getShortTermMemory,
   saveShortTermMemory,
@@ -551,7 +551,18 @@ export async function routePrompt(input: {
       }
 
       // Run main agent WITHOUT await (fire-and-forget)
-      runMainAgent(input).catch((err) => {
+      runMainAgent(input).then((res) => {
+        if (input.socketId) {
+          streamMessage(
+            "Doomscrolling completed",
+            "done",
+            input.socketId,
+            JSON.stringify({ type: "assistant_response", message: res.response })
+          ).catch((err) => {
+            console.error("[promptRouter] Failed to stream doomscroll completion:", err.message);
+          });
+        }
+      }).catch((err) => {
         console.error("[promptRouter] Doomscroll task failed:", err.message);
       });
 

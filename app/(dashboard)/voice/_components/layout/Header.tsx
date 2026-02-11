@@ -84,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({
     // All menu items for desktop
     const allMenuItems = [
         { icon: <Workflow size={18} />, label: "Workflows", action: () => setIsWorkflowOpen(true) },
-        { icon: <Search size={18} />, label: "Sessions", action: () => setIsSessionsOpen(true) },
+        // { icon: <Search size={18} />, label: "Sessions", action: () => setIsSessionsOpen(true) },
         { icon: showHistory ? <ChevronDown size={18} /> : <History size={18} />, label: "History", action: () => setShowHistory(!showHistory) },
         { icon: <LayoutGrid size={18} />, label: "Tools", action: () => setIsNexusOpen(true) },
         { icon: <Users size={18} />, label: "People", action: () => setShowPeople(true) },
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
     // Always visible on mobile (outside hamburger) - bigger icons (18px instead of 16px)
     const mobileVisibleItems = [
         { icon: <Workflow size={18} />, action: () => setIsWorkflowOpen(true) },
-        { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
+        // { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
         { icon: showHistory ? <ChevronDown size={18} /> : <History size={18} />, action: () => setShowHistory(!showHistory) },
     ];
 

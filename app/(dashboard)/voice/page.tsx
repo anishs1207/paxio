@@ -122,6 +122,7 @@ export default function VoicePage() {
     const [socketId, setSocketId] = useState<string | null>(null);
     const [showWorkflow, setShowWorkflow] = useState(false);
     const [showSessions, setShowSessions] = useState(false);
+    const [doomscrollUrl, setDoomscrollUrl] = useState<string | null>(null);
 
     const [messages, setMessages] = useState<any[]>([]);
 
@@ -254,9 +255,36 @@ export default function VoicePage() {
         // });
 
 
+        socket.on("streamMessage", (data: any) => {
+             console.log("Stream message received:", data);
+             if (data.type === "doomscroll_start" && data.url) {
+                 setDoomscrollUrl(data.url);
+                 setAppState("thinking"); 
+                 setActiveResponse("Researching...");
+             } else if (data.type === "assistant_response") {
+                  setDoomscrollUrl(null);
+                  setActiveResponse(data.message);
+                  setAppState("speaking");
+                  // Trigger TTS manually if needed, or rely on normal flow if audio is sent separately.
+                  // For now, we assume the text response comes here. 
+                  // If we need audio, we might need to handle that via streamVoiceMessage or similar.
+                  // However, the promptRouter sends streamVoiceMessage for the initial confirmation.
+                  // The FINAL response usually comes via the HTTP response of the mainAgent call.
+                  // But since we are doing fire-and-forget in promptRouter for doomscrolling,
+                  // we need to handle the final response here or via another socket event.
+                  
+                  // Actually, promptRouter.ts uses streamVoiceMessage to speak the confirmation.
+                  // Then it calls runMainAgent without await. 
+                  // runMainAgent returns a JSON object with response.
+                  // We need to make sure promptRouter emits ANY final result via socket if it's running in background.
+                  // The plan says: "On fulfillment, call streamMessage with type: 'assistant_response' and the agent's response."
+             }
+        });
+
         return () => {
-            socket.disconnect();
-            audioContextRef.current?.close();
+             socket.off("streamMessage");
+             socket.disconnect();
+             audioContextRef.current?.close();
         };
     }, []);
 
@@ -733,6 +761,24 @@ export default function VoicePage() {
                         setResponse={setResponse}
 
                     /> :
+                    doomscrollUrl ? (
+                         <div className="flex-1 flex flex-col items-center justify-center p-4">
+                             <div className="w-full max-w-6xl h-[80vh] bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative">
+                                 <iframe 
+                                     src={doomscrollUrl} 
+                                     className="w-full h-full" 
+                                     allow="clipboard-read; clipboard-write"
+                                 />
+                                 <div className="absolute top-4 right-4 bg-red-500/90 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-2">
+                                     <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+                                     LIVE AGENT VIEW
+                                 </div>
+                             </div>
+                             <div className="mt-6 text-zinc-400 font-mono text-sm animate-pulse">
+                                  Paxio is researching your topic...
+                             </div>
+                         </div>
+                    ) :
                     (
                         <>
                             <VoiceContent
