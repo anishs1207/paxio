@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
       const audioBlob = new Blob([buffer], { type: audioFile.type || 'audio/wav' });
       groqFormData.append("file", audioBlob, "audio.wav");
       groqFormData.append("model", "whisper-large-v3");
+      groqFormData.append("language", "en"); // Force English transcription to remove multilingual support
 
       try {
         const groqResponse = await axios.post(

@@ -8,11 +8,11 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
  
    const container = {
      hidden: { opacity: 0 },
-     visible: (i = 1) => ({
-       opacity: 1,
-       transition: { staggerChildren: 0.005, delayChildren: delay * 0.1 } // Ultra fast typing
-     })
-   };
+      visible: (i = 1) => ({
+        opacity: 1,
+        transition: { staggerChildren: 0.01, delayChildren: delay } // Direct delay in seconds
+      })
+    };
  
    const child = {
      visible: {
@@ -97,88 +97,42 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
                <div className="relative rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] p-8 h-[520px] overflow-hidden shadow-2xl">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500" />
 
-                  {/* Vision Terminal */}
-                  <div className="font-mono text-sm space-y-5 text-white/90">
+                  <div className="font-mono text-xs md:text-sm space-y-3 text-white/90 font-light overflow-y-auto no-scrollbar pb-4">
+                     {/* Data-driven Terminal Content */}
+                     {[
+                        { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.2, color: "text-gray-500" },
+                        { text: "Loading generic agent modules ... [OK]", delay: 0.8, color: "text-gray-500" },
+                        { text: "Connecting to Neural Fabric ... [ESTABLISHED]", delay: 1.4, color: "text-emerald-500/80" },
+                        
+                        { spacer: true },
+                        { text: "VisionOfPaxio() > SYSTEM_READY", delay: 2.2, color: "text-orange-400 font-bold" },
+                        
+                        { spacer: true },
+                        { text: "> QUERY: 'Analyze recent discussions on Oat Milk'", delay: 3.5, color: "text-white" },
+                        { text: "  ⠶ Scanning r/coffee, r/vegan, r/barista (842 threads)...", delay: 4.8, color: "text-gray-400" },
+                        { text: "  ✓ Sentiment Analysis: Positive (Oatly: 45%, Califia: 30%)", delay: 6.0, color: "text-blue-300" },
+                        { text: "  ⚠ Insight: 'Barista edition worth extra cost for texture'", delay: 7.2, color: "text-yellow-200/80" },
+                        
+                        { spacer: true },
+                        { text: "> QUERY: 'Find best price for Otaly Barista Edition'", delay: 9.0, color: "text-white" },
+                        { text: "  ⠶ Querying Zepto, Blinkit, Instamart real-time APIs...", delay: 10.2, color: "text-gray-400" },
+                        { text: "  ✓ Found Deal: Zepto (₹285) vs Blinkit (₹310). Saving 8%.", delay: 11.5, color: "text-emerald-400" },
+                        { text: "  ➜ Action: Added to cart. Awaiting confirmation.", delay: 12.8, color: "text-white/60" },
 
-                     <div className="flex items-center gap-2 text-orange-400">
-                        <TypewriterText text="VisionOfPaxio()" delay={0} />
-                     </div>
+                        { spacer: true },
+                        { text: "> QUERY: 'Catch me up on Tech Twitter today'", delay: 14.5, color: "text-white" },
+                        { text: "  oslash Filtered 142 'rage-bait' & political posts.", delay: 15.8, color: "text-red-400/80" },
+                        { text: "  ✓ Extracted Signal: 3 major launches in AI Agents space.", delay: 17.0, color: "text-purple-300" },
+                        { text: "  ✓ Summary prepared. Reading time: 45 seconds.", delay: 18.2, color: "text-white/80" },
 
-                     <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} <TypewriterText text="What are people *actually* saying about oat milk on Reddit?" delay={0.5} /></p>
-                        <motion.p 
-                           initial={{ opacity: 0 }}
-                           whileInView={{ opacity: 1 }}
-                           viewport={{ once: true }}
-                           transition={{ delay: 1, duration: 0.2 }}
-                           className="text-white/80"
-                        >
-                           Not reviews. Not ads. Just patterns.
-                        </motion.p>
-                     </div>
-
-                     <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} <TypewriterText text="Why does everyone on Zepto buy Brand A at night but Brand B in the morning?" delay={1.5} /></p>
-                        <motion.p 
-                           initial={{ opacity: 0 }}
-                           whileInView={{ opacity: 1 }}
-                           viewport={{ once: true }}
-                           transition={{ delay: 2.5, duration: 0.2 }}
-                           className="text-white/80"
-                        >
-                           Price, delivery time, habit — or something deeper?
-                        </motion.p>
-                     </div>
-
-                     <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} <TypewriterText text="This product is trending on Instagram… but Reddit hates it." delay={3} /></p>
-                        <motion.p 
-                           initial={{ opacity: 0 }}
-                           whileInView={{ opacity: 1 }}
-                           viewport={{ once: true }}
-                           transition={{ delay: 3.8, duration: 0.2 }}
-                           className="text-white/80"
-                        >
-                           Is hype diverging from trust?
-                        </motion.p>
-                     </div>
-
-                     <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} <TypewriterText text="Everyone says “best value” — but what does that mean *for me*?" delay={4.5} /></p>
-                        <motion.p 
-                           initial={{ opacity: 0 }}
-                           whileInView={{ opacity: 1 }}
-                           viewport={{ once: true }}
-                           transition={{ delay: 5.2, duration: 0.2 }}
-                           className="text-white/80"
-                        >
-                           Time saved, money saved, regret avoided.
-                        </motion.p>
-                     </div>
-                     <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">
-                           {">"} <TypewriterText text="Paxio, doom-scroll YouTube Shorts and Instagram for me." delay={6} />
-                        </p>
-                        <motion.p 
-                           initial={{ opacity: 0 }}
-                           whileInView={{ opacity: 1 }}
-                           viewport={{ once: true }}
-                           transition={{ delay: 7, duration: 0.2 }}
-                           className="text-white/80"
-                        >
-                           Extract trends, recurring narratives, and early signals I can act on.
-                        </motion.p>
-                        <motion.p 
-                           initial={{ opacity: 0 }}
-                           whileInView={{ opacity: 1 }}
-                           viewport={{ once: true }}
-                           transition={{ delay: 7.2, duration: 0.2 }}
-                           className="text-green-400"
-                        >
-                           Output: patterns, momentum shifts, and opportunities — not content.
-                        </motion.p>
-                     </div>
-
+                        { spacer: true },
+                        { text: "System awaiting next command ...", delay: 20.0, color: "text-gray-600 animate-pulse" },
+                     ].map((line, i) => (
+                        line.spacer ? <div key={i} className="h-2" /> :
+                        <div key={i} className={`${line.color} flex items-start gap-2`}>
+                           <TypewriterText text={line.text || ""} delay={line.delay || 0} />
+                        </div>
+                     ))}
                   </div>
 
                   {/* Bottom Gradient */}

@@ -12,6 +12,7 @@ import { WorkflowFormBubble } from "./_components/Workflow"
 import { DoomscrollSessions } from "./_components/DoomscrollSessions"
 import OnboardingForm from "./_components/Onboarding";
 import { useSession } from "next-auth/react";
+import { CartesiaClient } from "@cartesia/cartesia-js";
 
 
 type AppState = "idle" | "listening" | "thinking" | "speaking";
@@ -181,8 +182,8 @@ export default function VoicePage() {
     }, []);
 
     useEffect(() => {
-        // add https://localhost:3002 for local testing
-        const socket = io("https://api.paxio.tech");
+        // const socket = io("https://api.paxio.tech");
+        const socket = io("http://localhost:3000");
         socketRef.current = socket;
         audioContextRef.current = new AudioContext();
 
@@ -210,7 +211,93 @@ export default function VoicePage() {
             console.log("streamVoiceMessage received:", message, status);
             setAppState("speaking");
 
-            if (audioBuffer && audioContextRef.current) {
+            // --- CARTESIA TTS IMPLEMENTATION ---
+            if (message && !audioBuffer) {
+                try {
+                    // Initialize Cartesia Client if not already done
+                    // Note: Ideally this should be outside or in a ref, but for simplicity here:
+                    const cartesia = new CartesiaClient({
+                        apiKey: "sk_car_J34hxd5LuwGN8yvUijn8ih", // Using key directly as env might not be exposed to client without NEXT_PUBLIC_ prefix
+                    });
+
+                    const websocket = cartesia.tts.websocket({
+                        container: "raw",
+                        encoding: "pcm_f32le",
+                        sampleRate: 44100,
+                    });
+
+                    await websocket.connect();
+
+                    // Create a player to play the audio
+                    // The Cartesia SDK has a WebPlayer but if not exported, we use standard AudioContext
+                    // Checking docs or previous usage... 
+                    // Actually, let's use the standard AudioContext approach with the response from websocket or just bytes if possible for simplicity.
+                    // But `websocket` is for streaming. 
+                    // Let's use `cartesia.tts.bytes` for simplicity if we can accept the latency, 
+                    // OR use the websocket and feed the buffer.
+                    
+                    // Given the constraint of the previous code structure using AudioContext:
+                    console.log("Generating audio with Cartesia for:", message);
+
+                    // We can use the simple bytes API for now to allow AudioContext decoding
+                    const response = await cartesia.tts.bytes({
+                        modelId: "sonic-english",
+                        transcript: message,
+                        voice: {
+                            mode: "id",
+                            id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
+                        },
+                        outputFormat: {
+                            container: "wav",
+                            encoding: "pcm_f32le",
+                            sampleRate: 44100,
+                        },
+                    });
+
+                    // Play using existing AudioContext logic
+                    if (audioContextRef.current) {
+                        let finalBuffer;
+                         if (Buffer.isBuffer(response)) {
+                            finalBuffer = response;
+                          } else if (response && typeof (response as any).arrayBuffer === "function") {
+                            finalBuffer = Buffer.from(await (response as any).arrayBuffer());
+                          } else if (response && typeof (response as any).buffer === "function") {
+                            finalBuffer = Buffer.from(await (response as any).buffer());
+                          } else {
+                             try {
+                                const chunks: any[] = [];
+                                // @ts-ignore
+                                for await (const chunk of response) {
+                                  chunks.push(chunk);
+                                }
+                                finalBuffer = Buffer.concat(chunks);
+                              } catch (err) {
+                                console.error("Failed to consume Cartesia stream:", err);
+                              }
+                          }
+                        
+                        if (finalBuffer) {
+                            // Decode
+                            // Note: AudioContext.decodeAudioData requires a copy of the buffer sometimes or standard ArrayBuffer
+                             const arrayBuffer = finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
+
+                            const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+                            const source = audioContextRef.current.createBufferSource();
+                            source.buffer = decodedBuffer;
+                            source.connect(audioContextRef.current.destination);
+
+                            if (nextPlayTimeRef.current < audioContextRef.current.currentTime) {
+                                nextPlayTimeRef.current = audioContextRef.current.currentTime;
+                            }
+                            source.start(nextPlayTimeRef.current);
+                            nextPlayTimeRef.current += decodedBuffer.duration;
+                        }
+                    }
+
+                } catch (e) {
+                   console.error("Cartesia Client Error:", e);
+                }
+            } else if (audioBuffer && audioContextRef.current) {
                 try {
                     const buffer = await audioContextRef.current.decodeAudioData(audioBuffer);
                     const source = audioContextRef.current.createBufferSource();
