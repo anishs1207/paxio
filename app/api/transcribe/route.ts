@@ -1,9 +1,13 @@
-export const runtime = "nodejs"; // ensure Node runtime for Deepgram SDK
+export const runtime = "nodejs"; // ensure Node runtime
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@deepgram/sdk";
+// import { createClient } from "@deepgram/sdk";
+import { AssemblyAI } from "assemblyai";
 
-const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
+// const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
+const client = new AssemblyAI({
+  apiKey: process.env.ASSEMBLYAI_API_KEY!,
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,11 +24,12 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // --- DEEPGRAM CODE COMMENTED OUT ---
+    /*
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       buffer,
       {
-        //  language: "en",  => to prebnt multilinual cbehaviour
-        model: "nova-3", // new, improved model
+        model: "nova-3",
         smart_format: true,
         detect_language: true,
       }
@@ -40,6 +45,24 @@ export async function POST(req: NextRequest) {
 
     const text =
       result?.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
+    */
+
+    // --- ASSEMBLYAI IMPLEMENTATION ---
+    const transcript = await client.transcripts.transcribe({
+      audio: buffer,
+      // @ts-ignore - universal-2 is valid per API but not yet in SDK types
+      speech_model: "universal-2" as any,
+    });
+
+    if (transcript.status === "error") {
+      console.error("AssemblyAI error:", transcript.error);
+      return NextResponse.json(
+        { error: "Transcription failed" },
+        { status: 500 }
+      );
+    }
+
+    const text = transcript.text || "";
 
     if (!text) {
       return NextResponse.json(
@@ -52,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ text }, { status: 200 });
   } catch (error) {
-    console.error("Deepgram Transcription Error:", error);
+    console.error("Transcription Error:", error);
     return NextResponse.json(
       { error: "Internal server error during transcription" },
       { status: 500 }

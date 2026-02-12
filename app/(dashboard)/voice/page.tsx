@@ -667,7 +667,7 @@ export default function VoicePage() {
             if (volume < 0.015) { // your threshold
                 silenceStart ??= Date.now();
 
-                if (Date.now() - silenceStart > 5000) { // 5 sec silence
+                if (Date.now() - silenceStart > 500) { // 1.5 sec silence
                     cancelled = true; // stop loop
                     stopVoice();     // stop recorder
                     return;
