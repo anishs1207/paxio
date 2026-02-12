@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { signIn } from "next-auth/react";
+import Link from 'next/link';
 
 const Hero: React.FC = () => {
   return (
@@ -33,13 +34,13 @@ const Hero: React.FC = () => {
 
       {/* Primary CTA */}
       <div className="relative z-20 mt-4 flex flex-col items-center">
-        <button
-          onClick={() => signIn("google")}
+        <Link
+          href="/signup"
           className="cursor-pointer group relative flex items-center justify-center gap-3 bg-white hover:bg-gray-200 text-black font-bold text-base md:text-lg px-8 py-4 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 font-display"
         >
-          <span>Try Paxio with Free Credits</span>
+          <span>Try Paxio for Free</span>
           <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-        </button>
+        </Link>
 
 
       </div>

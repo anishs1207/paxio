@@ -81,18 +81,13 @@ export default function Navbar() {
                         Join Waitlist
                     </Button>
 
-                    <button
-                        onClick={handleGoogleSignIn}
-                        disabled={isSigningIn}
-                        className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2 disabled:opacity-60"
+                    <Link
+                        href="/signup"
+                        className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2"
                     >
-                        {isSigningIn ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <FcGoogle className=" text-lg" />
-                        )}
-                        {isSigningIn ? "Signing in..." : "Sign In"}
-                    </button>
+                        <FcGoogle className=" text-lg" />
+                        Sign In
+                    </Link>
                 </div>
 
                 {/* Mobile Toggle */}
@@ -139,18 +134,13 @@ export default function Navbar() {
                             </Button>
 
 
-                            <button
-                                onClick={handleGoogleSignIn}
-                                disabled={isSigningIn}
+                            <Link
+                                href="/signup"
                                 className="border cursor-pointer border-zinc-700 px-4 py-3 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center justify-center gap-2"
                             >
-                                {isSigningIn ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <FcGoogle className="text-lg" />
-                                )}
-                                {isSigningIn ? "Signing in..." : "Sign In with Google"}
-                            </button>
+                                <FcGoogle className="text-lg" />
+                                Sign In with Google
+                            </Link>
 
                         </div>
                     </motion.div>

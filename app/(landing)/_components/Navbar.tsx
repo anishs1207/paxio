@@ -1,24 +1,10 @@
 'use client';
-import React, { useState } from 'react';
-import { signIn } from "next-auth/react";
 import Link from 'next/link';
 import { FcGoogle } from "react-icons/fc";
 // import { FaTwitter } from "react-icons/fa";
 import { FaXTwitter } from 'react-icons/fa6';
-import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 
 const Navbar: React.FC = () => {
-  const router = useRouter();
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsSigningIn(true);
-      await signIn("google", { callbackUrl: "/" });
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-6 px-4">
       <nav className="flex items-center justify-between bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-6 py-3 w-full max-w-5xl shadow-2xl">
@@ -59,18 +45,13 @@ const Navbar: React.FC = () => {
             <FaXTwitter className="text-lg" />
             Share on X
           </button>
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={isSigningIn}
-            className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2 disabled:opacity-60"
+          <Link
+            href="/signup"
+            className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2"
           >
-            {isSigningIn ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <FcGoogle className=" text-lg" />
-            )}
-            {isSigningIn ? "Signing in..." : "Sign In"}
-          </button>
+            <FcGoogle className=" text-lg" />
+            Sign In
+          </Link>
         </div>
 
       </nav>
