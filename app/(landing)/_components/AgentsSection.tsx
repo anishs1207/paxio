@@ -1,7 +1,52 @@
 'use client';
 import React from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer, fadeIn } from '@/app/lib/animations';
 
-const AgentsSection: React.FC = () => {
+const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
+   const letters = Array.from(text);
+ 
+   const container = {
+     hidden: { opacity: 0 },
+     visible: (i = 1) => ({
+       opacity: 1,
+       transition: { staggerChildren: 0.005, delayChildren: delay * 0.1 } // Ultra fast typing
+     })
+   };
+ 
+   const child = {
+     visible: {
+       opacity: 1,
+       transition: {
+        duration: 0
+       }
+     },
+     hidden: {
+       opacity: 0,
+       transition: {
+        duration: 0
+       }
+     }
+   };
+ 
+   return (
+     <motion.span
+       style={{ display: "inline-block" }} // Allows wrapping but keeps inline flow
+       variants={container}
+       initial="hidden"
+       whileInView="visible"
+       viewport={{ once: true }}
+     >
+       {letters.map((letter, index) => (
+         <motion.span variants={child} key={index}>
+           {letter === " " ? "\u00A0" : letter}
+         </motion.span>
+       ))}
+     </motion.span>
+   );
+ };
+ 
+ const AgentsSection: React.FC = () => {
    const capabilities = [
       {
          category: "App Management",
@@ -56,46 +101,82 @@ const AgentsSection: React.FC = () => {
                   <div className="font-mono text-sm space-y-5 text-white/90">
 
                      <div className="flex items-center gap-2 text-orange-400">
-                        <span>VisionOfPaxio()</span>
+                        <TypewriterText text="VisionOfPaxio()" delay={0} />
                      </div>
 
                      <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} What are people *actually* saying about oat milk on Reddit?</p>
-                        <p className="text-white/80">
+                        <p className="text-gray-400">{">"} <TypewriterText text="What are people *actually* saying about oat milk on Reddit?" delay={0.5} /></p>
+                        <motion.p 
+                           initial={{ opacity: 0 }}
+                           whileInView={{ opacity: 1 }}
+                           viewport={{ once: true }}
+                           transition={{ delay: 1, duration: 0.2 }}
+                           className="text-white/80"
+                        >
                            Not reviews. Not ads. Just patterns.
-                        </p>
+                        </motion.p>
                      </div>
 
                      <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} Why does everyone on Zepto buy Brand A at night but Brand B in the morning?</p>
-                        <p className="text-white/80">
+                        <p className="text-gray-400">{">"} <TypewriterText text="Why does everyone on Zepto buy Brand A at night but Brand B in the morning?" delay={1.5} /></p>
+                        <motion.p 
+                           initial={{ opacity: 0 }}
+                           whileInView={{ opacity: 1 }}
+                           viewport={{ once: true }}
+                           transition={{ delay: 2.5, duration: 0.2 }}
+                           className="text-white/80"
+                        >
                            Price, delivery time, habit — or something deeper?
-                        </p>
+                        </motion.p>
                      </div>
 
                      <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} This product is trending on Instagram… but Reddit hates it.</p>
-                        <p className="text-white/80">
+                        <p className="text-gray-400">{">"} <TypewriterText text="This product is trending on Instagram… but Reddit hates it." delay={3} /></p>
+                        <motion.p 
+                           initial={{ opacity: 0 }}
+                           whileInView={{ opacity: 1 }}
+                           viewport={{ once: true }}
+                           transition={{ delay: 3.8, duration: 0.2 }}
+                           className="text-white/80"
+                        >
                            Is hype diverging from trust?
-                        </p>
+                        </motion.p>
                      </div>
 
                      <div className="pl-4 border-l border-white/10 space-y-3">
-                        <p className="text-gray-400">{">"} Everyone says “best value” — but what does that mean *for me*?</p>
-                        <p className="text-white/80">
+                        <p className="text-gray-400">{">"} <TypewriterText text="Everyone says “best value” — but what does that mean *for me*?" delay={4.5} /></p>
+                        <motion.p 
+                           initial={{ opacity: 0 }}
+                           whileInView={{ opacity: 1 }}
+                           viewport={{ once: true }}
+                           transition={{ delay: 5.2, duration: 0.2 }}
+                           className="text-white/80"
+                        >
                            Time saved, money saved, regret avoided.
-                        </p>
+                        </motion.p>
                      </div>
                      <div className="pl-4 border-l border-white/10 space-y-3">
                         <p className="text-gray-400">
-                           {">"} Paxio, doom-scroll YouTube Shorts and Instagram for me.
+                           {">"} <TypewriterText text="Paxio, doom-scroll YouTube Shorts and Instagram for me." delay={6} />
                         </p>
-                        <p className="text-white/80">
+                        <motion.p 
+                           initial={{ opacity: 0 }}
+                           whileInView={{ opacity: 1 }}
+                           viewport={{ once: true }}
+                           transition={{ delay: 7, duration: 0.2 }}
+                           className="text-white/80"
+                        >
                            Extract trends, recurring narratives, and early signals I can act on.
-                        </p>
-                        <p className="text-green-400">
+                        </motion.p>
+                        <motion.p 
+                           initial={{ opacity: 0 }}
+                           whileInView={{ opacity: 1 }}
+                           viewport={{ once: true }}
+                           transition={{ delay: 7.2, duration: 0.2 }}
+                           className="text-green-400"
+                        >
                            Output: patterns, momentum shifts, and opportunities — not content.
-                        </p>
+                        </motion.p>
                      </div>
 
                   </div>

@@ -529,40 +529,10 @@ export default function VoicePage() {
     }
 
     let mediaRecorder: MediaRecorder;
-    let audioChunks: Blob[] = [];
-    let silenceStart: number | null = null;
-
-    const SILENCE_THRESHOLD = 0.01; // tweak
-    const SILENCE_DURATION = 5000; // 5 sec
-
-
-    // const startVoice = async () => {
-    //     if (appState !== "idle") return;
-
-    //     submittedPromptRef.current = "";
-
-    //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    //     const recorder = new MediaRecorder(stream);
-
-    //     mediaRecorderRef.current = recorder;
-    //     audioChunksRef.current = [];
-
-    //     recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
-
-    //     recorder.onstop = async () => {
-    //         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-    //         stream.getTracks().forEach((t) => t.stop());
-    //         await getResponse(audioBlob);
-    //     };
-
-    //     recorder.start();
-    //     setAppState("listening");
-    //     setActiveResponse("Listening...");
-
-    //     setTimeout(() => {
-    //         if (recorder.state === "recording") recorder.stop();
-    //     }, 10000);
-    // };
+    // --- ADJUSTABLE PARAMETERS ---
+    const SILENCE_THRESHOLD = 0.05; // 5% volume - safer than 30%
+    const SILENCE_DURATION = 800;   // Wait 800ms of silence to stop (500ms is very short)
+    const NO_SPEECH_TIMEOUT = 5000; // Stop if no speech detected for 5s
 
     const startVoice = async () => {
         if (appState !== "idle") return;
@@ -579,21 +549,15 @@ export default function VoicePage() {
         mediaRecorderRef.current = recorder;
         audioChunksRef.current = [];
 
-        // recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
-
+        // Standard data collection
         recorder.ondataavailable = (e) => {
-            audioChunksRef.current.push(e.data);
-
-            if (!hasReceivedAudioRef.current) {
-                hasReceivedAudioRef.current = true;
-                // start silence detection and save cleanup
-                //@ts-expect-error
-                silenceCleanupRef.current = startSilenceDetection(stream);
+            if (e.data.size > 0) {
+                audioChunksRef.current.push(e.data);
             }
         };
 
         recorder.onstop = async () => {
-            silenceCleanupRef.current?.(); // stop silence detection if still running
+            silenceCleanupRef.current?.(); // cleanup silence detection loop
             silenceCleanupRef.current = null;
             hasReceivedAudioRef.current = false;
 
@@ -603,38 +567,20 @@ export default function VoicePage() {
             await getResponse(audioBlob);
         };
 
+        recorder.start();
+        setAppState("listening");
+        setActiveResponse("Listening...");
 
-        //         Your current implementation will start listening, detect silence, and stop automatically after ~5 seconds of silence.
+        // Start silence detection IMMEDIATELY
+        // @ts-expect-error
+        silenceCleanupRef.current = startSilenceDetection(stream);
 
-        // The Stop button also works as a manual override.
-
-        // You’re properly cleaning up the detection loop and recorder.
-
+        // Backup safety timeout (10s max)
         setTimeout(() => {
             if (mediaRecorderRef.current?.state === "recording") {
                 stopVoice();
             }
         }, 10000);
-
-
-
-        // recorder.onstop = async () => {
-        //     const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-        //     stream.getTracks().forEach((t) => t.stop());
-        //     setAppState("thinking");
-        //     await getResponse(audioBlob);
-        // };
-
-        recorder.start();
-        setAppState("listening");
-        setActiveResponse("Listening...");
-
-        // // start silence detection AFTER a short delay
-        // setTimeout(() => {
-        //     if (recorder.state === "recording") {
-        //         silenceCleanupRef.current = startSilenceDetection(stream);
-        //     }
-        // }, 800);
     };
 
     const startSilenceDetection = (stream: MediaStream) => {
@@ -649,31 +595,58 @@ export default function VoicePage() {
         const data = new Uint8Array(analyser.fftSize);
 
         let silenceStart: number | null = null;
+        let speechStart: number | null = null;
+        let hasSpoken = false;
         let cancelled = false;
+
+        const startTime = Date.now();
 
         const check = () => {
             if (cancelled) return;
 
             analyser.getByteTimeDomainData(data);
 
+            // Calculate RMS volume
             let sum = 0;
             for (let i = 0; i < data.length; i++) {
                 const v = (data[i] - 128) / 128;
                 sum += v * v;
             }
-
             const volume = Math.sqrt(sum / data.length);
 
-            if (volume < 0.015) { // your threshold
-                silenceStart ??= Date.now();
+            // Check if user has started speaking
+            if (!hasSpoken && volume > SILENCE_THRESHOLD) {
+                hasSpoken = true;
+                speechStart = Date.now();
+                // console.log("Speech started!");
+            }
 
-                if (Date.now() - silenceStart > 500) { // 1.5 sec silence
-                    cancelled = true; // stop loop
-                    stopVoice();     // stop recorder
-                    return;
-                }
+            // Logic:
+            // 1. If volume > threshold, reset silence timer (user is speaking)
+            // 2. If volume < threshold AND user has spoken, start silence timer
+            // 3. If silence timer > limit, stop recording
+            
+            if (volume > SILENCE_THRESHOLD) {
+                silenceStart = null; // Reset silence timer
             } else {
-                silenceStart = null;
+                // It is silent...
+                if (hasSpoken) {
+                    // ...and user has already spoken at least once
+                    silenceStart ??= Date.now();
+
+                    if (Date.now() - silenceStart > SILENCE_DURATION) {
+                        cancelled = true;
+                        stopVoice();
+                        return;
+                    }
+                } else {
+                    // User hasn't spoken yet. Check explicit timeout for "no speech"
+                    if (Date.now() - startTime > NO_SPEECH_TIMEOUT) {
+                         cancelled = true;
+                         stopVoice();
+                         return;
+                    }
+                }
             }
 
             requestAnimationFrame(check);
@@ -681,26 +654,18 @@ export default function VoicePage() {
 
         check();
 
-        // return cleanup function
         return () => {
             cancelled = true;
+            source.disconnect();
+            // analyser.disconnect(); // optional
         };
     };
 
-
-
-    // const stopVoice = () => {
-    //     const recorder = mediaRecorderRef.current;
-    //     if (!recorder || recorder.state !== "recording") return;
-    //     recorder.stop();
-    // };
-
     const stopVoice = () => {
-        // Stop silence detection
+        // Stop silence detection loop
         silenceCleanupRef.current?.();
         silenceCleanupRef.current = null;
-        hasReceivedAudioRef.current = false;
-
+        
         // Stop recorder
         const recorder = mediaRecorderRef.current;
         if (!recorder || recorder.state !== "recording") return;

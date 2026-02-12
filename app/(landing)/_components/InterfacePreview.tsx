@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, scaleIn } from '@/app/lib/animations';
 
 const InterfacePreview: React.FC = () => {
   return (
@@ -21,7 +23,13 @@ const InterfacePreview: React.FC = () => {
           ></div>
 
           {/* Floating UI Element / Modal */}
-          <div className="relative z-10 bg-black/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl max-w-md w-full mx-4 shadow-2xl animate-[float_8s_ease-in-out_infinite_1s]">
+          <motion.div 
+            variants={scaleIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="relative z-10 bg-black/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl max-w-md w-full mx-4 shadow-2xl animate-[float_8s_ease-in-out_infinite_1s]"
+          >
             {/* Header of Modal */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-500 flex items-center justify-center text-black shadow-lg">
@@ -49,7 +57,7 @@ const InterfacePreview: React.FC = () => {
                 Refine
               </button>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </div>

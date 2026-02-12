@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer } from '@/app/lib/animations';
 
 interface FeatureCardProps {
   icon: string;
@@ -8,7 +10,11 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
-  <div className="group relative flex flex-col justify-between p-8 rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] transition-colors duration-300 h-80 overflow-hidden">
+  <motion.div 
+    variants={fadeInUp}
+    whileHover={{ y: -10, transition: { duration: 0.3 } }}
+    className="group relative flex flex-col justify-between p-8 rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] transition-colors duration-300 h-80 overflow-hidden"
+  >
     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
     <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-full bg-[#1a1a1a] text-white mb-6 group-hover:bg-white group-hover:text-black transition-colors duration-300">
@@ -19,7 +25,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
       <h3 className="text-xl font-bold text-white mb-3 font-display">{title}</h3>
       <p className="text-gray-400 text-sm leading-relaxed font-display">{description}</p>
     </div>
-  </div>
+  </motion.div>
 );
 
 const Features: React.FC = () => {
@@ -50,7 +56,13 @@ const Features: React.FC = () => {
         <p className="text-gray-500 text-sm max-w-md font-display">Why is Paxio Better than the rest ? </p>
       </div>
 
-      <div className="cursor-pointer grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div 
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        className="cursor-pointer grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
         {features.map((feature, index) => (
           <FeatureCard
             key={index}
@@ -59,7 +71,7 @@ const Features: React.FC = () => {
             description={feature.description}
           />
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };

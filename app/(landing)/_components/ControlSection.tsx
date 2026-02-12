@@ -1,5 +1,7 @@
 'use client';
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer } from '@/app/lib/animations';
 
 const ControlSection: React.FC = () => {
     const [autonomyLevel, setAutonomyLevel] = useState(1);
@@ -15,7 +17,13 @@ const ControlSection: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
 
                 {/* Autonomy Column */}
-                <div className="flex flex-col gap-8">
+                <motion.div 
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                    className="flex flex-col gap-8"
+                >
                     <div>
                         <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display">You are always<br />in control.</h2>
                         <p className="text-gray-400 text-lg font-light font-display">Set boundaries for every agent. Decide when Paxio should ask and when it should act.</p>
@@ -61,7 +69,13 @@ const ControlSection: React.FC = () => {
                 </div>
 
                 {/* Doomscroll Controller Column */}
-                <div className="flex flex-col gap-8">
+                <motion.div 
+                    initial={{ opacity: 0, x: 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                    className="flex flex-col gap-8"
+                >
                     <div>
                         <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display">Kill the noise.<br />Keep the signal.</h2>
                         <p className="text-gray-400 text-lg font-light font-display">Paxio's Doomscroll Controller filters rage-bait and summarizes trends so you don't have to scroll.</p>
@@ -72,31 +86,37 @@ const ControlSection: React.FC = () => {
                         {/* Visual representation of filtering */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 blur-3xl rounded-full pointer-events-none group-hover:bg-red-500/10 transition-colors"></div>
                         
-                        <div className="space-y-4 relative z-10">
-                            <div className="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-xl">
+                        <motion.div 
+                            variants={staggerContainer}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true }}
+                            className="space-y-4 relative z-10"
+                        >
+                            <motion.div variants={fadeInUp} className="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-xl">
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-gray-500">block</span>
                                     <span className="text-gray-300 line-through decoration-red-500/50 decoration-2">Politics & Rage Bait</span>
                                 </div>
                                 <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Filtered</span>
-                            </div>
+                            </motion.div>
 
-                            <div className="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-xl">
+                            <motion.div variants={fadeInUp} className="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-xl">
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-gray-500">block</span>
                                     <span className="text-gray-300 line-through decoration-red-500/50 decoration-2">Viral "Hacks"</span>
                                 </div>
                                 <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded">Filtered</span>
-                            </div>
+                            </motion.div>
 
-                            <div className="flex items-center justify-between bg-brand-primary/10 border border-brand-primary/20 p-4 rounded-xl shadow-[0_0_15px_rgba(19,19,236,0.1)]">
+                            <motion.div variants={fadeInUp} className="flex items-center justify-between bg-brand-primary/10 border border-brand-primary/20 p-4 rounded-xl shadow-[0_0_15px_rgba(19,19,236,0.1)]">
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-brand-primary">auto_awesome</span>
                                     <span className="text-white font-bold">Tech News Digest</span>
                                 </div>
                                 <span className="text-xs bg-brand-primary/20 text-brand-primary px-2 py-1 rounded">Delivered</span>
-                            </div>
-                        </div>
+                            </motion.div>
+                        </motion.div>
 
                         <div className="mt-8 pt-8 border-t border-white/5">
                              <p className="text-sm text-center text-gray-500">"Paxio, what happened on X today?"</p>
