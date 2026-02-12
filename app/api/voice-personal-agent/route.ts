@@ -8,9 +8,10 @@ import { authOptions } from "@/lib/auth";
 // import { deductCredits, refundCredits } from "@/lib/credit.service";
 
 // const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
-const assemblyClient = new AssemblyAI({
-  apiKey: process.env.ASSEMBLYAI_API_KEY!,
-});
+// const assemblyClient = new AssemblyAI({
+//   apiKey: process.env.ASSEMBLYAI_API_KEY!,
+// });
+import axios from "axios";
 
 const cartesiaClient = new CartesiaClient({
   apiKey: process.env.CARTESIA_API_KEY!,
@@ -64,7 +65,8 @@ export async function POST(req: NextRequest) {
         result?.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
       */
 
-      // --- ASSEMBLYAI STT IMPLEMENTATION ---
+      // --- ASSEMBLYAI STT IMPLEMENTATION COMMENTED OUT ---
+      /*
       const transcript = await assemblyClient.transcripts.transcribe({
         audio: buffer,
         // @ts-ignore - universal-2 is valid per API but not yet in SDK types
@@ -77,6 +79,36 @@ export async function POST(req: NextRequest) {
       }
 
       text = transcript.text || "";
+      */
+
+      // --- GROQ STT IMPLEMENTATION ---
+      console.log("Starting Groq transcription...");
+      const groqFormData = new FormData();
+
+      // Create a Blob from the buffer (needed for native FormData)
+      const audioBlob = new Blob([buffer], { type: audioFile.type || 'audio/wav' });
+      groqFormData.append("file", audioBlob, "audio.wav");
+      groqFormData.append("model", "whisper-large-v3");
+
+      try {
+        const groqResponse = await axios.post(
+          "https://api.groq.com/openai/v1/audio/transcriptions",
+          groqFormData,
+          {
+            headers: {
+              "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+              // native FormData (in Node 18+) usually sets the boundary automatically
+              // If this fails, we might need to let axios/browser env handle it or use fetch
+            },
+          }
+        );
+
+        text = groqResponse.data.text;
+        console.log("Groq transcription result:", text);
+      } catch (error: any) {
+        console.error("Groq STT Error:", error.response?.data || error.message);
+        throw new Error("Groq Transcription failed");
+      }
 
       if (!text) {
         return NextResponse.json(
