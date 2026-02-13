@@ -80,10 +80,7 @@
     font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
   }
 
-<<<<<<< HEAD
-=======
   /* Custom Scrollbar */
->>>>>>> fbbf9b95066531851c0b610d50f53b876de54d64
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -94,14 +91,6 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-<<<<<<< HEAD
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-=======
     background-color: #27272a;
     /* zinc-800 */
     border-radius: 20px;
@@ -116,7 +105,6 @@
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #27272a transparent;
->>>>>>> fbbf9b95066531851c0b610d50f53b876de54d64
   }
 }
 
