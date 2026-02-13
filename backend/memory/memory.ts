@@ -19,7 +19,7 @@ export type LongTermCategory =
    SHORT-TERM MEMORY (Conversation)
 ============================================================ */
 
-const SHORT_TERM_LIMIT = 6; // last 3 user+assistant pairs
+const SHORT_TERM_LIMIT = 4; // last 2 user+assistant pairs
 
 export async function getShortTermMemory(
   userId: string,

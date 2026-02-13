@@ -1230,7 +1230,6 @@ function createGmailTools(gmail: any) {
                         success: true,
                         messageId: result.data.id,
                         threadId: result.data.threadId,
-                        message: `Email sent successfully to ${recipient}${cc && cc.length > 0 ? `, CC: ${cc.join(", ")}` : ""}`,
                     });
                 } catch (error) {
                     return JSON.stringify({
@@ -1309,7 +1308,6 @@ function createGmailTools(gmail: any) {
                     return JSON.stringify({
                         success: true,
                         draftId: result.data.id,
-                        message: `Draft created successfully for ${recipient}`,
                     });
                 } catch (error) {
                     return JSON.stringify({
@@ -1699,7 +1697,6 @@ IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
                                 product,
                                 location,
                                 phone_number,
-                                message: `OTP sent to ${phone_number}. Please provide the OTP to continue ordering ${product}.`,
                             });
                         }
                     }
@@ -1832,7 +1829,6 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
                         location: resolvedLocation,
                         productScreenshot,
                         checkoutScreenshot,
-                        message: `Successfully ordered ${resolvedProduct} from Zepto! Check the payment screen.`,
                     });
                 } catch (error) {
                     console.error("❌ Zepto shopping error:", error);
@@ -2624,6 +2620,12 @@ CRITICAL TOOL RULES
    - Great for market research, news tracking, trend analysis, competitive intelligence
    - Browser session is automatically cleaned up after completion
 
+9. **NATURAL RESPONSES (CRITICAL)**:
+   - DO NOT use generic success messages like "Email sent successfully" or "Order placed".
+   - Generate a natural, conversational confirmation that includes context from the action.
+   - Example: "I've sent the email to Nishant about the project update." or "I've placed the order for milk on Zepto. It should arrive soon!"
+   - VARY your responses so they don't sound robotic. Use the context of the user's request.
+
 ========================
 AUTONOMOUS BEHAVIOR (BE PROACTIVE)
 ========================
@@ -3045,13 +3047,13 @@ EXAMPLES
 
 {
   "type": ["gmail"],
-  "response": "Email sent successfully.",
+  "response": "I've sent the birthday email to Anushay!",
   "data": {
     "gmail": {
       "emails": [
         {
           "summarizedEmail": "Birthday wish email",
-          "to": "anishs1207@gmail.com",
+          "to": "anushayjain7622@gmail.com",
           "cc": [],
           "from":"",
           "subject": "Happy Birthday ",
@@ -3069,7 +3071,7 @@ EXAMPLES
 
 {
   "type": ["gmail", "calendar"],
-  "response": "Email sent and meeting scheduled.",
+  "response": "I've sent the project update email and scheduled the review meeting for tomorrow afternoon.",
   "data": {
     "gmail": {
       "emails": [

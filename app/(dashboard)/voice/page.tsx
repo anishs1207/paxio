@@ -130,6 +130,22 @@ export default function VoicePage() {
 
     const [activities] = useState<any[]>([]);
 
+    // Auto-vanish activeResponse after 5 seconds
+    useEffect(() => {
+        if (!activeResponse || appState === "listening" || appState === "speaking") return;
+
+        const timer = setTimeout(() => {
+            setActiveResponse("");
+            // Optional: Reset to idle if we were in thinking state and text vanishes?
+            // Usually we stay in 'thinking' until response comes. 
+            // If response is done (text shows), we are usually in 'idle' or 'speaking'.
+            // If 'speaking', we shouldn't vanish.
+            // If 'idle', we can vanish.
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [activeResponse, appState]);
+
     // Check onboarding status on mount
     useEffect(() => {
         if (userStatus !== "authenticated") return;
@@ -182,13 +198,14 @@ export default function VoicePage() {
     }, []);
 
     useEffect(() => {
-        // const socket = io("https://api.paxio.tech");
-        const socket = io("http://localhost:3000");
+        const socket = io("https://api.paxio.tech");
+        // const socket = io("http://localhost:3000");
         socketRef.current = socket;
         audioContextRef.current = new AudioContext();
 
         socket.on("connect", async () => {
             console.log("Connected with id:", socket.id);
+            console.log("VERSION: Transcription Feedback Fixed"); // Verify code update
             setSocketId(socket.id || null);
             console.log("socket is connected", socket.id)
             setIsSocketReady(true);
@@ -346,14 +363,16 @@ export default function VoicePage() {
         socket.on("streamMessage", (data: any) => {
              console.log("Stream message received raw:", data);
 
-             // Handle nested JSON in stepData
+             // Handle nested JSON in stepData or extraData (fallback)
              let processedData = data;
-             if (data.stepData && typeof data.stepData === 'string') {
+             const jsonString = data.stepData || data.extraData;
+             
+             if (jsonString && typeof jsonString === 'string') {
                  try {
-                     const parsed = JSON.parse(data.stepData);
+                     const parsed = JSON.parse(jsonString);
                      processedData = { ...data, ...parsed };
                  } catch (e) {
-                     console.error("Failed to parse stepData JSON:", e);
+                     console.error("Failed to parse JSON in streamMessage:", e);
                  }
              }
              
@@ -368,8 +387,13 @@ export default function VoicePage() {
              } else if (processedData.type === "assistant_response") {
                   console.log("Assistant response received, clearing doomscroll URL");
                   setDoomscrollUrl(null);
-                  setActiveResponse(processedData.message); 
+                  // User requested NOT to show the final text response in the main UI
+                  // setActiveResponse(processedData.message); 
                   setAppState("speaking");
+             } else if (processedData.type === "user_transcription") {
+                  console.log("User transcription received:", processedData.message);
+                  setActiveResponse(processedData.message);
+                  setAppState("thinking");
              }
         });
 
@@ -602,6 +626,9 @@ export default function VoicePage() {
                         payload: dbRes.data.payload || data.data,
                     },
                 ]);
+                
+                // User requested NOT to show final text in main UI
+                // setActiveResponse(aiResponse); 
 
                 await refreshCredits();
             } catch (err) {

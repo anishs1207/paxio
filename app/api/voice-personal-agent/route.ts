@@ -12,6 +12,7 @@ import { authOptions } from "@/lib/auth";
 //   apiKey: process.env.ASSEMBLYAI_API_KEY!,
 // });
 import axios from "axios";
+import { streamMessage } from "@/backend/utils/ws";
 
 const cartesiaClient = new CartesiaClient({
   apiKey: process.env.CARTESIA_API_KEY!,
@@ -124,6 +125,16 @@ export async function POST(req: NextRequest) {
     const socketId = formData.get("socketId")?.toString();
 
     console.log("returned transcription here", text);
+
+    if (socketId && text) {
+      // Stream the user's transcription back to the UI immediately
+      streamMessage(
+        text,
+        "streaming",
+        socketId,
+        JSON.stringify({ type: "user_transcription" })
+      ).catch(err => console.error("Failed to stream transcription:", err));
+    }
 
     const obj = await routePrompt({
       prompt: text,

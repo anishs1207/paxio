@@ -1,57 +1,48 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface VibratingTextProps {
     text: string;
     size?: "sm" | "lg";
-    isVibrating?: boolean; // kept for compatibility
+    isVibrating?: boolean;
 }
-
-const WORDS_PER_CHUNK = 10;
-const CHUNK_DELAY = 2000; // ms between chunks
 
 export const VibratingText: React.FC<VibratingTextProps> = ({
     text,
     size = "lg",
 }) => {
-    const words = useMemo(() => text.trim().split(/\s+/), [text]);
-
-    // split text into chunks of 10 words
-    const chunks = useMemo(() => {
-        const result: string[] = [];
-        for (let i = 0; i < words.length; i += WORDS_PER_CHUNK) {
-            result.push(words.slice(i, i + WORDS_PER_CHUNK).join(" "));
-        }
-        return result;
-    }, [words]);
-
-    const [index, setIndex] = useState(0);
-
-    useEffect(() => {
-        if (index >= chunks.length - 1) return;
-
-        const timer = setTimeout(() => {
-            setIndex((prev) => prev + 1);
-        }, CHUNK_DELAY);
-
-        return () => clearTimeout(timer);
-    }, [index, chunks.length]);
+    // Split text into characters
+    const characters = Array.from(text);
 
     return (
         <div className="pl-10 pr-10 relative overflow-hidden h-[6.5rem] md:h-[8rem] flex items-center justify-center">
-            <AnimatePresence mode="wait">
+             {/* Key triggers re-render on text change, ensuring immediate replacement */}
+            <AnimatePresence mode="popLayout"> 
                 <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 30, filter: "blur(6px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -30, filter: "blur(6px)" }}
-                    transition={{ duration: 0.6, ease: "easeInOut" }}
-                    className={`text-center leading-tight text-zinc-100 ${size === "lg"
-                        ? "text-3xl md:text-5xl font-light tracking-tight"
-                        : "text-sm font-medium tracking-wide"
-                        }`}
+                    key={text} 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, filter: "blur(10px)", transition: { duration: 0.2 } }}
+                    className={`text-center leading-tight text-zinc-100 ${
+                        size === "lg"
+                            ? "text-3xl md:text-5xl font-light tracking-tight"
+                            : "text-sm font-medium tracking-wide"
+                    }`}
                 >
-                    {chunks[index]}
+                    {characters.map((char, index) => (
+                        <motion.span
+                            key={index}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                duration: 0.05,
+                                delay: index * 0.02, // 20ms delay per distinct character
+                                ease: "easeOut",
+                            }}
+                        >
+                            {char}
+                        </motion.span>
+                    ))}
                 </motion.div>
             </AnimatePresence>
         </div>
