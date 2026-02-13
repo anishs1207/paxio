@@ -15,7 +15,7 @@ export const VibratingText: React.FC<VibratingTextProps> = ({
     const characters = Array.from(text);
 
     return (
-        <div className="pl-10 pr-10 relative overflow-hidden h-[6.5rem] md:h-[8rem] flex items-center justify-center">
+        <div className="pl-10 pr-10 relative min-h-[6.5rem] flex items-center justify-center">
              {/* Key triggers re-render on text change, ensuring immediate replacement */}
             <AnimatePresence mode="popLayout"> 
                 <motion.div

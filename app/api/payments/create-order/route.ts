@@ -71,6 +71,20 @@ export async function POST(req: Request) {
 
     const userId = session?.user?.id;
 
+    const body = await req.json().catch(() => ({}));
+    const { plan } = body;
+
+    let productId = process.env.DODO_PAYMENTS_PRODUCT_ID!;
+    let credits = 1000; // Default fallback
+
+    if (plan === 'BASIC') {
+      productId = process.env.DODO_PRODUCT_ID_BASIC || process.env.DODO_PAYMENTS_PRODUCT_ID!;
+      credits = 4000;
+    } else if (plan === 'PRO') {
+      productId = process.env.DODO_PRODUCT_ID_PRO || process.env.DODO_PAYMENTS_PRODUCT_ID!;
+      credits = 10000;
+    }
+
     const checkout = await client.checkoutSessions.create({
       customer: {
         email: session.user.email || 'customer@example.com',
@@ -78,10 +92,12 @@ export async function POST(req: Request) {
       },
       metadata: {
         userId: userId,
+        credits: credits.toString(),
+        plan: plan || 'unknown',
       },
       product_cart: [
         {
-          product_id: process.env.DODO_PAYMENTS_PRODUCT_ID!,
+          product_id: productId,
           quantity: 1,
         }
       ],

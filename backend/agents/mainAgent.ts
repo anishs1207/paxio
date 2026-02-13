@@ -1692,8 +1692,6 @@ IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
                                 phase: "awaiting_otp",
                                 //@ts-expect-error
                                 sessionId: session.id,
-                                liveUrl: (session as any).liveUrl,
-                                publicShareUrl: share.shareUrl,
                                 product,
                                 location,
                                 phone_number,
@@ -1823,8 +1821,6 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
                         phase: "complete",
                         //@ts-expect-error
                         sessionId: session.id,
-                        liveUrl: (session as any).liveUrl,
-                        publicShareUrl: share!.shareUrl,
                         product: resolvedProduct,
                         location: resolvedLocation,
                         productScreenshot,
@@ -2304,7 +2300,6 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                         findingsCount: findings.length,
                         duration,
                         reportPath: filepath,
-                        shareUrl,
                         summary: findings.map(f => ({
                             platform: f.platform,
                             preview: f.rawOutput.substring(0, 500) + (f.rawOutput.length > 500 ? "..." : "")
@@ -2559,6 +2554,7 @@ ABSOLUTE RULES (VERY IMPORTANT)
 9. Use proper formatting inside JSON strings.
 10. NEVER copy past conversation style.
 11. IGNORE memory formatting styles – ONLY FOLLOW THIS PROMPT.
+12. NEVER share 'browser-use' links, live URLs, or session recordings with the user. Log them internally only.
 
 ========================
 USER MEMORY CONTEXT
@@ -3000,8 +2996,6 @@ IMPORTANT GRAPH RULES:
         "phone_number": "phone used for OTP",
         "status": "awaiting_otp | complete | failed",
         "sessionId": "IMPORTANT: session ID to pass when continuing with OTP",
-        "sessionUrl": "public share URL to view browser session",
-        "liveUrl": "live URL for real-time viewing",
         "message": "status message",
         "productScreenshot": "path to product screenshot (if available)",
         "checkoutScreenshot": "path to checkout screenshot (if available)"
@@ -3015,7 +3009,6 @@ When responding with TYPE: shopping:
 - For first-time orders without OTP, status will be "awaiting_otp"
 - CRITICAL: When status is "awaiting_otp", include sessionId in the response data
 - When user provides OTP later, call zepto_order with otp + sessionId + original params
-- Include the sessionUrl so user can watch the browser automation in real-time
 - Once OTP is provided and order completes, status will be "complete"
 
 --- TYPE: general ---

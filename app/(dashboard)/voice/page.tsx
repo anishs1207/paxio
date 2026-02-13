@@ -224,9 +224,8 @@ export default function VoicePage() {
         });
 
         socket.on("streamVoiceMessage", async ({ message, status, audioBuffer }) => {
-            setActiveResponse(message);
-            console.log("streamVoiceMessage received:", message, status);
-            setAppState("speaking");
+            // Keep appState as "thinking" until we are ready to speak
+            console.log("streamVoiceMessage received, processing audio...", message);
 
             // --- CARTESIA TTS IMPLEMENTATION ---
             if (message && !audioBuffer) {
@@ -308,11 +307,18 @@ export default function VoicePage() {
                             }
                             source.start(nextPlayTimeRef.current);
                             nextPlayTimeRef.current += decodedBuffer.duration;
+
+                            // Sync: Show text and speak ONLY when audio starts
+                            setAppState("speaking");
+                            setActiveResponse(message);
                         }
                     }
 
                 } catch (e) {
                    console.error("Cartesia Client Error:", e);
+                   // Fallback: Show text if audio fails
+                   setAppState("speaking");
+                   setActiveResponse(message);
                 }
             } else if (audioBuffer && audioContextRef.current) {
                 try {
@@ -326,8 +332,15 @@ export default function VoicePage() {
                     }
                     source.start(nextPlayTimeRef.current);
                     nextPlayTimeRef.current += buffer.duration;
+
+                    // Sync: Show text and speak ONLY when audio starts
+                    setAppState("speaking");
+                    setActiveResponse(message);
                 } catch (e) {
                     console.error("Error decoding streamed audio", e);
+                    // Fallback
+                    setAppState("speaking");
+                    setActiveResponse(message);
                 }
             }
         });
@@ -348,6 +361,7 @@ export default function VoicePage() {
         //         source.start(nextPlayTimeRef.current);
         //         nextPlayTimeRef.current += buffer.duration;
         //     } catch (err) {
+
         //         console.error("Error processing audio chunk:", err);
         //     }
         // });
@@ -507,13 +521,13 @@ export default function VoicePage() {
                     // 1. Capture the text strictly before the async call
                     const currentPrompt = submittedPromptRef.current;
 
-                    const res = await axios.post("/api/new-chat", {
+                    axios.post("/api/new-chat", {
                         conversationId,
                         userId,
                         role: "user",
                         message: currentPrompt,
                         payload: {},
-                    });
+                    }).catch(err => console.error("Failed to save user message:", err));
 
 
                 } catch (err) {
@@ -543,13 +557,13 @@ export default function VoicePage() {
             // --- HANDLER: VOICE USER MESSAGE (transcribed) ---
             if (audioBlob && transcription) {
                 try {
-                    await axios.post("/api/new-chat", {
+                    axios.post("/api/new-chat", {
                         conversationId,
                         userId,
                         role: "user",
                         message: transcription,
                         payload: {},
-                    });
+                    }).catch(err => console.error("Failed to save transcription:", err));
 
                     setMessages((prev) => [
                         ...prev,
@@ -606,24 +620,24 @@ export default function VoicePage() {
                 // 2. Capture the response text strictly
                 const aiResponse = data.response;
 
-                const dbRes = await axios.post("/api/new-chat", {
+                axios.post("/api/new-chat", {
                     conversationId,
                     userId,
                     role: "assistant",
                     message: aiResponse,
                     payload: data.data,
-                });
+                }).then(() => refreshCredits()).catch(err => console.error("Failed to save assistant response:", err));
 
                 setMessages((prev) => [
                     ...prev,
                     {
-                        id: dbRes.data.id || Date.now().toString(),
+                        id: Date.now().toString(),
                         role: "assistant",
                         // FIX: Use aiResponse directly.
                         // FIX: Changed key from 'content' to 'message'
                         message: aiResponse,
                         timestamp: new Date(),
-                        payload: dbRes.data.payload || data.data,
+                        payload: data.data,
                     },
                 ]);
                 

@@ -50,21 +50,31 @@ export async function GET(req: Request) {
 
     if (status === 'succeeded' || status === 'completed' || status === 'paid') {
       let userId = session?.user?.id;
+      let creditsToAdd = 1000;
 
       // Fallback to metadata if session userId is missing
-      if (!userId && payment.metadata && payment.metadata.userId) {
-        userId = payment.metadata.userId;
-        console.log(`[Verify] User ID from metadata: ${userId}`);
-      } else {
-        console.log(`[Verify] User ID from session: ${userId}`);
+      if (payment.metadata) {
+        if (!userId && payment.metadata.userId) {
+          userId = payment.metadata.userId;
+          console.log(`[Verify] User ID from metadata: ${userId}`);
+        }
+        if (payment.metadata.credits) {
+          creditsToAdd = parseInt(payment.metadata.credits, 10);
+          console.log(`[Verify] Credits from metadata: ${creditsToAdd}`);
+        }
       }
+
+      if (!userId) {
+        console.log(`[Verify] User ID from session: ${session?.user?.id}`);
+      }
+
 
       if (userId) {
         const updatedUser = await prisma.user.update({
           where: { id: userId },
           data: {
             plan: "PRO",
-            credits: { increment: 1000 },
+            credits: { increment: creditsToAdd },
           },
         });
         console.log(`[Verify] User updated:`, updatedUser);

@@ -34,7 +34,7 @@ const Navbar: React.FC = () => {
         {/* CTA */}
         <div className='flex flex-row gap-2'>
 
-          <button
+          {/* <button
             onClick={() => {
               const text = "I want paxio.tech to have <feedback> @codewithrobu @anishs1207";
               const encodedText = encodeURIComponent(text);
@@ -44,13 +44,13 @@ const Navbar: React.FC = () => {
           >
             <FaXTwitter className="text-lg" />
             Share on X
-          </button>
+          </button> */}
           <Link
             href="/signup"
-            className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2"
+            className="cursor-pointer bg-white text-black px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-200 transition flex items-center gap-2"
           >
-            <FcGoogle className=" text-lg" />
-            Sign In
+            {/* <FcGoogle className=" text-lg" /> */}
+            Sign Up
           </Link>
         </div>
 
