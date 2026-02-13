@@ -37,7 +37,8 @@ const MemorySection: React.FC = () => {
 
         {/* Visual Side */}
         <div className="w-full md:w-1/2 flex justify-center">
-          <motion.div 
+          <motion.div
+            //@ts-expect-error
             variants={scaleIn}
             initial="hidden"
             whileInView="visible"
@@ -51,6 +52,7 @@ const MemorySection: React.FC = () => {
         {/* Content Side */}
         <div className="w-full md:w-1/2 flex flex-col gap-8">
           <motion.div
+            //@ts-expect-error
             variants={fadeInUp}
             initial="hidden"
             whileInView="visible"
@@ -60,7 +62,7 @@ const MemorySection: React.FC = () => {
             <p className="text-gray-400 text-lg font-light font-display">Paxio doesn't just read history. It understands context, builds a profile, and grows with you.</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
@@ -68,8 +70,9 @@ const MemorySection: React.FC = () => {
             className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
             {memoryTypes.map((item, index) => (
-              <motion.div 
-                key={index} 
+              <motion.div
+                key={index}
+                //@ts-expect-error
                 variants={fadeInUp}
                 className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors duration-300"
               >

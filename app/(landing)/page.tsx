@@ -4,7 +4,6 @@ import Hero from './_components/Hero';
 import Features from './_components/Features';
 import MemorySection from './_components/MemorySection';
 import AgentsSection from './_components/AgentsSection';
-import ControlSection from './_components/ControlSection';
 import InterfacePreview from './_components/InterfacePreview';
 
 import LandingPricing from './_components/LandingPricing';

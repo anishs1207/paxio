@@ -37,6 +37,8 @@ export const metadata: Metadata = {
   },
 };
 
+// works
+
 export default function RootLayout({
   children,
 }: Readonly<{

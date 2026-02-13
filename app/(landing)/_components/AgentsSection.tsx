@@ -5,48 +5,48 @@ import { fadeInUp, staggerContainer, fadeIn } from '@/app/lib/animations';
 
 const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
    const letters = Array.from(text);
- 
+
    const container = {
-     hidden: { opacity: 0 },
+      hidden: { opacity: 0 },
       visible: (i = 1) => ({
-        opacity: 1,
-        transition: { staggerChildren: 0.01, delayChildren: delay } // Direct delay in seconds
+         opacity: 1,
+         transition: { staggerChildren: 0.01, delayChildren: delay } // Direct delay in seconds
       })
-    };
- 
-   const child = {
-     visible: {
-       opacity: 1,
-       transition: {
-        duration: 0
-       }
-     },
-     hidden: {
-       opacity: 0,
-       transition: {
-        duration: 0
-       }
-     }
    };
- 
+
+   const child = {
+      visible: {
+         opacity: 1,
+         transition: {
+            duration: 0
+         }
+      },
+      hidden: {
+         opacity: 0,
+         transition: {
+            duration: 0
+         }
+      }
+   };
+
    return (
-     <motion.span
-       style={{ display: "inline-block" }} // Allows wrapping but keeps inline flow
-       variants={container}
-       initial="hidden"
-       whileInView="visible"
-       viewport={{ once: true }}
-     >
-       {letters.map((letter, index) => (
-         <motion.span variants={child} key={index}>
-           {letter === " " ? "\u00A0" : letter}
-         </motion.span>
-       ))}
-     </motion.span>
+      <motion.span
+         style={{ display: "inline-block" }} // Allows wrapping but keeps inline flow
+         variants={container}
+         initial="hidden"
+         whileInView="visible"
+         viewport={{ once: true }}
+      >
+         {letters.map((letter, index) => (
+            <motion.span variants={child} key={index}>
+               {letter === " " ? "\u00A0" : letter}
+            </motion.span>
+         ))}
+      </motion.span>
    );
- };
- 
- const AgentsSection: React.FC = () => {
+};
+
+const AgentsSection: React.FC = () => {
    const capabilities = [
       {
          category: "App Management",
@@ -103,16 +103,16 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
                         { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.2, color: "text-gray-500" },
                         { text: "Loading generic agent modules ... [OK]", delay: 0.8, color: "text-gray-500" },
                         { text: "Connecting to Neural Fabric ... [ESTABLISHED]", delay: 1.4, color: "text-emerald-500/80" },
-                        
+
                         { spacer: true },
                         { text: "VisionOfPaxio() > SYSTEM_READY", delay: 2.2, color: "text-orange-400 font-bold" },
-                        
+
                         { spacer: true },
                         { text: "> QUERY: 'Analyze recent discussions on Oat Milk'", delay: 3.5, color: "text-white" },
                         { text: "  ⠶ Scanning r/coffee, r/vegan, r/barista (842 threads)...", delay: 4.8, color: "text-gray-400" },
                         { text: "  ✓ Sentiment Analysis: Positive (Oatly: 45%, Califia: 30%)", delay: 6.0, color: "text-blue-300" },
                         { text: "  ⚠ Insight: 'Barista edition worth extra cost for texture'", delay: 7.2, color: "text-yellow-200/80" },
-                        
+
                         { spacer: true },
                         { text: "> QUERY: 'Find best price for Otaly Barista Edition'", delay: 9.0, color: "text-white" },
                         { text: "  ⠶ Querying Zepto, Blinkit, Instamart real-time APIs...", delay: 10.2, color: "text-gray-400" },
@@ -129,9 +129,9 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
                         { text: "System awaiting next command ...", delay: 20.0, color: "text-gray-600 animate-pulse" },
                      ].map((line, i) => (
                         line.spacer ? <div key={i} className="h-2" /> :
-                        <div key={i} className={`${line.color} flex items-start gap-2`}>
-                           <TypewriterText text={line.text || ""} delay={line.delay || 0} />
-                        </div>
+                           <div key={i} className={`${line.color} flex items-start gap-2`}>
+                              <TypewriterText text={line.text || ""} delay={line.delay || 0} />
+                           </div>
                      ))}
                   </div>
 

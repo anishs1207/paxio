@@ -10,7 +10,8 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
-  <motion.div 
+  <motion.div
+    //@ts-expect-error
     variants={fadeInUp}
     whileHover={{ y: -10, transition: { duration: 0.3 } }}
     className="group relative flex flex-col justify-between p-8 rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] transition-colors duration-300 h-80 overflow-hidden"
@@ -56,7 +57,7 @@ const Features: React.FC = () => {
         <p className="text-gray-500 text-sm max-w-md font-display">Why is Paxio Better than the rest ? </p>
       </div>
 
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
