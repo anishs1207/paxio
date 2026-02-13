@@ -68,13 +68,13 @@ async function classifyRequest(
   // Build memory context string
   let memoryContext = "";
   if (shortTermMemory.length > 0) {
-    memoryContext += "\n\nRECENT CONVERSATION:\n";
+    memoryContext += "\nRECENT CONVERSATION HISTORY (CONTEXT ONLY - DO NOT REPEAT OLD ACTIONS):\n";
     for (const mem of shortTermMemory) {
       memoryContext += `${mem.role.toUpperCase()}: ${mem.content}\n`;
     }
   }
   if (longTermMemory.length > 0) {
-    memoryContext += "\n\nUSER KNOWLEDGE:\n";
+    memoryContext += "\nLONG-TERM KNOWLEDGE (REFERENCE ONLY):\n";
     for (const mem of longTermMemory) {
       memoryContext += `- ${mem.key}: ${mem.value}\n`;
     }
@@ -98,12 +98,19 @@ MUST FOLLOW:
 - Never reveal the underlying model (Gemini, GPT, etc.)
 - Always identify as Paxio when asked about identity
 - Be warm and conversational
-${memoryContext}
 
 USER CONTEXT:
 Name: ${user?.onboardingName || "User"}
 Location: ${user?.onboardingCountry || "Unknown"}
 
+${memoryContext}
+
+IMPORTANT: 
+- The "RECENT CONVERSATION HISTORY" above is for context only. 
+- **DO NOT** re-execute old requests from the history. 
+- **ONLY** execute the "CURRENT USER INSTRUCTION" below.
+- If the current instruction contradicts history, the current instruction wins.
+- If the user provides a statement (e.g., "My email is x"), DO NOT treat it as a command, but confirm receipt.
 
 Your job:
 1. Classify the user's intent (Execution vs Automation vs Query)
@@ -173,51 +180,7 @@ Return ONLY valid JSON.
   "response": "string"
 }
 
-EXAMPLES:
-
-User: "Who are you?"
-{
-  "intent": "GENERAL_QUERY",
-  "requestType": "GENERAL_QUERY",
-  "response": "I'm Paxio, your personal AI assistant. I can help you with emails, calendar, social media research, shopping, and much more!"
-}
-
-User: "Research AI trends on Reddit"
-{
-  "intent": "DIRECT_EXECUTION",
-  "requestType": "DOOMSCROLL_RESEARCH",
-  "response": "I'm on it. Starting a research session on Reddit for AI trends."
-}
-
-User: "Order milk from zepto"
-{
-  "intent": "DIRECT_EXECUTION",
-  "requestType": "ORDER_REQUEST",
-  "response": "Okay, ordering milk from Zepto for you now."
-}
-
-User: "Send an email to Anushay"
-{
-  "intent": "DIRECT_EXECUTION",
-  "requestType": "NORMAL_APP_ACTION",
-  "response": "Okay, I'm sending the email to Anushay now."
-}
-
-User: "Every day at 9am send me unread emails"
-{
-  "intent": "AUTOMATION_CREATE",
-  "requestType": "AUTOMATION_CREATE",
-  "response": "Got it. I'll send you your unread emails every day at 9am."
-}
-
-User: "029405"
-{
-  "intent": "DIRECT_EXECUTION",
-  "requestType": "OTP_SUBMISSION",
-  "response": "Got it. Processing that code now."
-}
-
-USER INSTRUCTION:
+CURRENT USER INSTRUCTION:
 "${prompt}"
 `);
 

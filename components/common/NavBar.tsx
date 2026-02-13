@@ -27,7 +27,7 @@ export default function Navbar() {
         { name: "Home", href: "/", icon: <Home size={16} /> },
         { name: "Use Cases", href: "/use-cases", icon: <Puzzle size={16} /> },
         { name: "Features", href: "/features", icon: <BookOpen size={16} /> },
-        { name: "Pricing", href: "/pricing", icon: <Puzzle size={16} /> },
+        { name: "Pricing", href: "/#pricing", icon: <Puzzle size={16} /> },
     ];
 
     const handleGoogleSignIn = async () => {
@@ -39,11 +39,14 @@ export default function Navbar() {
         }
     };
 
-    const handleScrollToWaitlist = () => {
+    const handleScrollToSection = (id: string) => {
         if (window.location.pathname !== "/") {
-            router.push("/#waitlist");
+            router.push(`/#${id}`);
         } else {
-            document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" });
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth" });
+            }
         }
     };
 
@@ -74,7 +77,7 @@ export default function Navbar() {
                 {/* Desktop Actions */}
                 <div className=" hidden md:flex items-center gap-3">
                     <Button
-                        onClick={handleScrollToWaitlist}
+                        onClick={() => handleScrollToSection('waitlist')}
                         className="cursor-pointer bg-white text-black hover:bg-zinc-200 rounded-xl font-medium flex gap-2"
                     >
                         <CheckCircle2 size={16} />
@@ -124,7 +127,7 @@ export default function Navbar() {
 
                             <Button
                                 onClick={() => {
-                                    handleScrollToWaitlist();
+                                    handleScrollToSection('waitlist');
                                     setMobileOpen(false);
                                 }}
                                 className="mt-4 cursor-pointer bg-white text-black hover:bg-zinc-200 rounded-xl flex gap-2"

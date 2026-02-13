@@ -7,6 +7,8 @@ import AgentsSection from './_components/AgentsSection';
 import ControlSection from './_components/ControlSection';
 import InterfacePreview from './_components/InterfacePreview';
 
+import LandingPricing from './_components/LandingPricing';
+
 export default function Home() {
     return (
         <>
@@ -20,6 +22,8 @@ export default function Home() {
             {/* Divider */}
             <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
             <AgentsSection />
+
+            <LandingPricing />
 
         </>
     );
