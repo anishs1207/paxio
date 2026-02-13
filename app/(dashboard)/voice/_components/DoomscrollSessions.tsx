@@ -158,7 +158,7 @@ export const DoomscrollSessions: React.FC<DoomscrollSessionsProps> = ({
               </div>
 
               {/* Body */}
-              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 custom-scrollbar">
                 {isLoading && sessions.length === 0 ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 size={24} className="animate-spin text-zinc-500" />
@@ -293,7 +293,7 @@ export const DoomscrollSessions: React.FC<DoomscrollSessionsProps> = ({
                                 </button>
 
                                 {expandedResult === result.id && (
-                                  <div className="p-3 pt-3 border-t border-zinc-800 max-h-96 overflow-y-auto">
+                                  <div className="p-3 pt-3 border-t border-zinc-800 max-h-96 overflow-y-auto custom-scrollbar">
                                     <div className="prose prose-invert prose-sm max-w-none
                                       prose-headings:text-zinc-100 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2
                                       prose-h1:text-lg prose-h2:text-base prose-h3:text-sm

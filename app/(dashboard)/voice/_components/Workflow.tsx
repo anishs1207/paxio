@@ -55,7 +55,7 @@ export const WorkflowFormBubble: React.FC<
 
   async function fetchWorkflows() {
     if (!userId) return;
-    
+
     setIsLoading(true);
     try {
       const res = await axios.get<Workflow[]>(`/api/auto-workflow/${userId}`);
@@ -75,11 +75,11 @@ export const WorkflowFormBubble: React.FC<
     try {
       const formData = new FormData();
       formData.append("prompt", prompt.trim());
-      
+
       await axios.post("/api/voice-personal-agent", formData, {
         responseType: "json",
       });
-      
+
       // Refresh workflows list
       await fetchWorkflows();
       setPrompt("");
@@ -95,12 +95,12 @@ export const WorkflowFormBubble: React.FC<
 
     setTogglingId(workflowId);
     const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    
+
     try {
       await axios.patch(`/api/auto-workflow/${userId}/${workflowId}`, {
         status: newStatus,
       });
-      
+
       // Update local state
       setWorkflows((prev) =>
         prev.map((wf) =>
@@ -191,7 +191,7 @@ export const WorkflowFormBubble: React.FC<
                 </form>
 
                 {/* Workflows List */}
-                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 size={24} className="animate-spin text-zinc-500" />
@@ -232,7 +232,7 @@ export const WorkflowFormBubble: React.FC<
                             <div className="flex items-center gap-1.5 mt-1">
                               <Clock size={11} className="text-zinc-500" />
                               <span className="text-[11px] text-zinc-500">
-                                {wf.lastRunAt 
+                                {wf.lastRunAt
                                   ? `Last run: ${new Date(wf.lastRunAt).toLocaleString()}`
                                   : "Never run"
                                 }
@@ -253,21 +253,19 @@ export const WorkflowFormBubble: React.FC<
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Toggle Switch */}
                           <button
                             onClick={() => toggleWorkflowStatus(wf.id, wf.status)}
                             disabled={togglingId === wf.id}
-                            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                              wf.status === "ACTIVE"
-                                ? "bg-emerald-600"
-                                : "bg-zinc-700"
-                            } ${togglingId === wf.id ? "opacity-50" : ""}`}
+                            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${wf.status === "ACTIVE"
+                              ? "bg-emerald-600"
+                              : "bg-zinc-700"
+                              } ${togglingId === wf.id ? "opacity-50" : ""}`}
                           >
                             <span
-                              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-                                wf.status === "ACTIVE" ? "translate-x-5" : "translate-x-0"
-                              }`}
+                              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${wf.status === "ACTIVE" ? "translate-x-5" : "translate-x-0"
+                                }`}
                             />
                           </button>
                         </div>

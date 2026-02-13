@@ -10,7 +10,7 @@ const ChatBubbleSkeleton: React.FC<{ isUser: boolean }> = ({ isUser }) => (
         <div className={`flex max-w-[85%] md:max-w-[70%] gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* Avatar skeleton */}
             <div className={`flex-shrink-0 w-8 h-8 rounded-full bg-zinc-800 animate-pulse`} />
-            
+
             <div className="flex flex-col gap-1">
                 {/* Message skeleton */}
                 <div className={`px-4 py-3 rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} bg-zinc-800 animate-pulse`}>
