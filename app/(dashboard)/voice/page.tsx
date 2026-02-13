@@ -93,6 +93,7 @@ export default function VoicePage() {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const isAtBottomRef = useRef(true);
 
     const [showPeople, setShowPeople] = useState(false);
     const [response, setResponse] = useState(false);
@@ -251,7 +252,7 @@ export default function VoicePage() {
                     // But `websocket` is for streaming. 
                     // Let's use `cartesia.tts.bytes` for simplicity if we can accept the latency, 
                     // OR use the websocket and feed the buffer.
-                    
+
                     // Given the constraint of the previous code structure using AudioContext:
                     console.log("Generating audio with Cartesia for:", message);
 
@@ -273,29 +274,29 @@ export default function VoicePage() {
                     // Play using existing AudioContext logic
                     if (audioContextRef.current) {
                         let finalBuffer;
-                         if (Buffer.isBuffer(response)) {
+                        if (Buffer.isBuffer(response)) {
                             finalBuffer = response;
-                          } else if (response && typeof (response as any).arrayBuffer === "function") {
+                        } else if (response && typeof (response as any).arrayBuffer === "function") {
                             finalBuffer = Buffer.from(await (response as any).arrayBuffer());
-                          } else if (response && typeof (response as any).buffer === "function") {
+                        } else if (response && typeof (response as any).buffer === "function") {
                             finalBuffer = Buffer.from(await (response as any).buffer());
-                          } else {
-                             try {
+                        } else {
+                            try {
                                 const chunks: any[] = [];
                                 // @ts-ignore
                                 for await (const chunk of response) {
-                                  chunks.push(chunk);
+                                    chunks.push(chunk);
                                 }
                                 finalBuffer = Buffer.concat(chunks);
-                              } catch (err) {
+                            } catch (err) {
                                 console.error("Failed to consume Cartesia stream:", err);
-                              }
-                          }
-                        
+                            }
+                        }
+
                         if (finalBuffer) {
                             // Decode
                             // Note: AudioContext.decodeAudioData requires a copy of the buffer sometimes or standard ArrayBuffer
-                             const arrayBuffer = finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
+                            const arrayBuffer = finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
 
                             const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
                             const source = audioContextRef.current.createBufferSource();
@@ -375,46 +376,46 @@ export default function VoicePage() {
 
 
         socket.on("streamMessage", (data: any) => {
-             console.log("Stream message received raw:", data);
+            console.log("Stream message received raw:", data);
 
-             // Handle nested JSON in stepData or extraData (fallback)
-             let processedData = data;
-             const jsonString = data.stepData || data.extraData;
-             
-             if (jsonString && typeof jsonString === 'string') {
-                 try {
-                     const parsed = JSON.parse(jsonString);
-                     processedData = { ...data, ...parsed };
-                 } catch (e) {
-                     console.error("Failed to parse JSON in streamMessage:", e);
-                 }
-             }
-             
-             console.log("Processed stream message:", processedData);
+            // Handle nested JSON in stepData or extraData (fallback)
+            let processedData = data;
+            const jsonString = data.stepData || data.extraData;
 
-             if (processedData.type === "doomscroll_start" && processedData.url) {
-                 console.log("Setting doomscroll URL:", processedData.url);
-                 setDoomscrollUrl(processedData.url);
-                 setResponsePayload(null); // Clear any previous visualizer payload
-                 setAppState("thinking"); 
-                 setActiveResponse("Researching...");
-             } else if (processedData.type === "assistant_response") {
-                  console.log("Assistant response received, clearing doomscroll URL");
-                  setDoomscrollUrl(null);
-                  // User requested NOT to show the final text response in the main UI
-                  // setActiveResponse(processedData.message); 
-                  setAppState("speaking");
-             } else if (processedData.type === "user_transcription") {
-                  console.log("User transcription received:", processedData.message);
-                  setActiveResponse(processedData.message);
-                  setAppState("thinking");
-             }
+            if (jsonString && typeof jsonString === 'string') {
+                try {
+                    const parsed = JSON.parse(jsonString);
+                    processedData = { ...data, ...parsed };
+                } catch (e) {
+                    console.error("Failed to parse JSON in streamMessage:", e);
+                }
+            }
+
+            console.log("Processed stream message:", processedData);
+
+            if (processedData.type === "doomscroll_start" && processedData.url) {
+                console.log("Setting doomscroll URL:", processedData.url);
+                setDoomscrollUrl(processedData.url);
+                setResponsePayload(null); // Clear any previous visualizer payload
+                setAppState("thinking");
+                setActiveResponse("Researching...");
+            } else if (processedData.type === "assistant_response") {
+                console.log("Assistant response received, clearing doomscroll URL");
+                setDoomscrollUrl(null);
+                // User requested NOT to show the final text response in the main UI
+                // setActiveResponse(processedData.message); 
+                setAppState("speaking");
+            } else if (processedData.type === "user_transcription") {
+                console.log("User transcription received:", processedData.message);
+                setActiveResponse(processedData.message);
+                setAppState("thinking");
+            }
         });
 
         return () => {
-             socket.off("streamMessage");
-             socket.disconnect();
-             audioContextRef.current?.close();
+            socket.off("streamMessage");
+            socket.disconnect();
+            audioContextRef.current?.close();
         };
     }, []);
 
@@ -422,12 +423,32 @@ export default function VoicePage() {
         if (socketId) console.log("Socket connected with id:", socketId);
     }, [socketId]);
 
+    // Track scroll position to determine if we should auto-scroll
     useEffect(() => {
-        scrollRef.current?.scrollTo({
-            top: scrollRef.current.scrollHeight,
-            behavior: "smooth",
-        });
-    }, [messages, appState, showHistory]);
+        const scrollContainer = scrollRef.current;
+        if (scrollContainer) {
+            const handleScroll = () => {
+                const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+                const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+                isAtBottomRef.current = distanceToBottom < 100;
+            };
+
+            // Reset to true when the container re-appears (e.g. state change)
+            isAtBottomRef.current = true;
+
+            scrollContainer.addEventListener("scroll", handleScroll);
+            return () => scrollContainer.removeEventListener("scroll", handleScroll);
+        }
+    }, [showHistory, appState, shouldShowVisualizer]);
+
+    useEffect(() => {
+        if (isAtBottomRef.current) {
+            scrollRef.current?.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: "smooth",
+            });
+        }
+    }, [messages, appState, showHistory, shouldShowVisualizer]);
 
     async function getAllMessages({
         userId,
@@ -640,7 +661,7 @@ export default function VoicePage() {
                         payload: data.data,
                     },
                 ]);
-                
+
                 // User requested NOT to show final text in main UI
                 // setActiveResponse(aiResponse); 
 
@@ -753,7 +774,7 @@ export default function VoicePage() {
             // 1. If volume > threshold, reset silence timer (user is speaking)
             // 2. If volume < threshold AND user has spoken, start silence timer
             // 3. If silence timer > limit, stop recording
-            
+
             if (volume > SILENCE_THRESHOLD) {
                 silenceStart = null; // Reset silence timer
             } else {
@@ -770,9 +791,9 @@ export default function VoicePage() {
                 } else {
                     // User hasn't spoken yet. Check explicit timeout for "no speech"
                     if (Date.now() - startTime > NO_SPEECH_TIMEOUT) {
-                         cancelled = true;
-                         stopVoice();
-                         return;
+                        cancelled = true;
+                        stopVoice();
+                        return;
                     }
                 }
             }
@@ -793,7 +814,7 @@ export default function VoicePage() {
         // Stop silence detection loop
         silenceCleanupRef.current?.();
         silenceCleanupRef.current = null;
-        
+
         // Stop recorder
         const recorder = mediaRecorderRef.current;
         if (!recorder || recorder.state !== "recording") return;
@@ -860,105 +881,105 @@ export default function VoicePage() {
 
                     /> :
                     doomscrollUrl ? (
-                         <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-                             <div className="bg-red-500/90 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse shadow-lg flex items-center gap-2">
-                                 <div className="w-2 h-2 bg-white rounded-full animate-ping" />
-                                 LIVE AGENT VIEW
-                             </div>
+                        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+                            <div className="bg-red-500/90 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse shadow-lg flex items-center gap-2">
+                                <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+                                LIVE AGENT VIEW
+                            </div>
 
-                             <div className="w-full max-w-6xl h-[80vh] bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative">
-                                 {/* Block interactions */}
-                                 <div className="absolute inset-0 z-10 bg-transparent" />
-                                 
-                                 <iframe 
-                                     src={doomscrollUrl} 
-                                     className="w-full h-full" 
-                                     allow="clipboard-read; clipboard-write"
-                                 />
-                                 
-                                 {/* Close Button */}
-                                 <button 
-                                     onClick={() => setShowStopModal(true)}
-                                     className="absolute top-4 right-4 z-50 bg-white hover:bg-zinc-200 text-black p-2 rounded-full shadow-xl transition-all hover:scale-105"
-                                 >
+                            <div className="w-full max-w-6xl h-[80vh] bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative">
+                                {/* Block interactions */}
+                                <div className="absolute inset-0 z-10 bg-transparent" />
+
+                                <iframe
+                                    src={doomscrollUrl}
+                                    className="w-full h-full"
+                                    allow="clipboard-read; clipboard-write"
+                                />
+
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setShowStopModal(true)}
+                                    className="absolute top-4 right-4 z-50 bg-white hover:bg-zinc-200 text-black p-2 rounded-full shadow-xl transition-all hover:scale-105"
+                                >
                                     <X size={24} />
-                                 </button>
+                                </button>
 
-                                 {/* Confirmation Modal */}
-                                 {showStopModal && (
-                                     <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-                                         <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-xl max-w-md w-full mx-4 shadow-2xl">
-                                             <h3 className="text-xl font-bold mb-2">Stop viewing?</h3>
-                                             <p className="text-zinc-400 mb-6"> The agent will continue researching in the background.</p>
-                                             
-                                             <div className="flex flex-col gap-3">
-                                                 <button
-                                                     onClick={() => {
-                                                         setDoomscrollUrl(null);
-                                                         setShowStopModal(false);
-                                                     }}
-                                                     className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg font-medium transition-colors"
-                                                 >
-                                                     Continue in background
-                                                 </button>
-                                                 <button
-                                                     onClick={() => {
-                                                         // TODO: implement actual stop signal to backend
-                                                         setDoomscrollUrl(null);
-                                                         setShowStopModal(false);
-                                                         setAppState("idle");
-                                                         setActiveResponse("Doomscrolling stopped.");
-                                                     }}
-                                                     className="w-full py-3 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/50 rounded-lg font-medium transition-colors"
-                                                 >
-                                                     Stop Doomscrolling
-                                                 </button>
-                                                 <button
-                                                     onClick={() => setShowStopModal(false)}
-                                                     className="mt-2 text-zinc-500 hover:text-zinc-300 text-sm"
-                                                 >
-                                                     Cancel
-                                                 </button>
-                                             </div>
-                                         </div>
-                                     </div>
-                                 )}
-                             </div>
-                             <div className="mt-6 text-zinc-400 font-mono text-sm animate-pulse">
-                                  Paxio is researching your topic...
-                             </div>
-                         </div>
+                                {/* Confirmation Modal */}
+                                {showStopModal && (
+                                    <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+                                        <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-xl max-w-md w-full mx-4 shadow-2xl">
+                                            <h3 className="text-xl font-bold mb-2">Stop viewing?</h3>
+                                            <p className="text-zinc-400 mb-6"> The agent will continue researching in the background.</p>
+
+                                            <div className="flex flex-col gap-3">
+                                                <button
+                                                    onClick={() => {
+                                                        setDoomscrollUrl(null);
+                                                        setShowStopModal(false);
+                                                    }}
+                                                    className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg font-medium transition-colors"
+                                                >
+                                                    Continue in background
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        // TODO: implement actual stop signal to backend
+                                                        setDoomscrollUrl(null);
+                                                        setShowStopModal(false);
+                                                        setAppState("idle");
+                                                        setActiveResponse("Doomscrolling stopped.");
+                                                    }}
+                                                    className="w-full py-3 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/50 rounded-lg font-medium transition-colors"
+                                                >
+                                                    Stop Doomscrolling
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowStopModal(false)}
+                                                    className="mt-2 text-zinc-500 hover:text-zinc-300 text-sm"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mt-6 text-zinc-400 font-mono text-sm animate-pulse">
+                                Paxio is researching your topic...
+                            </div>
+                        </div>
                     ) :
-                    (
-                        <>
-                            <VoiceContent
-                                appState={appState}
-                                activeResponse={activeResponse}
-                                showHistory={showHistory}
-                                messages={messages}
-                                activities={activities}
-                                isLoadingMessages={isLoadingMessages}
-                                response={response}
-                                //@ts-expect-error
-                                scrollRef={scrollRef}
-                            />
-                            {
-                                appState === "idle" && (
-                                    <Footer
-                                        //@ts-expect-error
-                                        disabled={!isSocketReady}
-                                        appState={appState}
-                                        isKeyboardVisible={isKeyboardVisible}
-                                        setIsKeyboardVisible={setIsKeyboardVisible}
-                                        inputText={inputText}
-                                        setInputText={setInputText}
-                                        handleSendMessage={handleSendMessage}
-                                        startVoice={startVoice}
-                                    />
-                                )
-                            }
-                        </>
-                    )
+                        (
+                            <>
+                                <VoiceContent
+                                    appState={appState}
+                                    activeResponse={activeResponse}
+                                    showHistory={showHistory}
+                                    messages={messages}
+                                    activities={activities}
+                                    isLoadingMessages={isLoadingMessages}
+                                    response={response}
+                                    //@ts-expect-error
+                                    scrollRef={scrollRef}
+                                />
+                                {
+                                    appState === "idle" && (
+                                        <Footer
+                                            //@ts-expect-error
+                                            disabled={!isSocketReady}
+                                            appState={appState}
+                                            isKeyboardVisible={isKeyboardVisible}
+                                            setIsKeyboardVisible={setIsKeyboardVisible}
+                                            inputText={inputText}
+                                            setInputText={setInputText}
+                                            handleSendMessage={handleSendMessage}
+                                            startVoice={startVoice}
+                                        />
+                                    )
+                                }
+                            </>
+                        )
                 }
 
                 {/* @@fix this stop button */}

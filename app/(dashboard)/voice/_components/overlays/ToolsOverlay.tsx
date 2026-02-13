@@ -111,6 +111,7 @@ const ToolsOverlay: React.FC<ToolsOverlayProps> = ({
                                     shadow-2xl
                                     p-6 sm:p-8
                                     max-h-[90vh] overflow-y-auto
+                                    custom-scrollbar
                                 "
                             >
                                 {/* HEADER */}

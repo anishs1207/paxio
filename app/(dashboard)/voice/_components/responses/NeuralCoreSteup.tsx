@@ -62,7 +62,7 @@ const IdleVisualizer: React.FC<any> = ({
 
 
                 <div className="mt-5 w-full max-w-5xl px-4">
-                    <div className="max-h-[50vh] overflow-y-auto space-y-6  scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                    <div className="max-h-[50vh] overflow-y-auto space-y-6 custom-scrollbar">
                         {/* <EmailMessage
                             summarisedEmail={dummyEmail.summarisedEmail}
                             to={dummyEmail.to}
@@ -161,7 +161,7 @@ const IdleVisualizer: React.FC<any> = ({
                                 }}
                                 className="
                                     w-full max-w-xl
-                                    border-1
+                                    cursor-pointer
                                     mr-4 ml-4
                                     px-6 py-3
                                     rounded-xl

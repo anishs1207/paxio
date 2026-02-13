@@ -193,7 +193,7 @@ const PeopleOverlay: React.FC<PeopleOverlayProps> = ({
                 </div>
 
                 {/* LIST */}
-                <div className="grid gap-3 max-h-[45vh] overflow-y-auto pr-1">
+                <div className="grid gap-3 max-h-[45vh] overflow-y-auto pr-1 custom-scrollbar">
                     {filteredPeople.map((p) => (
                         <div
                             key={p.id}

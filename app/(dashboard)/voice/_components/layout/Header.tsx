@@ -133,26 +133,27 @@ const Header: React.FC<HeaderProps> = ({
         <header className="relative">
             <div className="relative flex items-center px-4 sm:px-10 py-4">
                 {/* LEFT — Logo */}
-                <Link
-                    href="/"
-                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity z-10"
-                >
-                    <span className="text-xl font-bold tracking-tight font-display">
-                        Paxio
-                    </span>
-
-                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
-        bg-white/10 text-white/70 border border-white/20"
+                <div className="flex flex-1 items-center justify-start z-10">
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
                     >
-                        Beta
-                    </span>
-                </Link>
+                        <span className="text-xl font-bold tracking-tight font-display">
+                            Paxio
+                        </span>
+
+                        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
+        bg-white/10 text-white/70 border border-white/20"
+                        >
+                            Beta
+                        </span>
+                    </Link>
+                </div>
 
                 {/* CENTER — Desktop Navigation */}
                 <div
                     className="
-        hidden sm:flex items-center gap-2
-        absolute left-1/2 -translate-x-1/2
+        hidden sm:flex items-center justify-center gap-2
         max-w-[60vw] overflow-hidden
       "
                 >
@@ -172,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 {/* RIGHT — Credits + Sign Out */}
-                <div className="hidden sm:flex items-center gap-2 ml-auto z-10">
+                <div className="hidden sm:flex flex-1 items-center justify-end gap-2 z-10">
                     {/* Credits */}
                     <button
                         onClick={() => router.push("/payment")}

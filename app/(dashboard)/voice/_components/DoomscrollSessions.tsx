@@ -177,7 +177,11 @@ export const DoomscrollSessions: React.FC<DoomscrollSessionsProps> = ({
               </div>
 
               {/* Body */}
+<<<<<<< HEAD
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-3 custom-scrollbar">
+=======
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 custom-scrollbar">
+>>>>>>> fbbf9b95066531851c0b610d50f53b876de54d64
                 {isLoading && sessions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 gap-3">
                     <Loader2 size={28} className="animate-spin text-zinc-600" />
@@ -327,6 +331,7 @@ export const DoomscrollSessions: React.FC<DoomscrollSessionsProps> = ({
                                       </div>
                                     </button>
 
+<<<<<<< HEAD
                                     {expandedResult === result.id && (
                                       <motion.div 
                                         initial={{ opacity: 0 }} 
@@ -364,6 +369,28 @@ export const DoomscrollSessions: React.FC<DoomscrollSessionsProps> = ({
                                             </p>
                                         </div>
                                       )}
+=======
+                                {expandedResult === result.id && (
+                                  <div className="p-3 pt-3 border-t border-zinc-800 max-h-96 overflow-y-auto custom-scrollbar">
+                                    <div className="prose prose-invert prose-sm max-w-none
+                                      prose-headings:text-zinc-100 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2
+                                      prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
+                                      prose-p:text-zinc-300 prose-p:leading-relaxed prose-p:my-2
+                                      prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+                                      prose-strong:text-zinc-200 prose-strong:font-semibold
+                                      prose-ul:text-zinc-300 prose-ul:my-2 prose-ul:pl-4
+                                      prose-ol:text-zinc-300 prose-ol:my-2 prose-ol:pl-4
+                                      prose-li:my-0.5 prose-li:marker:text-zinc-500
+                                      prose-code:text-amber-400 prose-code:bg-zinc-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                                      prose-pre:bg-zinc-800 prose-pre:border prose-pre:border-zinc-700 prose-pre:rounded-lg prose-pre:p-3 prose-pre:overflow-x-auto
+                                      prose-blockquote:border-l-2 prose-blockquote:border-zinc-600 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-zinc-400
+                                      prose-hr:border-zinc-700
+                                    ">
+                                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {result.rawOutput}
+                                      </ReactMarkdown>
+                                    </div>
+>>>>>>> fbbf9b95066531851c0b610d50f53b876de54d64
                                   </div>
                                 ))
                               )}
