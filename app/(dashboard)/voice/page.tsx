@@ -12,7 +12,7 @@ import { WorkflowFormBubble } from "./_components/Workflow"
 import { DoomscrollSessions } from "./_components/DoomscrollSessions"
 import OnboardingForm from "./_components/Onboarding";
 import { useSession } from "next-auth/react";
-import { CartesiaClient } from "@cartesia/cartesia-js";
+import { generateSpeech } from "@/lib/actions";
 
 
 type AppState = "idle" | "listening" | "thinking" | "speaking";
@@ -230,84 +230,39 @@ export default function VoicePage() {
 
             // --- CARTESIA TTS IMPLEMENTATION ---
             if (message && !audioBuffer) {
-                // Cartesia API keys for fallback
-                const CARTESIA_KEYS = [
-                    process.env.NEXT_PUBLIC_CARTESIA_API_KEY_1!,
-                    process.env.NEXT_PUBLIC_CARTESIA_API_KEY_2!,
-                ];
+                try {
+                    console.log("Generating audio with Cartesia (Server Action) for:", message);
+                    const result = await generateSpeech(message);
 
-                let ttsSuccess = false;
-
-                for (const apiKey of CARTESIA_KEYS) {
-                    try {
-                        const cartesia = new CartesiaClient({ apiKey });
-
-                        console.log(`Generating audio with Cartesia (key ${apiKey.slice(0, 14)}...) for:`, message);
-
-                        const response = await cartesia.tts.bytes({
-                            modelId: "sonic-english",
-                            transcript: message,
-                            voice: {
-                                mode: "id",
-                                id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
-                            },
-                            outputFormat: {
-                                container: "wav",
-                                encoding: "pcm_f32le",
-                                sampleRate: 44100,
-                            },
-                        });
-
-                        // Play using existing AudioContext logic
-                        if (audioContextRef.current) {
-                            let finalBuffer;
-                            if (Buffer.isBuffer(response)) {
-                                finalBuffer = response;
-                            } else if (response && typeof (response as any).arrayBuffer === "function") {
-                                finalBuffer = Buffer.from(await (response as any).arrayBuffer());
-                            } else if (response && typeof (response as any).buffer === "function") {
-                                finalBuffer = Buffer.from(await (response as any).buffer());
-                            } else {
-                                try {
-                                    const chunks: any[] = [];
-                                    // @ts-ignore
-                                    for await (const chunk of response) {
-                                        chunks.push(chunk);
-                                    }
-                                    finalBuffer = Buffer.concat(chunks);
-                                } catch (err) {
-                                    console.error("Failed to consume Cartesia stream:", err);
-                                }
-                            }
-
-                            if (finalBuffer) {
-                                const arrayBuffer = finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
-
-                                const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
-                                const source = audioContextRef.current.createBufferSource();
-                                source.buffer = decodedBuffer;
-                                source.connect(audioContextRef.current.destination);
-
-                                if (nextPlayTimeRef.current < audioContextRef.current.currentTime) {
-                                    nextPlayTimeRef.current = audioContextRef.current.currentTime;
-                                }
-                                source.start(nextPlayTimeRef.current);
-                                nextPlayTimeRef.current += decodedBuffer.duration;
-
-                                setAppState("speaking");
-                                setActiveResponse(message);
-                            }
+                    if (result.success && result.audio) {
+                        const audioData = atob(result.audio);
+                        const audioArray = new Uint8Array(audioData.length);
+                        for (let i = 0; i < audioData.length; i++) {
+                            audioArray[i] = audioData.charCodeAt(i);
                         }
 
-                        ttsSuccess = true;
-                        break; // Success — stop trying other keys
-                    } catch (e: any) {
-                        console.warn(`Cartesia TTS failed with key ${apiKey.slice(0, 14)}...:`, e?.statusCode || e?.message);
-                    }
-                }
+                        if (audioContextRef.current) {
+                            const finalBuffer = await audioContextRef.current.decodeAudioData(audioArray.buffer);
+                            const source = audioContextRef.current.createBufferSource();
+                            source.buffer = finalBuffer;
+                            source.connect(audioContextRef.current.destination);
 
-                if (!ttsSuccess) {
-                    console.error("All Cartesia API keys failed. Falling back to text only.");
+                            if (nextPlayTimeRef.current < audioContextRef.current.currentTime) {
+                                nextPlayTimeRef.current = audioContextRef.current.currentTime;
+                            }
+                            source.start(nextPlayTimeRef.current);
+                            nextPlayTimeRef.current += finalBuffer.duration;
+
+                            setAppState("speaking");
+                            setActiveResponse(message);
+                        }
+                    } else {
+                        throw new Error(result.error || "Failed to generate audio");
+                    }
+
+                } catch (e) {
+                    console.error("Cartesia TTS Error:", e);
+                    // Fallback: Show text if audio fails
                     setAppState("speaking");
                     setActiveResponse(message);
                 }

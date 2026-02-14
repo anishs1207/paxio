@@ -38,7 +38,6 @@ const MemorySection: React.FC = () => {
         {/* Visual Side */}
         <div className="w-full md:w-1/2 flex justify-center">
           <motion.div
-            //@ts-expect-error
             variants={scaleIn}
             initial="hidden"
             whileInView="visible"
@@ -52,7 +51,6 @@ const MemorySection: React.FC = () => {
         {/* Content Side */}
         <div className="w-full md:w-1/2 flex flex-col gap-8">
           <motion.div
-            //@ts-expect-error
             variants={fadeInUp}
             initial="hidden"
             whileInView="visible"
@@ -72,7 +70,6 @@ const MemorySection: React.FC = () => {
             {memoryTypes.map((item, index) => (
               <motion.div
                 key={index}
-                //@ts-expect-error
                 variants={fadeInUp}
                 className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-colors duration-300"
               >

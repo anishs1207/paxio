@@ -13,7 +13,6 @@ const Hero: React.FC = () => {
 
       {/* 3D Orb Representation */}
       <motion.div
-        //@ts-expect-error
         variants={scaleIn}
         initial="hidden"
         animate="visible"
@@ -32,7 +31,6 @@ const Hero: React.FC = () => {
 
       {/* Hero Text */}
       <motion.div
-        //@ts-expect-error
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
@@ -49,7 +47,6 @@ const Hero: React.FC = () => {
 
       {/* Primary CTA */}
       <motion.div
-        //@ts-expect-error
         variants={fadeInUp}
         initial="hidden"
         animate="visible"

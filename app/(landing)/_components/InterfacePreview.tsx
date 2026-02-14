@@ -24,7 +24,6 @@ const InterfacePreview: React.FC = () => {
 
           {/* Floating UI Element / Modal */}
           <motion.div
-            //@ts-expect-error
             variants={scaleIn}
             initial="hidden"
             whileInView="visible"

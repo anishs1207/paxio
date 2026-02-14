@@ -9,13 +9,8 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
    const container = {
       hidden: { opacity: 0 },
       visible: (i = 1) => ({
-<<<<<<< HEAD
          opacity: 1,
-         transition: { staggerChildren: 0.01, delayChildren: delay } // Direct delay in seconds
-=======
-        opacity: 1,
-        transition: { staggerChildren: 0.009, delayChildren: delay } // Direct delay in seconds
->>>>>>> 87076760e5c67afb625c31045bf06a96ac419773
+         transition: { staggerChildren: 0.009, delayChildren: delay } // Direct delay in seconds
       })
    };
 
@@ -105,35 +100,19 @@ const AgentsSection: React.FC = () => {
                   <div className="font-mono text-xs md:text-sm space-y-3 text-white/90 font-light pb-4">
                      {/* Data-driven Terminal Content */}
                      {[
-<<<<<<< HEAD
-                        { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.2, color: "text-gray-500" },
-                        { text: "Loading generic agent modules ... [OK]", delay: 0.8, color: "text-gray-500" },
-                        { text: "Connecting to Neural Fabric ... [ESTABLISHED]", delay: 1.4, color: "text-emerald-500/80" },
-
-                        { spacer: true },
-                        { text: "VisionOfPaxio() > SYSTEM_READY", delay: 2.2, color: "text-orange-400 font-bold" },
-
-                        { spacer: true },
-                        { text: "> QUERY: 'Analyze recent discussions on Oat Milk'", delay: 3.5, color: "text-white" },
-                        { text: "  ⠶ Scanning r/coffee, r/vegan, r/barista (842 threads)...", delay: 4.8, color: "text-gray-400" },
-                        { text: "  ✓ Sentiment Analysis: Positive (Oatly: 45%, Califia: 30%)", delay: 6.0, color: "text-blue-300" },
-                        { text: "  ⚠ Insight: 'Barista edition worth extra cost for texture'", delay: 7.2, color: "text-yellow-200/80" },
-
-=======
                         { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.1, color: "text-gray-500" },
                         { text: "Loading generic agent modules ... [OK]", delay: 0.2, color: "text-gray-500" },
                         { text: "Connecting to Neural Fabric ... [ESTABLISHED]", delay: 0.3, color: "text-emerald-500/80" },
-                        
+
                         { spacer: true },
                         { text: "VisionOfPaxio() > SYSTEM_READY", delay: 0.5, color: "text-orange-400 font-bold" },
-                        
+
                         { spacer: true },
                         { text: "> QUERY: 'Analyze recent discussions on Oat Milk'", delay: 0.8, color: "text-white" },
                         { text: "  ⠶ Scanning r/coffee, r/vegan, r/barista (842 threads)...", delay: 1.0, color: "text-gray-400" },
                         { text: "  ✓ Sentiment Analysis: Positive (Oatly: 45%, Califia: 30%)", delay: 1.2, color: "text-blue-300" },
                         { text: "  ⚠ Insight: 'Barista edition worth extra cost for texture'", delay: 1.4, color: "text-yellow-200/80" },
-                        
->>>>>>> 87076760e5c67afb625c31045bf06a96ac419773
+
                         { spacer: true },
                         { text: "> QUERY: 'Find best price for Otaly Barista Edition'", delay: 1.8, color: "text-white" },
                         { text: "  ⠶ Querying Zepto, Blinkit, Instamart real-time APIs...", delay: 2.0, color: "text-gray-400" },
@@ -180,20 +159,20 @@ const AgentsSection: React.FC = () => {
                         <ul className="pl-6 flex gap-3 flex-wrap">
                            {cap.items.map((item, i) => (
                               <li
-                                key={i}
-                                className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-gray-500 border border-white/5 transition-colors cursor-pointer"
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'white';
-                                  e.currentTarget.style.color = 'black';
-                                  e.currentTarget.style.borderColor = 'white';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = '';
-                                  e.currentTarget.style.color = '';
-                                  e.currentTarget.style.borderColor = '';
-                                }}
+                                 key={i}
+                                 className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-gray-500 border border-white/5 transition-colors cursor-pointer"
+                                 onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'white';
+                                    e.currentTarget.style.color = 'black';
+                                    e.currentTarget.style.borderColor = 'white';
+                                 }}
+                                 onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '';
+                                    e.currentTarget.style.color = '';
+                                    e.currentTarget.style.borderColor = '';
+                                 }}
                               >
-                                {item}
+                                 {item}
                               </li>
                            ))}
                         </ul>
