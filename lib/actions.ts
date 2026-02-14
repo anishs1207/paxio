@@ -15,7 +15,7 @@ async function consumeResponse(response: any): Promise<Buffer> {
     }
     return Buffer.concat(chunks);
   }
-  // done
+  //
   throw new Error("Unexpected response type from Cartesia TTS");
 }
 
