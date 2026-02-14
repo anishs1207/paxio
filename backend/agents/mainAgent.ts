@@ -1,6 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { getGeminiLLM, getGeminiLLMByIndex, getApiKeyCount, rotateApiKey, invokeGeminiWithFallback } from "../utils/GeminiChatModel";
+import { getGeminiLLM, getGeminiLLMByIndex, getApiKeyCount, invokeGeminiWithFallback } from "../utils/GeminiChatModel";
 import TestAllCredentials from "./mainCredentials";
 import * as chrono from "chrono-node";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -2507,17 +2507,21 @@ If the user asks to order/buy something from Zepto:
             const keyCount = getApiKeyCount();
             let lastError: any;
 
-            for (let attempt = 0; attempt < keyCount; attempt++) {
-                try {
-                    const agent = createAgentWithKey(attempt);
-                    console.log(`[mainAgent] Attempting with API key ${attempt + 1}/${keyCount}`);
-                    const result = await agent.invoke({ messages });
+            // Shuffle key indices randomly
+            const indices = Array.from({ length: keyCount }, (_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
 
-                    // Success - rotate to this key for future use
-                    if (attempt > 0) rotateApiKey();
+            for (const keyIndex of indices) {
+                try {
+                    const agent = createAgentWithKey(keyIndex);
+                    console.log(`[mainAgent] Attempting with API key ${keyIndex + 1}/${keyCount} (random order)`);
+                    const result = await agent.invoke({ messages });
                     return result;
                 } catch (err: any) {
-                    console.warn(`[mainAgent] API key ${attempt + 1}/${keyCount} failed:`, err.message || err);
+                    console.warn(`[mainAgent] API key ${keyIndex + 1}/${keyCount} failed:`, err.message || err);
                     lastError = err;
 
                     // Only retry on rate limit / quota errors

@@ -7,23 +7,32 @@ interface FeatureCardProps {
   icon: string;
   title: string;
   description: string;
+  delay: number;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => (
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, delay }) => (
   <motion.div 
     variants={fadeInUp}
-    whileHover={{ y: -10, transition: { duration: 0.3 } }}
-    className="group relative flex flex-col justify-between p-8 rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#333] transition-colors duration-300 h-80 overflow-hidden"
+    whileHover={{ y: -5 }}
+    className="group relative flex flex-col p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-2xl hover:shadow-brand-primary/10 h-full"
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+    {/* Glow Gradient Blob */}
+    <div className="absolute -top-20 -right-20 w-40 h-40 bg-brand-primary/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+    <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
-    <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-full bg-[#1a1a1a] text-white mb-6 group-hover:bg-white group-hover:text-black transition-colors duration-300">
-      <span className="material-symbols-outlined">{icon}</span>
-    </div>
+    {/* Content */}
+    <div className="relative z-10">
+      <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white mb-6 group-hover:scale-110 group-hover:bg-brand-primary/20 group-hover:border-brand-primary/20 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.2)] group-hover:shadow-[0_0_20px_rgba(19,19,236,0.3)]">
+        <span className="material-symbols-outlined text-2xl">{icon}</span>
+      </div>
 
-    <div className="relative z-10 mt-auto">
-      <h3 className="text-xl font-bold text-white mb-3 font-display">{title}</h3>
-      <p className="text-gray-400 text-sm leading-relaxed font-display">{description}</p>
+      <h3 className="text-xl md:text-2xl font-bold text-white mb-3 font-display tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all duration-300">
+        {title}
+      </h3>
+      
+      <p className="text-gray-400 text-sm md:text-base leading-relaxed font-display group-hover:text-gray-300 transition-colors duration-300">
+        {description}
+      </p>
     </div>
   </motion.div>
 );
@@ -31,37 +40,49 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
 const Features: React.FC = () => {
   const features = [
     {
-      icon: "mic",
+      icon: "shopping_bag",
       title: "Order on Quick Commerce",
       description: "Connect your Zepto account, tell Paxio what you want, review the order and securely confirm the payment via UPI at the end. Blinkit, Zomato, Swiggy, and more coming soon. "
     },
     {
-      icon: "psychology",
+      icon: "integration_instructions",
       title: "Connect Your Favourite Tools",
       description: "Connect Gmail, Calendar, and Notion to Paxio and let it handle emails scheduling, and notes in the background—so you can stay focused on high-intensity work without breaking flow."
-    }
-    ,
+    },
     {
-      icon: "currency_bitcoin",
+      icon: "smart_toy",
       title: "Autonomous Workflows",
       description: "Schedule intelligent workflows to run at specific times or recurring intervals. Paxio can search the internet, take actions, and integrate seamlessly with Gmail, Calendar, and Notion—automatically, on your behalf."
     }
-
   ];
 
   return (
-    <section className="w-full max-w-7xl px-4 mb-10 scroll-mt-28" id="features">
-      <div className="flex flex-col items-center text-center gap-3 mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-white font-display">Core Features</h2>
-        <p className="text-gray-500 text-sm max-w-md font-display">Why is Paxio Better than the rest ? </p>
+    <section className="w-full max-w-7xl px-4 mb-24 scroll-mt-28 relative" id="features">
+       {/* Background ambient glow */}
+       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-brand-primary/10 blur-[100px] rounded-full pointer-events-none z-0"></div>
+
+      <div className="flex flex-col items-center text-center gap-4 mb-16 relative z-10">
+        <motion.div 
+           initial={{ opacity: 0, y: 20 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-white font-display tracking-tight mb-4">
+            Core Features
+          </h2>
+          <p className="text-gray-400 text-lg max-w-xl mx-auto font-display leading-relaxed">
+            Why is Paxio Better than the rest ?
+          </p>
+        </motion.div>
       </div>
 
       <motion.div 
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        className="cursor-pointer grid grid-cols-1 md:grid-cols-3 gap-6"
+        viewport={{ once: true, amount: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10"
       >
         {features.map((feature, index) => (
           <FeatureCard
@@ -69,6 +90,7 @@ const Features: React.FC = () => {
             icon={feature.icon}
             title={feature.title}
             description={feature.description}
+            delay={index * 0.1}
           />
         ))}
       </motion.div>
