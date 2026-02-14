@@ -23,31 +23,44 @@ const Navbar: React.FC = () => {
           </span>
         </Link>
 
-
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="#features" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Features</Link>
-          <Link href="#agents" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Agents</Link>
-          <Link href="#pricing" className="text-sm font-medium text-gray-300 hover:text-white transition-colors font-display">Pricing</Link>
+        <div className="hidden md:flex items-center gap-2">
+          {["Features", "Agents", "Pricing"].map((item) => (
+            <Link
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              className="px-4 py-2 text-sm font-medium text-gray-300 transition-all duration-300 rounded-lg font-display"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.borderRadius = '16px'; // rounded-2xl
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'rgb(209, 213, 219)'; // text-gray-300
+                e.currentTarget.style.borderRadius = '8px'; // rounded-lg
+              }}
+            >
+              {item}
+            </Link>
+          ))}
         </div>
 
         {/* CTA */}
         <div className='flex flex-row gap-2'>
-
-          {/* <button
-            onClick={() => {
-              const text = "I want paxio.tech to have <feedback> @codewithrobu @anishs1207";
-              const encodedText = encodeURIComponent(text);
-              window.open(`https://twitter.com/intent/tweet?text=${encodedText}`, "_blank")
-            }}
-            className="cursor-pointer border border-zinc-700 px-4 py-2 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900 transition flex items-center gap-2"
-          >
-            <FaXTwitter className="text-lg" />
-            Share on X
-          </button> */}
           <Link
             href="/signup"
-            className="cursor-pointer bg-white text-black px-4 py-2 rounded-xl text-sm font-medium hover:bg-zinc-200 transition flex items-center gap-2"
+            className="cursor-pointer bg-white text-black px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(255,255,255,0.3)';
+              e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)'; // hover:bg-gray-100
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.backgroundColor = 'white';
+            }}
           >
             {/* <FcGoogle className=" text-lg" /> */}
             Sign Up

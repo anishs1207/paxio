@@ -39,20 +39,20 @@ export default function SignupPage() {
                 </div>
 
                 {/* Sign In Button */}
-                 <button
+                <button
                     onClick={handleGoogleSignIn}
                     disabled={isSigningIn}
                     className="w-full cursor-pointer bg-white text-black hover:bg-zinc-200 transition-colors py-3 rounded-xl font-medium flex items-center justify-center gap-3 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                     {isSigningIn ? (
+                    {isSigningIn ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                         <FcGoogle className="text-xl" />
                     )}
                     {isSigningIn ? "Connecting..." : "Continue with Google"}
                 </button>
-                
-                 <p className="text-xs text-zinc-500 text-center px-8">
+
+                <p className="text-xs text-zinc-500 text-center px-8">
                     By continuing, you agree to Paxio's Terms of Service and Privacy Policy.
                 </p>
 

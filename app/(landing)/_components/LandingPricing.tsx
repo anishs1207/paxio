@@ -107,10 +107,32 @@ const LandingPricing = () => {
 
                             <Link href={plan.href} target={plan.isExternal ? "_blank" : undefined}>
                                 <Button
-                                    className={`w-full py-6 font-semibold rounded-xl transition-all ${plan.popular
-                                        ? "bg-white text-black hover:bg-zinc-200 shadow-lg hover:shadow-white/20"
-                                        : "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700"
+                                    className={`w-full py-6 font-semibold rounded-xl transition-all duration-300 ${plan.popular
+                                        ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                                        : "bg-zinc-800 text-white border border-zinc-700"
                                         }`}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.05)';
+                                        if (plan.popular) {
+                                            e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)'; // hover:bg-gray-100
+                                            e.currentTarget.style.boxShadow = '0 0 30px rgba(255,255,255,0.5)';
+                                        } else {
+                                            e.currentTarget.style.backgroundColor = 'rgb(63, 63, 70)'; // hover:bg-zinc-700
+                                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; // hover:shadow-lg
+                                            e.currentTarget.style.borderColor = 'rgb(113, 113, 122)'; // hover:border-zinc-500
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        if (plan.popular) {
+                                            e.currentTarget.style.backgroundColor = 'white';
+                                            e.currentTarget.style.boxShadow = '0 0 20px rgba(255,255,255,0.3)';
+                                        } else {
+                                            e.currentTarget.style.backgroundColor = 'rgb(39, 39, 42)'; // bg-zinc-800
+                                            e.currentTarget.style.boxShadow = 'none';
+                                            e.currentTarget.style.borderColor = 'rgb(63, 63, 70)'; // border-zinc-700
+                                        }
+                                    }}
                                 >
                                     {plan.buttonText}
                                 </Button>

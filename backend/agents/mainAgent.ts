@@ -1,6 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { getGeminiLLM, getGeminiLLMByIndex, getApiKeyCount, rotateApiKey, invokeGeminiWithFallback } from "../utils/GeminiChatModel";
+import { getGeminiLLM, getGeminiLLMByIndex, getApiKeyCount, invokeGeminiWithFallback } from "../utils/GeminiChatModel";
 import TestAllCredentials from "./mainCredentials";
 import * as chrono from "chrono-node";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -1464,10 +1464,63 @@ function createRedditTools() {
    SHOPPING TOOLS (Zepto, more platforms can be added)
 ============================================================ */
 
-// Browser Use Client for shopping automation
-const browserUseClient = new BrowserUseClient({
-    apiKey: process.env.BROWSER_USE_API_KEY,
-});
+// Browser Use Client for shopping automation - with API key fallback
+// Collect all BROWSER_USE_API_KEY_N from env
+function getBrowserUseApiKeys(): string[] {
+    const keys: string[] = [];
+    for (let i = 1; ; i++) {
+        const key = process.env[`BROWSER_USE_API_KEY_${i}`];
+        if (!key) break;
+        keys.push(key);
+    }
+    return keys;
+}
+
+let currentBrowserUseKeyIndex = 0;
+const browserUseApiKeys = getBrowserUseApiKeys();
+
+function createBrowserUseClientWithKey(keyIndex: number): BrowserUseClient {
+    const key = browserUseApiKeys[keyIndex];
+    if (!key) {
+        throw new Error(`No Browser Use API key available at index ${keyIndex}`);
+    }
+    console.log(`🔑 Using BROWSER_USE_API_KEY_${keyIndex + 1}`);
+    return new BrowserUseClient({ apiKey: key });
+}
+
+// Get a working BrowserUseClient, trying keys in order on auth failure
+async function withBrowserUseClient<T>(fn: (client: BrowserUseClient) => Promise<T>): Promise<T> {
+    if (browserUseApiKeys.length === 0) {
+        throw new Error("No BROWSER_USE_API_KEY_N environment variables found");
+    }
+
+    let lastError: any;
+    for (let attempt = 0; attempt < browserUseApiKeys.length; attempt++) {
+        const keyIndex = (currentBrowserUseKeyIndex + attempt) % browserUseApiKeys.length;
+        const client = createBrowserUseClientWithKey(keyIndex);
+        try {
+            const result = await fn(client);
+            // Success - remember this key for next time
+            currentBrowserUseKeyIndex = keyIndex;
+            return result;
+        } catch (error: any) {
+            lastError = error;
+            const errMsg = (error?.message || error?.toString() || "").toLowerCase();
+            const isAuthError = errMsg.includes("401") || errMsg.includes("unauthorized") ||
+                errMsg.includes("forbidden") || errMsg.includes("invalid api key") ||
+                errMsg.includes("rate limit") || errMsg.includes("quota");
+            if (isAuthError) {
+                console.warn(`⚠️ BROWSER_USE_API_KEY_${keyIndex + 1} failed (${errMsg}), trying next key...`);
+                continue;
+            }
+            // Non-auth error, don't retry with different key
+            throw error;
+        }
+    }
+    console.error("❌ All Browser Use API keys exhausted");
+    throw lastError;
+}
+
 
 // Helper function to save screenshot from base64 or URL
 async function saveShoppingScreenshot(data: string, filename: string): Promise<string> {
@@ -1537,6 +1590,7 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                 let session: { id: string; liveUrl?: string } | null = null;
                 let share: { shareUrl: string; shareToken: string } | null = null;
                 let shouldStopSession = false; // Only stop if we complete the order
+                let client: BrowserUseClient | null = null; // Will be resolved with key fallback
 
                 // Auto-lookup session and fill missing params when OTP is provided
                 let resolvedSessionId = existingSessionId;
@@ -1581,7 +1635,8 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                 const stopBrowserSession = async (sessionId: string) => {
                     try {
                         console.log("🛑 Stopping browser session...");
-                        await browserUseClient.sessions.updateSession({
+                        const stopClient = client || createBrowserUseClientWithKey(currentBrowserUseKeyIndex);
+                        await stopClient.sessions.updateSession({
                             session_id: sessionId,
                             action: "stop"
                         });
@@ -1602,10 +1657,15 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
 
                         session = { id: resolvedSessionId };
 
-                        // Get existing share URL
-                        share = await browserUseClient.sessions.getSessionPublicShare({
-                            session_id: resolvedSessionId,
+                        // Get existing share URL (with key fallback)
+                        const resumeResult = await withBrowserUseClient(async (c) => {
+                            const s = await c.sessions.getSessionPublicShare({
+                                session_id: resolvedSessionId,
+                            });
+                            return { client: c, share: s };
                         });
+                        client = resumeResult.client;
+                        share = resumeResult.share;
 
                         console.log(`🌐 Existing Share URL: ${share.shareUrl}`);
                     } else {
@@ -1625,18 +1685,22 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                         console.log(`📱 Phone: ${phone_number}`);
                         console.log(`🛒 Product: ${product}`);
 
-                        // Step 1: Create a browser session
-                        const newSession = await browserUseClient.sessions.createSession({
-                            browserScreenWidth: 1920,
-                            browserScreenHeight: 1080,
+                        // Step 1: Create a browser session (with key fallback)
+                        const createResult = await withBrowserUseClient(async (c) => {
+                            const newSession = await c.sessions.createSession({
+                                browserScreenWidth: 1920,
+                                browserScreenHeight: 1080,
+                            });
+                            return { client: c, session: newSession };
                         });
+                        client = createResult.client;
                         //@ts-expect-error
-                        session = newSession;
+                        session = createResult.session;
                         //@ts-expect-error
                         console.log(`✅ Session created! ID: ${session.id}`);
 
                         // Step 2: Create a PUBLIC share URL
-                        share = await browserUseClient.sessions.createSessionPublicShare({
+                        share = await client.sessions.createSessionPublicShare({
                             //@ts-expect-error
                             session_id: session.id,
                         });
@@ -1646,7 +1710,7 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                         // Step 3: Run PHASE 1 - Location and Login (stop before OTP)
                         console.log("🤖 Phase 1: Setting location and requesting OTP...");
 
-                        const phase1Task = await browserUseClient.tasks.createTask({
+                        const phase1Task = await client.tasks.createTask({
                             task: `1. Go to https://www.zeptonow.com/
 2. Click "Select Location" button.
 3. In the location box, enter "${location}" and choose the closest option.
@@ -1703,7 +1767,7 @@ IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
                     // Step 4: Run PHASE 2 - Enter OTP and complete login
                     console.log("🤖 Phase 2: Entering OTP and logging in...");
 
-                    const phase2Task = await browserUseClient.tasks.createTask({
+                    const phase2Task = await client!.tasks.createTask({
                         task: `PRE-CONDITION: You are viewing the OTP input field on Zepto website.
 
 1. Enter the following OTP: ${otp} into the visible OTP field.
@@ -1727,7 +1791,7 @@ STOP after login is confirmed.`,
                     // Step 5: Run PHASE 3 - Search product and add to cart
                     console.log("🤖 Phase 3: Searching product and adding to cart...");
 
-                    const phase3Task = await browserUseClient.tasks.createTask({
+                    const phase3Task = await client!.tasks.createTask({
                         task: `PRE-CONDITION: You are logged in on Zepto.
 
 1. Go to https://www.zeptonow.com/search
@@ -1764,7 +1828,7 @@ STOP after confirming product is in cart. Return the screenshot.`,
                     // Step 6: Run PHASE 4 - Checkout process
                     console.log("🤖 Phase 4: Proceeding to checkout...");
 
-                    const phase4Task = await browserUseClient.tasks.createTask({
+                    const phase4Task = await client!.tasks.createTask({
                         task: `PRE-CONDITION: You are logged in and have an item in the cart on Zepto.
 
 1. Click on the cart to view cart items.
@@ -2145,15 +2209,19 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                 });
                 console.log(`📝 DB Session created: ${dbSession.id} (RUNNING)`);
 
-                // Create browser session
+                // Create browser session (with key fallback)
                 // Get or create persistent profile for cookies
-                const doomscrollProfileId = await getOrCreateDoomscrollProfile(browserUseClient);
-
-                const browserSession = await browserUseClient.sessions.createSession({
-                    browserScreenWidth: 1920,
-                    browserScreenHeight: 1080,
-                    profileId: doomscrollProfileId || undefined,
+                const createDoomResult = await withBrowserUseClient(async (c) => {
+                    const profileId = await getOrCreateDoomscrollProfile(c);
+                    const session = await c.sessions.createSession({
+                        browserScreenWidth: 1920,
+                        browserScreenHeight: 1080,
+                        profileId: profileId || undefined,
+                    });
+                    return { client: c, session };
                 });
+                const doomClient = createDoomResult.client;
+                const browserSession = createDoomResult.session;
 
                 console.log(`✅ Browser session: ${browserSession.id}`);
                 console.log(`🎥 LIVE VIEW: https://browser-use.com/session/${browserSession.id}`);
@@ -2179,7 +2247,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                 // Get public share URL
                 let shareUrl = "";
                 try {
-                    const share = await browserUseClient.sessions.createSessionPublicShare({
+                    const share = await doomClient.sessions.createSessionPublicShare({
                         session_id: browserSession.id,
                     });
                     shareUrl = share.shareUrl || "";
@@ -2198,7 +2266,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                 const stopSession = async () => {
                     console.log("\n🛑 Stopping browser session...");
                     try {
-                        await browserUseClient.sessions.updateSession({
+                        await doomClient.sessions.updateSession({
                             session_id: browserSession.id,
                             action: "stop"
                         });
@@ -2213,7 +2281,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                     for (const platform of platforms as DoomscrollPlatform[]) {
                         try {
                             const finding = await doomscrollPlatform(
-                                browserUseClient,
+                                doomClient,
                                 browserSession.id,
                                 platform,
                                 topic
@@ -2507,17 +2575,21 @@ If the user asks to order/buy something from Zepto:
             const keyCount = getApiKeyCount();
             let lastError: any;
 
-            for (let attempt = 0; attempt < keyCount; attempt++) {
-                try {
-                    const agent = createAgentWithKey(attempt);
-                    console.log(`[mainAgent] Attempting with API key ${attempt + 1}/${keyCount}`);
-                    const result = await agent.invoke({ messages });
+            // Shuffle key indices randomly
+            const indices = Array.from({ length: keyCount }, (_, i) => i);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
 
-                    // Success - rotate to this key for future use
-                    if (attempt > 0) rotateApiKey();
+            for (const keyIndex of indices) {
+                try {
+                    const agent = createAgentWithKey(keyIndex);
+                    console.log(`[mainAgent] Attempting with API key ${keyIndex + 1}/${keyCount} (random order)`);
+                    const result = await agent.invoke({ messages });
                     return result;
                 } catch (err: any) {
-                    console.warn(`[mainAgent] API key ${attempt + 1}/${keyCount} failed:`, err.message || err);
+                    console.warn(`[mainAgent] API key ${keyIndex + 1}/${keyCount} failed:`, err.message || err);
                     lastError = err;
 
                     // Only retry on rate limit / quota errors

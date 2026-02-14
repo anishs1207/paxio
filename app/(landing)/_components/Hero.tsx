@@ -58,10 +58,20 @@ const Hero: React.FC = () => {
       >
         <Link
           href="/signup"
-          className="cursor-pointer group relative flex items-center justify-center gap-3 bg-white hover:bg-gray-200 text-black font-bold text-base md:text-lg px-8 py-4 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 font-display"
+          className="cursor-pointer group relative flex items-center justify-center gap-3 bg-white text-black font-bold text-base md:text-lg px-8 py-4 rounded-full transition-all duration-500 shadow-[0_0_20px_rgba(255,255,255,0.3)] font-display"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 0 40px rgba(255,255,255,0.6)';
+            e.currentTarget.style.backgroundColor = 'rgb(243, 244, 246)'; // hover:bg-gray-100
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(255,255,255,0.3)';
+            e.currentTarget.style.backgroundColor = 'white';
+          }}
         >
           <motion.span whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>Try Paxio for Free</motion.span>
-          <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
         </Link>
 
 

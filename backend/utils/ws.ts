@@ -15,9 +15,8 @@ export type Service =
   | "calendly"
   | "reddit";
 
+// change if when using locally
 const WS_URL = "https://api.paxio.tech";
-// const WS_URL = "http://localhost:3000";
-console.log("WS_URL configured as:", WS_URL);
 
 export interface Question {
   q: string;

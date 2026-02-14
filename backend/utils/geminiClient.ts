@@ -16,17 +16,26 @@ if (apiKeys.length === 0) {
   throw new Error("No GEMINI_API_KEY_X found in environment");
 }
 
-let currentKeyIndex = 0;
+/**
+ * Shuffle an array in place using Fisher-Yates algorithm and return it.
+ */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export async function callGemini(
   prompt: string,
   files?: File[],
 ): Promise<string> {
   let lastError: any;
+  const shuffledKeys = shuffle(apiKeys);
 
-  for (let i = 0; i < apiKeys.length; i++) {
-    const key = apiKeys[(currentKeyIndex + i) % apiKeys.length];
-
+  for (const key of shuffledKeys) {
     try {
       const ai = new GoogleGenAI({ apiKey: key });
       const parts: any[] = [prompt];
@@ -45,13 +54,10 @@ export async function callGemini(
         contents: [createUserContent(parts)],
       });
 
-      // Rotate key for next use
-      currentKeyIndex = (currentKeyIndex + i) % apiKeys.length;
-
       //@ts-expect-error
       return response.text;
     } catch (err: any) {
-      console.error(`Gemini API key ${key} failed:`, err);
+      console.error(`Gemini API key failed, trying another...`, err.message || err);
       lastError = err;
     }
   }

@@ -9,8 +9,13 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
    const container = {
       hidden: { opacity: 0 },
       visible: (i = 1) => ({
+<<<<<<< HEAD
          opacity: 1,
          transition: { staggerChildren: 0.01, delayChildren: delay } // Direct delay in seconds
+=======
+        opacity: 1,
+        transition: { staggerChildren: 0.009, delayChildren: delay } // Direct delay in seconds
+>>>>>>> 87076760e5c67afb625c31045bf06a96ac419773
       })
    };
 
@@ -94,12 +99,13 @@ const AgentsSection: React.FC = () => {
 
             {/* Visual Side (Abstract Interface) */}
             <div className="w-full md:w-1/2">
-               <div className="relative rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] p-8 h-[520px] overflow-hidden shadow-2xl">
+               <div className="relative rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] p-8 h-auto overflow-hidden shadow-2xl">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500" />
 
-                  <div className="font-mono text-xs md:text-sm space-y-3 text-white/90 font-light overflow-y-auto no-scrollbar pb-4">
+                  <div className="font-mono text-xs md:text-sm space-y-3 text-white/90 font-light pb-4">
                      {/* Data-driven Terminal Content */}
                      {[
+<<<<<<< HEAD
                         { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.2, color: "text-gray-500" },
                         { text: "Loading generic agent modules ... [OK]", delay: 0.8, color: "text-gray-500" },
                         { text: "Connecting to Neural Fabric ... [ESTABLISHED]", delay: 1.4, color: "text-emerald-500/80" },
@@ -113,20 +119,35 @@ const AgentsSection: React.FC = () => {
                         { text: "  ✓ Sentiment Analysis: Positive (Oatly: 45%, Califia: 30%)", delay: 6.0, color: "text-blue-300" },
                         { text: "  ⚠ Insight: 'Barista edition worth extra cost for texture'", delay: 7.2, color: "text-yellow-200/80" },
 
+=======
+                        { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.1, color: "text-gray-500" },
+                        { text: "Loading generic agent modules ... [OK]", delay: 0.2, color: "text-gray-500" },
+                        { text: "Connecting to Neural Fabric ... [ESTABLISHED]", delay: 0.3, color: "text-emerald-500/80" },
+                        
                         { spacer: true },
-                        { text: "> QUERY: 'Find best price for Otaly Barista Edition'", delay: 9.0, color: "text-white" },
-                        { text: "  ⠶ Querying Zepto, Blinkit, Instamart real-time APIs...", delay: 10.2, color: "text-gray-400" },
-                        { text: "  ✓ Found Deal: Zepto (₹285) vs Blinkit (₹310). Saving 8%.", delay: 11.5, color: "text-emerald-400" },
-                        { text: "  ➜ Action: Added to cart. Awaiting confirmation.", delay: 12.8, color: "text-white/60" },
+                        { text: "VisionOfPaxio() > SYSTEM_READY", delay: 0.5, color: "text-orange-400 font-bold" },
+                        
+                        { spacer: true },
+                        { text: "> QUERY: 'Analyze recent discussions on Oat Milk'", delay: 0.8, color: "text-white" },
+                        { text: "  ⠶ Scanning r/coffee, r/vegan, r/barista (842 threads)...", delay: 1.0, color: "text-gray-400" },
+                        { text: "  ✓ Sentiment Analysis: Positive (Oatly: 45%, Califia: 30%)", delay: 1.2, color: "text-blue-300" },
+                        { text: "  ⚠ Insight: 'Barista edition worth extra cost for texture'", delay: 1.4, color: "text-yellow-200/80" },
+                        
+>>>>>>> 87076760e5c67afb625c31045bf06a96ac419773
+                        { spacer: true },
+                        { text: "> QUERY: 'Find best price for Otaly Barista Edition'", delay: 1.8, color: "text-white" },
+                        { text: "  ⠶ Querying Zepto, Blinkit, Instamart real-time APIs...", delay: 2.0, color: "text-gray-400" },
+                        { text: "  ✓ Found Deal: Zepto (₹285) vs Blinkit (₹310). Saving 8%.", delay: 2.2, color: "text-emerald-400" },
+                        { text: "  ➜ Action: Added to cart. Awaiting confirmation.", delay: 2.4, color: "text-white/60" },
 
                         { spacer: true },
-                        { text: "> QUERY: 'Catch me up on Tech Twitter today'", delay: 14.5, color: "text-white" },
-                        { text: "  oslash Filtered 142 'rage-bait' & political posts.", delay: 15.8, color: "text-red-400/80" },
-                        { text: "  ✓ Extracted Signal: 3 major launches in AI Agents space.", delay: 17.0, color: "text-purple-300" },
-                        { text: "  ✓ Summary prepared. Reading time: 45 seconds.", delay: 18.2, color: "text-white/80" },
+                        { text: "> QUERY: 'Catch me up on Tech Twitter today'", delay: 2.8, color: "text-white" },
+                        { text: "  oslash Filtered 142 'rage-bait' & political posts.", delay: 3.0, color: "text-red-400/80" },
+                        { text: "  ✓ Extracted Signal: 3 major launches in AI Agents space.", delay: 3.2, color: "text-purple-300" },
+                        { text: "  ✓ Summary prepared. Reading time: 45 seconds.", delay: 3.4, color: "text-white/80" },
 
                         { spacer: true },
-                        { text: "System awaiting next command ...", delay: 20.0, color: "text-gray-600 animate-pulse" },
+                        { text: "System awaiting next command ...", delay: 3.8, color: "text-gray-600 animate-pulse" },
                      ].map((line, i) => (
                         line.spacer ? <div key={i} className="h-2" /> :
                            <div key={i} className={`${line.color} flex items-start gap-2`}>
@@ -142,7 +163,7 @@ const AgentsSection: React.FC = () => {
 
 
             {/* Content Side */}
-            <div className="w-full md:w-1/2 flex flex-col gap-10">
+            <div className="w-full md:w-1/2 flex flex-col gap-10 relative z-20">
                <div>
                   <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display">Agents that work<br />not just help you.</h2>
                   <p className="text-gray-400 text-lg font-light font-display">From managing your schedule to buying groceries, to seeing whats trending on social media</p>
@@ -155,10 +176,25 @@ const AgentsSection: React.FC = () => {
                            <div className={`w-2 h-8 rounded-full ${cap.color} opacity-50 group-hover:opacity-100 transition-opacity`}></div>
                            <h3 className="text-2xl font-bold text-white font-display group-hover:text-gray-200 transition-colors">{cap.title}</h3>
                         </div>
-                        <p className="text-gray-400 mb-3 pl-6 font-display">{cap.description}</p>
+                        <p className="text-gray-400 mb-3 pl-6 font-display hover:text-white transition-colors cursor-default">{cap.description}</p>
                         <ul className="pl-6 flex gap-3 flex-wrap">
                            {cap.items.map((item, i) => (
-                              <li key={i} className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-gray-500 border border-white/5">{item}</li>
+                              <li
+                                key={i}
+                                className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-gray-500 border border-white/5 transition-colors cursor-pointer"
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'white';
+                                  e.currentTarget.style.color = 'black';
+                                  e.currentTarget.style.borderColor = 'white';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = '';
+                                  e.currentTarget.style.color = '';
+                                  e.currentTarget.style.borderColor = '';
+                                }}
+                              >
+                                {item}
+                              </li>
                            ))}
                         </ul>
                      </div>
