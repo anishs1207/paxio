@@ -14,9 +14,37 @@ import { authOptions } from "@/lib/auth";
 import axios from "axios";
 import { streamMessage } from "@/backend/utils/ws";
 
-const cartesiaClient = new CartesiaClient({
-  apiKey: process.env.CARTESIA_API_KEY!,
-});
+const CARTESIA_API_KEYS = [
+  process.env.CARTESIA_API_KEY_1!,
+  process.env.CARTESIA_API_KEY_2!,
+];
+
+async function cartesiaTTSWithFallback(transcript: string) {
+  let lastError: any;
+  for (const apiKey of CARTESIA_API_KEYS) {
+    try {
+      const client = new CartesiaClient({ apiKey });
+      const response = await client.tts.bytes({
+        modelId: "sonic-english",
+        transcript,
+        voice: {
+          mode: "id",
+          id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
+        },
+        outputFormat: {
+          container: "wav",
+          encoding: "pcm_f32le",
+          sampleRate: 44100,
+        },
+      });
+      return response;
+    } catch (err: any) {
+      console.warn(`Cartesia TTS failed with key ${apiKey.slice(0, 10)}...:`, err?.statusCode || err?.message);
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -183,23 +211,8 @@ export async function POST(req: NextRequest) {
     const audioBase64 = audioBuffer.toString("base64");
     */
 
-    // --- CARTESIA TTS IMPLEMENTATION ---
-    // Using sonic-english model and a sample voice. 
-    // You might want to parameterize the voice ID.
-    // --- CARTESIA TTS IMPLEMENTATION ---
-    const response = await cartesiaClient.tts.bytes({
-      modelId: "sonic-english",
-      transcript: responseText,
-      voice: {
-        mode: "id",
-        id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
-      },
-      outputFormat: {
-        container: "wav",
-        encoding: "pcm_f32le",
-        sampleRate: 44100,
-      },
-    });
+    // --- CARTESIA TTS IMPLEMENTATION (with key fallback) ---
+    const response = await cartesiaTTSWithFallback(responseText);
 
     let finalBuffer: Buffer;
 

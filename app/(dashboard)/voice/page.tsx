@@ -230,96 +230,86 @@ export default function VoicePage() {
 
             // --- CARTESIA TTS IMPLEMENTATION ---
             if (message && !audioBuffer) {
-                try {
-                    // Initialize Cartesia Client if not already done
-                    // Note: Ideally this should be outside or in a ref, but for simplicity here:
-                    const cartesia = new CartesiaClient({
-                        apiKey: "sk_car_J34hxd5LuwGN8yvUijn8ih", // Using key directly as env might not be exposed to client without NEXT_PUBLIC_ prefix
-                    });
+                // Cartesia API keys for fallback
+                const CARTESIA_KEYS = [
+                    process.env.NEXT_PUBLIC_CARTESIA_API_KEY_1!,
+                    process.env.NEXT_PUBLIC_CARTESIA_API_KEY_2!,
+                ];
 
-                    const websocket = cartesia.tts.websocket({
-                        container: "raw",
-                        encoding: "pcm_f32le",
-                        sampleRate: 44100,
-                    });
+                let ttsSuccess = false;
 
-                    await websocket.connect();
+                for (const apiKey of CARTESIA_KEYS) {
+                    try {
+                        const cartesia = new CartesiaClient({ apiKey });
 
-                    // Create a player to play the audio
-                    // The Cartesia SDK has a WebPlayer but if not exported, we use standard AudioContext
-                    // Checking docs or previous usage... 
-                    // Actually, let's use the standard AudioContext approach with the response from websocket or just bytes if possible for simplicity.
-                    // But `websocket` is for streaming. 
-                    // Let's use `cartesia.tts.bytes` for simplicity if we can accept the latency, 
-                    // OR use the websocket and feed the buffer.
+                        console.log(`Generating audio with Cartesia (key ${apiKey.slice(0, 14)}...) for:`, message);
 
-                    // Given the constraint of the previous code structure using AudioContext:
-                    console.log("Generating audio with Cartesia for:", message);
+                        const response = await cartesia.tts.bytes({
+                            modelId: "sonic-english",
+                            transcript: message,
+                            voice: {
+                                mode: "id",
+                                id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
+                            },
+                            outputFormat: {
+                                container: "wav",
+                                encoding: "pcm_f32le",
+                                sampleRate: 44100,
+                            },
+                        });
 
-                    // We can use the simple bytes API for now to allow AudioContext decoding
-                    const response = await cartesia.tts.bytes({
-                        modelId: "sonic-english",
-                        transcript: message,
-                        voice: {
-                            mode: "id",
-                            id: "79a125e8-cd45-4c13-8a67-188112f4dd22",
-                        },
-                        outputFormat: {
-                            container: "wav",
-                            encoding: "pcm_f32le",
-                            sampleRate: 44100,
-                        },
-                    });
-
-                    // Play using existing AudioContext logic
-                    if (audioContextRef.current) {
-                        let finalBuffer;
-                        if (Buffer.isBuffer(response)) {
-                            finalBuffer = response;
-                        } else if (response && typeof (response as any).arrayBuffer === "function") {
-                            finalBuffer = Buffer.from(await (response as any).arrayBuffer());
-                        } else if (response && typeof (response as any).buffer === "function") {
-                            finalBuffer = Buffer.from(await (response as any).buffer());
-                        } else {
-                            try {
-                                const chunks: any[] = [];
-                                // @ts-ignore
-                                for await (const chunk of response) {
-                                    chunks.push(chunk);
+                        // Play using existing AudioContext logic
+                        if (audioContextRef.current) {
+                            let finalBuffer;
+                            if (Buffer.isBuffer(response)) {
+                                finalBuffer = response;
+                            } else if (response && typeof (response as any).arrayBuffer === "function") {
+                                finalBuffer = Buffer.from(await (response as any).arrayBuffer());
+                            } else if (response && typeof (response as any).buffer === "function") {
+                                finalBuffer = Buffer.from(await (response as any).buffer());
+                            } else {
+                                try {
+                                    const chunks: any[] = [];
+                                    // @ts-ignore
+                                    for await (const chunk of response) {
+                                        chunks.push(chunk);
+                                    }
+                                    finalBuffer = Buffer.concat(chunks);
+                                } catch (err) {
+                                    console.error("Failed to consume Cartesia stream:", err);
                                 }
-                                finalBuffer = Buffer.concat(chunks);
-                            } catch (err) {
-                                console.error("Failed to consume Cartesia stream:", err);
+                            }
+
+                            if (finalBuffer) {
+                                const arrayBuffer = finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
+
+                                const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+                                const source = audioContextRef.current.createBufferSource();
+                                source.buffer = decodedBuffer;
+                                source.connect(audioContextRef.current.destination);
+
+                                if (nextPlayTimeRef.current < audioContextRef.current.currentTime) {
+                                    nextPlayTimeRef.current = audioContextRef.current.currentTime;
+                                }
+                                source.start(nextPlayTimeRef.current);
+                                nextPlayTimeRef.current += decodedBuffer.duration;
+
+                                setAppState("speaking");
+                                setActiveResponse(message);
                             }
                         }
 
-                        if (finalBuffer) {
-                            // Decode
-                            // Note: AudioContext.decodeAudioData requires a copy of the buffer sometimes or standard ArrayBuffer
-                            const arrayBuffer = finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
-
-                            const decodedBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
-                            const source = audioContextRef.current.createBufferSource();
-                            source.buffer = decodedBuffer;
-                            source.connect(audioContextRef.current.destination);
-
-                            if (nextPlayTimeRef.current < audioContextRef.current.currentTime) {
-                                nextPlayTimeRef.current = audioContextRef.current.currentTime;
-                            }
-                            source.start(nextPlayTimeRef.current);
-                            nextPlayTimeRef.current += decodedBuffer.duration;
-
-                            // Sync: Show text and speak ONLY when audio starts
-                            setAppState("speaking");
-                            setActiveResponse(message);
-                        }
+                        ttsSuccess = true;
+                        break; // Success — stop trying other keys
+                    } catch (e: any) {
+                        console.warn(`Cartesia TTS failed with key ${apiKey.slice(0, 14)}...:`, e?.statusCode || e?.message);
                     }
+                }
 
-                } catch (e) {
-                   console.error("Cartesia Client Error:", e);
-                   // Fallback: Show text if audio fails
-                   setAppState("speaking");
-                   setActiveResponse(message);
+                if (!ttsSuccess) {
+                    console.error("All Cartesia API keys failed. Falling back to text only.");
+                    setAppState("speaking");
+                    setActiveResponse(message);
                 }
             } else if (audioBuffer && audioContextRef.current) {
                 try {

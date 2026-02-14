@@ -61,9 +61,12 @@ export async function invokeGeminiWithFallback(
   let lastError: any;
   const shuffledKeys = shuffle(apiKeys);
 
-  for (const key of shuffledKeys) {
+  for (let idx = 0; idx < shuffledKeys.length; idx++) {
+    const key = shuffledKeys[idx];
+    const keyNum = apiKeys.indexOf(key) + 1;
     const llm = getLLMForKey(key);
 
+    console.log(`[GeminiLLM] Attempting with API key ${keyNum}/${apiKeys.length} (random order, attempt ${idx + 1})`);
     try {
       const result = await llm.invoke(prompt);
       return result;

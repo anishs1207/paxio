@@ -47,12 +47,12 @@ const Features: React.FC = () => {
     {
       icon: "integration_instructions",
       title: "Connect Your Favourite Tools",
-      description: "Connect Gmail, Calendar, and Notion to Paxio and let it handle emails scheduling, and notes in the background—so you can stay focused on high-intensity work without breaking flow."
+      description: "Connect Gmail, Calendar, and Notion to Paxio and let it handle emails scheduling, and notes in the background, so you can stay focused on high intensity work without breaking flow."
     },
     {
       icon: "smart_toy",
       title: "Autonomous Workflows",
-      description: "Schedule intelligent workflows to run at specific times or recurring intervals. Paxio can search the internet, take actions, and integrate seamlessly with Gmail, Calendar, and Notion—automatically, on your behalf."
+      description: "Schedule intelligent workflows to run at specific times or recurring intervals. Paxio can search the internet, take actions, and integrate seamlessly with Gmail, Calendar, and Notion automatically, on your behalf."
     }
   ];
 
