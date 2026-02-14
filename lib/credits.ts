@@ -1,4 +1,4 @@
-export const INITIAL_CREDITS = 1000;
+export const INITIAL_CREDITS = 500;
 // check this out
 export const COST_DOOMSCROLL = 250;
 export const COST_NORMAL_APP = 50;

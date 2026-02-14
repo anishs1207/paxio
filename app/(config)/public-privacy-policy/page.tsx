@@ -168,10 +168,10 @@ export default function PrivacyPolicyPage() {
                         <p className="mt-3">
                             If you have any questions about this Privacy Policy, contact us at{" "}
                             <a
-                                href="mailto:anishs1207@gmail.com"
+                                href="mailto:paxioai@gmail.com"
                                 className="underline text-white"
                             >
-                                anishs1207@gmail.com
+                                paxioai@gmail.com
                             </a>
                             .
                         </p>

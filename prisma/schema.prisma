@@ -321,3 +321,14 @@ model DoomscrollResult {
 
   @@index([sessionId])
 }
+
+// Track failed Gemini API keys for 24h exclusion
+model FailedApiKey {
+  id        String   @id @default(cuid())
+  keyHash   String   @unique // SHA-256 hash of the API key
+  reason    String? // e.g. "429", "RESOURCE_EXHAUSTED"
+  failedAt  DateTime @default(now())
+  expiresAt DateTime // failedAt + 24 hours
+
+  @@index([expiresAt])
+}

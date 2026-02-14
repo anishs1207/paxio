@@ -38,8 +38,8 @@ export default function PricingPage() {
             {/* Bottom Help Text */}
             <p className="mt-8 text-sm text-zinc-500 text-center">
                 Need help? Contact us at{" "}
-                <a href="mailto:anishs1207@gmail.com" className="text-zinc-400 hover:text-white underline">
-                    anishs1207@gmail.com
+                <a href="mailto:paxioai@gmail.com" className="text-zinc-400 hover:text-white underline">
+                    paxioai@gmail.com
                 </a>
             </p>
         </div>

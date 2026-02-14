@@ -4,6 +4,7 @@ import {
   createPartFromUri,
 } from "@google/genai";
 import dotenv from "dotenv";
+import { getAvailableKeys, markKeyFailed } from "./failedKeyCache";
 
 dotenv.config();
 
@@ -33,7 +34,12 @@ export async function callGemini(
   files?: File[],
 ): Promise<string> {
   let lastError: any;
-  const shuffledKeys = shuffle(apiKeys);
+  const available = getAvailableKeys(apiKeys);
+  if (available.length === 0) {
+    console.warn("[callGemini] All API keys are rate-limited. Falling back to full list.");
+  }
+  const keysToTry = available.length > 0 ? available : apiKeys;
+  const shuffledKeys = shuffle(keysToTry);
 
   for (const key of shuffledKeys) {
     try {
@@ -59,6 +65,17 @@ export async function callGemini(
     } catch (err: any) {
       console.error(`Gemini API key failed, trying another...`, err.message || err);
       lastError = err;
+
+      // Mark key as failed for 24h on rate-limit / quota errors
+      const msg = err.message || "";
+      const isRateLimit =
+        msg.includes("429") ||
+        msg.includes("quota") ||
+        msg.includes("rate") ||
+        msg.includes("RESOURCE_EXHAUSTED");
+      if (isRateLimit) {
+        markKeyFailed(key, msg).catch(() => { });
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 // apps/backend/src/utils/GeminiChatModel.ts
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { getAvailableKeys, markKeyFailed } from "./failedKeyCache";
 
 // Collect all GEMINI_API_KEY_* from environment
 const apiKeys: string[] = Object.entries(process.env)
@@ -47,7 +48,9 @@ function shuffle<T>(arr: T[]): T[] {
  * Get a random LLM instance
  */
 export function getGeminiLLM(): ChatGoogleGenerativeAI {
-  const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+  const available = getAvailableKeys(apiKeys);
+  const pool = available.length > 0 ? available : apiKeys;
+  const randomKey = pool[Math.floor(Math.random() * pool.length)];
   return getLLMForKey(randomKey);
 }
 
@@ -59,7 +62,12 @@ export async function invokeGeminiWithFallback(
   prompt: string | any[]
 ): Promise<any> {
   let lastError: any;
-  const shuffledKeys = shuffle(apiKeys);
+  const available = getAvailableKeys(apiKeys);
+  if (available.length === 0) {
+    console.warn("[GeminiLLM] All API keys are rate-limited. Falling back to full list.");
+  }
+  const keysToTry = available.length > 0 ? available : apiKeys;
+  const shuffledKeys = shuffle(keysToTry);
 
   for (let idx = 0; idx < shuffledKeys.length; idx++) {
     const key = shuffledKeys[idx];
@@ -84,7 +92,10 @@ export async function invokeGeminiWithFallback(
         err.message?.includes("rate") ||
         err.message?.includes("RESOURCE_EXHAUSTED");
 
-      if (!isRetirable) {
+      if (isRetirable) {
+        // Mark key as failed for 24h exclusion
+        markKeyFailed(key, err.message).catch(() => { });
+      } else {
         // Don't retry on non-retryable errors
         throw err;
       }

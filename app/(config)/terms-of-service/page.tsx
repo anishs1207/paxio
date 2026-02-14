@@ -158,10 +158,10 @@ export default function TermsOfServicePage() {
                         <p className="mt-3">
                             If you have any questions about these Terms, please contact us at{" "}
                             <a
-                                href="mailto:anishs1207@gmail.com"
+                                href="mailto:paxioai@gmail.com"
                                 className="underline text-white"
                             >
-                                anishs1207@gmail.com
+                                paxioai@gmail.com
                             </a>
                             .
                         </p>
