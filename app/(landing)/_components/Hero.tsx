@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orb-glow pointer-events-none z-0"></div>
 
       {/* 3D Orb Representation */}
-      <motion.div 
+      <motion.div
         variants={scaleIn}
         initial="hidden"
         animate="visible"
@@ -30,7 +30,7 @@ const Hero: React.FC = () => {
       </motion.div>
 
       {/* Hero Text */}
-      <motion.div 
+      <motion.div
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
@@ -46,7 +46,7 @@ const Hero: React.FC = () => {
       </motion.div>
 
       {/* Primary CTA */}
-      <motion.div 
+      <motion.div
         variants={fadeInUp}
         initial="hidden"
         animate="visible"

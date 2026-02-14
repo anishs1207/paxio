@@ -9,21 +9,21 @@ const InterfacePreview: React.FC = () => {
       <div className="rounded-[2.5rem] bg-[#080808] border border-[#151515] p-2 md:p-4 overflow-hidden relative shadow-2xl">
         {/* Glow effect at top */}
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-brand-primary/5 to-transparent pointer-events-none"></div>
-        
+
         {/* Inner container */}
         <div className="rounded-[2rem] bg-black border border-[#222] overflow-hidden relative h-[400px] md:h-[600px] flex items-center justify-center">
-          
+
           {/* Background Abstract Image */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-screen"
-            style={{ 
-              backgroundImage: "url('https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2532&auto=format&fit=crop')" 
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2532&auto=format&fit=crop')"
             }}
             aria-hidden="true"
           ></div>
 
           {/* Floating UI Element / Modal */}
-          <motion.div 
+          <motion.div
             variants={scaleIn}
             initial="hidden"
             whileInView="visible"
