@@ -21,7 +21,19 @@ function hashKey(apiKey: string): string {
     return crypto.createHash("sha256").update(apiKey).digest("hex");
 }
 
-const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+/**
+ * Get the next 1:30 PM IST (08:00 UTC / 00:00 PST) reset time.
+ * If we're already past 08:00 UTC today, returns tomorrow's 08:00 UTC.
+ */
+function getNextResetTime(): Date {
+    const now = new Date();
+    const reset = new Date(now);
+    reset.setUTCHours(8, 0, 0, 0); // 08:00 UTC = 1:30 PM IST = 00:00 PST
+    if (reset <= now) {
+        reset.setUTCDate(reset.getUTCDate() + 1);
+    }
+    return reset;
+}
 
 // ── Public API ────────────────────────────────────────────────────────
 
@@ -57,7 +69,7 @@ export async function markKeyFailed(
 ): Promise<void> {
     const h = hashKey(apiKey);
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + TWENTY_FOUR_HOURS_MS);
+    const expiresAt = getNextResetTime();
 
     // Update in-memory immediately (zero latency for subsequent checks)
     failedKeys.set(h, expiresAt);
