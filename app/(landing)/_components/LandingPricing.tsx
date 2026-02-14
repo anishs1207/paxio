@@ -55,7 +55,7 @@ const LandingPricing = () => {
     ];
 
     return (
-        <section id="pricing" className="py-24 bg-black text-white">
+        <section id="pricing" className="py-16 bg-black text-white">
             <div className="max-w-6xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">

@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 const Hero: React.FC = () => {
   return (
-    <section className="w-full max-w-6xl flex flex-col items-center text-center gap-8 relative mb-32">
+    <section className="w-full max-w-6xl flex flex-col items-center text-center gap-8 relative mb-24">
       {/* Background Glow Effect */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orb-glow pointer-events-none z-0"></div>
 

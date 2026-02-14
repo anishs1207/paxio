@@ -15,12 +15,12 @@ export default function Home() {
             <Hero />
 
             {/* Divider */}
-            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
+            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-20 opacity-50"></div>
 
             <Features />
 
             {/* Divider */}
-            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-24 opacity-50"></div>
+            <div className="w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-[#333] to-transparent mb-12 opacity-50"></div>
             <AgentsSection />
 
             <LandingPricing />
