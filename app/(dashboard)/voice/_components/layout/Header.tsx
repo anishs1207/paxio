@@ -91,11 +91,11 @@ const Header: React.FC<HeaderProps> = ({
     ];
 
     // Always visible on mobile (outside hamburger) - bigger icons (18px instead of 16px)
-    const mobileVisibleItems = [
+    // const mobileVisibleItems = [
 
-        // { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
-        // { icon: showHistory ? <ChevronDown size={18} /> : <History size={18} />, action: () => setShowHistory(!showHistory) },
-    ];
+    //     // { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
+    //     // { icon: showHistory ? <ChevronDown size={18} /> : <History size={18} />, action: () => setShowHistory(!showHistory) },
+    // ];
 
     // Items only in hamburger menu on mobile
     const mobileMenuItems = [
@@ -212,7 +212,7 @@ const Header: React.FC<HeaderProps> = ({
 
                 {/* MOBILE — Right Side */}
                 <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
-                    {mobileVisibleItems.map((item, index) => (
+                    {/* {mobileVisibleItems.map((item, index) => (
                         <button
                             key={index}
                             onClick={item.action}
@@ -220,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({
                         >
                             {item.icon}
                         </button>
-                    ))}
+                    ))} */}
 
                     <button
                         onClick={() => router.push("/payment")}
