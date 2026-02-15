@@ -99,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({
 
     // Items only in hamburger menu on mobile
     const mobileMenuItems = [
-         { icon: <Workflow size={18} />, label: "Workflows", action: () => setIsWorkflowOpen(true) },
+        { icon: <Workflow size={18} />, label: "Workflows", action: () => setIsWorkflowOpen(true) },
         { icon: <Search size={18} />, label: "Sessions", action: () => setIsSessionsOpen(true) },
         { icon: <LayoutGrid size={18} />, label: "Tools", action: () => { setIsNexusOpen(true); setMobileOpen(false); } },
         { icon: <Users size={18} />, label: "People", action: () => { setShowPeople(true); setMobileOpen(false); } },
@@ -224,19 +224,51 @@ const Header: React.FC<HeaderProps> = ({
 
                     <button
                         onClick={() => router.push("/payment")}
-                        className="cursor-pointer flex h-8 items-center gap-1 px-2 rounded-full
-            bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
-            hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]
-            active:scale-95 transition-all duration-200"
+                        className="
+        group cursor-pointer flex h-8 items-center gap-2 px-2.5 rounded-full
+        bg-white/[0.06] backdrop-blur-md border border-white/[0.08]
+        text-xs font-semibold text-zinc-200
+        hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]
+        hover:shadow-[0_0_12px_rgba(52,211,153,0.12)]
+        active:scale-95 transition-all duration-200
+    "
                     >
+                        {/* Plan / Status — calm */}
                         <PlanBadge compact />
-                        <Sparkles size={12} className="text-emerald-400" />
+
+                        {/* Credits — neutral */}
                         {isLoadingCredits ? (
-                            <div className="h-3 w-6 bg-zinc-700 rounded animate-pulse" />
+                            <div className="h-3 w-8 bg-zinc-700 rounded animate-pulse" />
                         ) : (
-                            <span className="text-zinc-200">{credits}</span>
+                            <span className="tabular-nums whitespace-nowrap text-zinc-200">
+                                {credits}
+                            </span>
                         )}
+
+                        {/* Divider */}
+                        <span className="w-px h-4 bg-white/10" />
+
+                        {/* + Action — obvious but subtle */}
+                        <span
+                            className="
+        flex items-center justify-center
+        h-5 w-5 rounded-full
+        bg-emerald-500/20 text-emerald-400
+        text-sm font-semibold leading-none
+        group-hover:bg-emerald-500/30
+        group-hover:scale-110
+        transition-all
+    "
+                        >
+                            +
+                        </span>
+
                     </button>
+
+
+
+
+
 
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
