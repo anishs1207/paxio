@@ -67,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({
 
     // Base button styles - premium glassmorphism
     const iconBtn =
-        "cursor-pointer h-10 w-10 flex items-center justify-center rounded-full " +
+        "cursor-pointer h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-full " +
         "bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-zinc-400 " +
         "hover:text-white hover:border-white/20 hover:bg-white/[0.1] hover:shadow-[0_0_15px_rgba(255,255,255,0.06)] " +
         "active:scale-95 transition-all duration-200";
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
 
     // Always visible on mobile (outside hamburger) - bigger icons (18px instead of 16px)
     const mobileVisibleItems = [
-        { icon: <Workflow size={18} />, action: () => setIsWorkflowOpen(true) },
+
         // { icon: <Search size={18} />, action: () => setIsSessionsOpen(true) },
         { icon: showHistory ? <ChevronDown size={18} /> : <History size={18} />, action: () => setShowHistory(!showHistory) },
     ];
@@ -102,6 +102,7 @@ const Header: React.FC<HeaderProps> = ({
     const mobileMenuItems = [
         { icon: <LayoutGrid size={18} />, label: "Tools", action: () => { setIsNexusOpen(true); setMobileOpen(false); } },
         { icon: <Users size={18} />, label: "People", action: () => { setShowPeople(true); setMobileOpen(false); } },
+        { icon: <Workflow size={18} />, action: () => setIsWorkflowOpen(true) },
     ];
 
     // Plan badge component
@@ -131,9 +132,9 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <header className="relative">
-            <div className="relative flex items-center px-4 sm:px-10 py-4">
+            <div className="relative flex items-center justify-between px-2 sm:px-10 py-3 sm:py-4">
                 {/* LEFT — Logo */}
-                <div className="flex flex-1 items-center justify-start z-10">
+                <div className="flex flex-1 min-w-0 items-center justify-start z-10">
                     <Link
                         href="/"
                         className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
@@ -142,8 +143,9 @@ const Header: React.FC<HeaderProps> = ({
                             Paxio
                         </span>
 
-                        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
-        bg-white/10 text-white/70 border border-white/20"
+                        <span
+                            className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
+                bg-white/10 text-white/70 border border-white/20"
                         >
                             Beta
                         </span>
@@ -153,9 +155,9 @@ const Header: React.FC<HeaderProps> = ({
                 {/* CENTER — Desktop Navigation */}
                 <div
                     className="
-        hidden sm:flex items-center justify-center gap-2
-        max-w-[60vw] overflow-hidden
-      "
+            hidden sm:flex items-center justify-center gap-2
+            max-w-[60vw] overflow-hidden
+        "
                 >
                     {allMenuItems.map((item, index) => (
                         <button
@@ -164,7 +166,6 @@ const Header: React.FC<HeaderProps> = ({
                             className={desktopBtn}
                         >
                             {item.icon}
-                            {/* Hide labels until large screens */}
                             <span className="hidden lg:inline text-xs font-medium uppercase tracking-wide">
                                 {item.label}
                             </span>
@@ -172,16 +173,15 @@ const Header: React.FC<HeaderProps> = ({
                     ))}
                 </div>
 
-                {/* RIGHT — Credits + Sign Out */}
+                {/* RIGHT — Credits + Sign Out (Desktop) */}
                 <div className="hidden sm:flex flex-1 items-center justify-end gap-2 z-10">
-                    {/* Credits */}
                     <button
                         onClick={() => router.push("/payment")}
                         className="cursor-pointer flex h-10 items-center gap-2 px-4 rounded-full
-          bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
-          hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]
-          hover:shadow-[0_0_20px_rgba(52,211,153,0.08)]
-          active:scale-[0.97] transition-all duration-200"
+            bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
+            hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]
+            hover:shadow-[0_0_20px_rgba(52,211,153,0.08)]
+            active:scale-[0.97] transition-all duration-200"
                     >
                         <PlanBadge />
                         <div className="w-px h-4 bg-white/10" />
@@ -193,15 +193,14 @@ const Header: React.FC<HeaderProps> = ({
                         )}
                     </button>
 
-                    {/* Sign Out */}
                     <button
                         onClick={handleSignOut}
                         disabled={isSigningOut}
                         className={`${iconBtn}
-          hover:!text-red-400
-          hover:!border-red-500/30
-          hover:!bg-red-500/[0.08]
-          hover:!shadow-[0_0_15px_rgba(239,68,68,0.08)]`}
+            hover:!text-red-400
+            hover:!border-red-500/30
+            hover:!bg-red-500/[0.08]
+            hover:!shadow-[0_0_15px_rgba(239,68,68,0.08)]`}
                     >
                         {isSigningOut ? (
                             <Loader2 size={16} className="animate-spin" />
@@ -212,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
 
                 {/* MOBILE — Right Side */}
-                <div className="flex sm:hidden items-center gap-1.5 ml-auto">
+                <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
                     {mobileVisibleItems.map((item, index) => (
                         <button
                             key={index}
@@ -225,10 +224,10 @@ const Header: React.FC<HeaderProps> = ({
 
                     <button
                         onClick={() => router.push("/payment")}
-                        className="cursor-pointer flex h-10 items-center gap-1.5 px-2.5 rounded-full
-          bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
-          hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]
-          active:scale-95 transition-all duration-200"
+                        className="cursor-pointer flex h-8 items-center gap-1 px-2 rounded-full
+            bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-xs font-semibold
+            hover:border-emerald-500/30 hover:bg-emerald-500/[0.06]
+            active:scale-95 transition-all duration-200"
                     >
                         <PlanBadge compact />
                         <Sparkles size={12} className="text-emerald-400" />
@@ -247,6 +246,7 @@ const Header: React.FC<HeaderProps> = ({
                     </button>
                 </div>
             </div>
+
 
             {/* MOBILE MENU */}
             <AnimatePresence>

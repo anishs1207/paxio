@@ -31,7 +31,7 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
 
    return (
       <motion.span
-         style={{ display: "inline-block" }} // Allows wrapping but keeps inline flow
+         style={{ display: "inline" }} // Allows natural word wrapping
          variants={container}
          initial="hidden"
          whileInView="visible"
@@ -39,7 +39,7 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
       >
          {letters.map((letter, index) => (
             <motion.span variants={child} key={index}>
-               {letter === " " ? "\u00A0" : letter}
+               {letter === " " ? <span style={{ whiteSpace: "pre" }}> </span> : letter}
             </motion.span>
          ))}
       </motion.span>
@@ -89,15 +89,15 @@ const AgentsSection: React.FC = () => {
    ];
 
    return (
-      <section id="agents" className="w-full max-w-7xl px-4 py-16 mb-0 pb-0  relative scroll-mt-28">
-         <div className="flex flex-col md:flex-row-reverse gap-16 items-start">
+      <section id="agents" className="w-full max-w-7xl px-4 sm:px-6 py-10 sm:py-16 mb-0 pb-0 relative scroll-mt-28">
+         <div className="flex flex-col md:flex-row-reverse gap-8 sm:gap-12 md:gap-16 items-start">
 
             {/* Visual Side (Abstract Interface) */}
-            <div className="w-full md:w-1/2">
-               <div className="relative rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] p-8 h-auto overflow-hidden shadow-2xl">
+            <div className="w-full md:w-1/2 order-2 md:order-none">
+               <div className="relative rounded-2xl sm:rounded-3xl bg-[#0a0a0a] border border-[#1a1a1a] p-4 sm:p-6 md:p-8 h-auto overflow-hidden shadow-2xl">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500" />
 
-                  <div className="font-mono text-xs md:text-sm space-y-3 text-white/90 font-light pb-4">
+                  <div className="font-mono text-[10px] sm:text-xs md:text-sm space-y-2 sm:space-y-3 text-white/90 font-light pb-4 break-words">
                      {/* Data-driven Terminal Content */}
                      {[
                         { text: "Initializing Paxio Cortex v2.4.0 ...", delay: 0.1, color: "text-gray-500" },
@@ -142,25 +142,25 @@ const AgentsSection: React.FC = () => {
 
 
             {/* Content Side */}
-            <div className="w-full md:w-1/2 flex flex-col gap-10 relative z-20">
+            <div className="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8 md:gap-10 relative z-20 order-1 md:order-none">
                <div>
-                  <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display">Agents that work<br />not just help you.</h2>
-                  <p className="text-gray-400 text-lg font-light font-display">From managing your schedule to buying groceries, to seeing whats trending on social media</p>
+                  <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-3 sm:mb-4 font-display">Agents that work<br />not just help you.</h2>
+                  <p className="text-gray-400 text-base sm:text-lg font-light font-display">From managing your schedule to buying groceries, to seeing whats trending on social media</p>
                </div>
 
-               <div className="space-y-8">
+               <div className="space-y-6 sm:space-y-8">
                   {capabilities.map((cap, index) => (
                      <div key={index} className="group cursor-default">
-                        <div className="flex items-center gap-4 mb-2">
-                           <div className={`w-2 h-8 rounded-full ${cap.color} opacity-50 group-hover:opacity-100 transition-opacity`}></div>
-                           <h3 className="text-2xl font-bold text-white font-display group-hover:text-gray-200 transition-colors">{cap.title}</h3>
+                        <div className="flex items-center gap-3 sm:gap-4 mb-2">
+                           <div className={`w-1.5 sm:w-2 h-6 sm:h-8 rounded-full ${cap.color} opacity-50 group-hover:opacity-100 transition-opacity`}></div>
+                           <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white font-display group-hover:text-gray-200 transition-colors">{cap.title}</h3>
                         </div>
-                        <p className="text-gray-400 mb-3 pl-6 font-display hover:text-white transition-colors cursor-default">{cap.description}</p>
-                        <ul className="pl-6 flex gap-3 flex-wrap">
+                        <p className="text-gray-400 text-sm sm:text-base mb-3 pl-5 sm:pl-6 font-display hover:text-white transition-colors cursor-default">{cap.description}</p>
+                        <ul className="pl-5 sm:pl-6 flex gap-2 sm:gap-3 flex-wrap">
                            {cap.items.map((item, i) => (
                               <li
                                  key={i}
-                                 className="text-xs font-mono bg-white/5 px-2 py-1 rounded text-gray-500 border border-white/5 transition-colors cursor-pointer"
+                                 className="text-[10px] sm:text-xs font-mono bg-white/5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-gray-500 border border-white/5 transition-colors cursor-pointer"
                                  onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor = 'white';
                                     e.currentTarget.style.color = 'black';

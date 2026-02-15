@@ -74,7 +74,7 @@ export default function VoiceContent({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="flex-1 overflow-y-auto px-6 md:px-20 pt-10 pb-20 custom-scrollbar"
+                        className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-20 pt-10 pb-20 custom-scrollbar"
                         ref={scrollRef}
                     >
                         <div className="max-w-4xl mx-auto">
