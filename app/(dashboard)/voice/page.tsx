@@ -790,8 +790,8 @@ export default function VoicePage() {
 
     // Main content (onboardingState === "ready")
     return (
-        <div className="relative flex h-screen bg-black text-zinc-100 overflow-hidden">
-            <div className="flex-1 flex flex-col relative">
+        <div className="relative flex h-[100dvh] bg-black text-zinc-100 overflow-hidden w-full max-w-[100vw]">
+            <div className="flex-1 flex flex-col relative w-full max-w-full overflow-x-hidden">
                 <Header
                     showBriefing={showBriefing}
                     setShowBriefing={setShowBriefing}

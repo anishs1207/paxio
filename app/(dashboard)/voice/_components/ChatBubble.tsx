@@ -25,7 +25,7 @@ export const ChatBubble: React.FC<any> = ({ role, message, payload }) => {
                             : 'bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-tl-none'
                             }`}>
 
-                            <p className="whitespace-pre-wrap">{message}</p>
+                            <p className="whitespace-pre-wrap break-words">{message}</p>
                         </div>
                         <span className={`text-[10px] text-zinc-600 px-1 ${isUser ? 'text-right' : 'text-left'}`}>
                             {isUser ? 'You' : 'Paxio'}

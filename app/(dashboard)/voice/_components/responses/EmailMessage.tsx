@@ -22,7 +22,7 @@ const EmailMessage = ({
     return (
         <div
             className="
-                mx-6 md:mx-10 max-w-4xl
+                mx-0 sm:mx-6 md:mx-10 max-w-4xl
                 rounded-2xl
                 bg-zinc-900/80 backdrop-blur
                 border border-zinc-800
@@ -103,7 +103,7 @@ const EmailMessage = ({
                         </div>
 
                         {/* Body */}
-                        <div className="px-5 py-4 text-sm text-zinc-200 leading-relaxed whitespace-pre-line">
+                        <div className="px-5 py-4 text-sm text-zinc-200 leading-relaxed whitespace-pre-line break-words">
                             {message}
                         </div>
                     </motion.div>

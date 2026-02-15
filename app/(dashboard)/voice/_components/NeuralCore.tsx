@@ -17,7 +17,7 @@ export const NeuralCore: React.FC<NeuralCoreProps> = ({ state }) => {
     };
 
     return (
-        <div className="relative w-64 h-64 flex items-center justify-center">
+        <div className="relative w-64 max-w-full h-64 flex items-center justify-center">
             {/* Dynamic Background Aura */}
             <motion.div
                 animate={{

@@ -102,7 +102,7 @@ const Header: React.FC<HeaderProps> = ({
     const mobileMenuItems = [
         { icon: <LayoutGrid size={18} />, label: "Tools", action: () => { setIsNexusOpen(true); setMobileOpen(false); } },
         { icon: <Users size={18} />, label: "People", action: () => { setShowPeople(true); setMobileOpen(false); } },
-        { icon: <Workflow size={18} />, action: () => setIsWorkflowOpen(true) },
+        // { icon: <Workflow size={18} />, action: () => setIsWorkflowOpen(true) },
     ];
 
     // Plan badge component
@@ -132,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <header className="relative">
-            <div className="relative flex items-center justify-between px-2 sm:px-10 py-3 sm:py-4">
+            <div className="relative flex items-center justify-between px-4 sm:px-10 py-3 sm:py-4">
                 {/* LEFT — Logo */}
                 <div className="flex flex-1 min-w-0 items-center justify-start z-10">
                     <Link

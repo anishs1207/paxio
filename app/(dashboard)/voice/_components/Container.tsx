@@ -74,7 +74,7 @@ export default function VoiceContent({
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-20 pt-10 pb-20 custom-scrollbar"
+                        className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-20 pt-10 pb-20 custom-scrollbar"
                         ref={scrollRef}
                     >
                         <div className="max-w-4xl mx-auto">
@@ -102,7 +102,7 @@ export default function VoiceContent({
                         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
                     >
                         {/* Ambient glow */}
-                        <div className="absolute w-[420px] h-[420px] rounded-full bg-white/5 blur-3xl" />
+                        <div className="absolute w-full max-w-[420px] aspect-square rounded-full bg-white/5 blur-3xl" />
 
                         <NeuralCore state="idle" />
 
