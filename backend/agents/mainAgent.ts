@@ -1549,7 +1549,7 @@ async function saveShoppingScreenshot(data: string, filename: string): Promise<s
 }
 
 // Shopping platforms array - more platforms can be added here
-const shoppingPlatforms = ["zepto"] as const;
+const shoppingPlatforms = ["zepto", "blinkit"] as const;
 type ShoppingPlatform = typeof shoppingPlatforms[number];
 
 // Zepto session info stored in user.zeptoSession (JSON field)
