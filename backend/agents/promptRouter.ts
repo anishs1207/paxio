@@ -159,7 +159,7 @@ PRIORITY RULES:
 2. OTP or numeric codes (4-6 digits) → DIRECT_EXECUTION / OTP_SUBMISSION
 3. **SCHEDULED TASKS with specific times** → AUTOMATION_CREATE / AUTOMATION_CREATE
 4. "Research", "Find out", "Check social media", "Trends" → DIRECT_EXECUTION / DOOMSCROLL_RESEARCH
-5. "Order", "Buy" → DIRECT_EXECUTION / ORDER_REQUEST
+5. "Order", "Buy" (from Zepto, Blinkit, or any shopping platform) → DIRECT_EXECUTION / ORDER_REQUEST
 6. Email, Calendar, Notion → DIRECT_EXECUTION / NORMAL_APP_ACTION
 7. **USER SHARING PERSONAL INFO** → DIRECT_EXECUTION / NORMAL_APP_ACTION
    - "I prefer...", "My name is...", "Call me...", "My email is..." (Save to memory)
@@ -170,6 +170,7 @@ RESPONSE RULES:
 - For other intents: confirm what will happen
 - Keep responses under 2-3 sentences
 - Never ask follow-up questions
+- SHOPPING: Paxio supports ordering from BOTH Zepto AND Blinkit. NEVER say "I can only order from Zepto" or similar. If user asks to order from Blinkit, confirm the order will be placed on Blinkit.
 
 OUTPUT FORMAT:
 Return ONLY valid JSON.
