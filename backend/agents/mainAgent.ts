@@ -1,6 +1,11 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { getGeminiLLM, getGeminiLLMByIndex, getApiKeyCount, invokeGeminiWithFallback } from "../utils/GeminiChatModel";
+import {
+    getGeminiLLM,
+    getGeminiLLMByIndex,
+    getApiKeyCount,
+    invokeGeminiWithFallback,
+} from "../utils/GeminiChatModel";
 import TestAllCredentials from "./mainCredentials";
 import * as chrono from "chrono-node";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -215,7 +220,9 @@ function createNotionTools(notion: any) {
                 description:
                     "Search for Notion databases by name with sorting and pagination. Use this when user wants to find databases to query or create pages in.",
                 schema: z.object({
-                    query: z.string().describe("The database name or keywords to search for"),
+                    query: z
+                        .string()
+                        .describe("The database name or keywords to search for"),
                     pageSize: z
                         .number()
                         .optional()
@@ -669,9 +676,22 @@ function createCalendarTools(calendar: any) {
                 description:
                     "Create a new Google Calendar event with full options. Use this when user asks to schedule, book, create an appointment, or add an event to calendar. Supports natural language, attendees, reminders, recurring events, and more.",
                 schema: z.object({
-                    title: z.string().optional().describe("Event title/summary (required unless using naturalLanguage)"),
-                    start: z.string().optional().describe("Start time in ISO format (required unless using naturalLanguage)"),
-                    end: z.string().optional().describe("End time in ISO format (default: 30 min after start)"),
+                    title: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "Event title/summary (required unless using naturalLanguage)",
+                        ),
+                    start: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "Start time in ISO format (required unless using naturalLanguage)",
+                        ),
+                    end: z
+                        .string()
+                        .optional()
+                        .describe("End time in ISO format (default: 30 min after start)"),
                     description: z
                         .string()
                         .optional()
@@ -679,7 +699,9 @@ function createCalendarTools(calendar: any) {
                     location: z
                         .string()
                         .optional()
-                        .describe("Event location (e.g., 'Conference Room A', 'https://meet.google.com/xxx')"),
+                        .describe(
+                            "Event location (e.g., 'Conference Room A', 'https://meet.google.com/xxx')",
+                        ),
                     attendees: z
                         .array(z.string())
                         .optional()
@@ -687,34 +709,44 @@ function createCalendarTools(calendar: any) {
                     sendUpdates: z
                         .enum(["all", "externalOnly", "none"])
                         .optional()
-                        .describe("Send invite emails: 'all' (everyone), 'externalOnly' (non-domain), 'none'"),
+                        .describe(
+                            "Send invite emails: 'all' (everyone), 'externalOnly' (non-domain), 'none'",
+                        ),
                     timezone: z
                         .string()
                         .optional()
-                        .describe("Timezone (default: Asia/Kolkata). Examples: 'America/New_York', 'Europe/London'"),
+                        .describe(
+                            "Timezone (default: Asia/Kolkata). Examples: 'America/New_York', 'Europe/London'",
+                        ),
                     reminders: z
                         .array(
                             z.object({
                                 method: z.enum(["email", "popup"]).describe("Reminder method"),
                                 minutes: z.number().describe("Minutes before event to remind"),
-                            })
+                            }),
                         )
                         .optional()
-                        .describe("Custom reminders. Example: [{method: 'popup', minutes: 30}]"),
+                        .describe(
+                            "Custom reminders. Example: [{method: 'popup', minutes: 30}]",
+                        ),
                     recurrence: z
                         .array(z.string())
                         .optional()
                         .describe(
-                            "RRULE recurrence rules. Examples: ['RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR'], ['RRULE:FREQ=DAILY;COUNT=5']"
+                            "RRULE recurrence rules. Examples: ['RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR'], ['RRULE:FREQ=DAILY;COUNT=5']",
                         ),
                     colorId: z
                         .string()
                         .optional()
-                        .describe("Event color ID (1-11). 1=Lavender, 2=Sage, 3=Grape, 4=Flamingo, 5=Banana, etc."),
+                        .describe(
+                            "Event color ID (1-11). 1=Lavender, 2=Sage, 3=Grape, 4=Flamingo, 5=Banana, etc.",
+                        ),
                     visibility: z
                         .enum(["default", "public", "private", "confidential"])
                         .optional()
-                        .describe("Event visibility: 'public', 'private', 'confidential', or 'default'"),
+                        .describe(
+                            "Event visibility: 'public', 'private', 'confidential', or 'default'",
+                        ),
                     calendarId: z
                         .string()
                         .optional()
@@ -812,7 +844,9 @@ function createCalendarTools(calendar: any) {
                     maxResults: z
                         .number()
                         .optional()
-                        .describe("Maximum number of events to return (1-2500, default: 10)"),
+                        .describe(
+                            "Maximum number of events to return (1-2500, default: 10)",
+                        ),
                     query: z
                         .string()
                         .optional()
@@ -832,11 +866,15 @@ function createCalendarTools(calendar: any) {
                     calendarId: z
                         .string()
                         .optional()
-                        .describe("Calendar ID to query (default: 'primary'). Use email for shared calendars"),
+                        .describe(
+                            "Calendar ID to query (default: 'primary'). Use email for shared calendars",
+                        ),
                     orderBy: z
                         .enum(["startTime", "updated"])
                         .optional()
-                        .describe("Sort order: 'startTime' (chronological) or 'updated' (last modified). Default: startTime"),
+                        .describe(
+                            "Sort order: 'startTime' (chronological) or 'updated' (last modified). Default: startTime",
+                        ),
                     showDeleted: z
                         .boolean()
                         .optional()
@@ -844,11 +882,15 @@ function createCalendarTools(calendar: any) {
                     singleEvents: z
                         .boolean()
                         .optional()
-                        .describe("Expand recurring events into individual instances (default: true)"),
+                        .describe(
+                            "Expand recurring events into individual instances (default: true)",
+                        ),
                     timeZone: z
                         .string()
                         .optional()
-                        .describe("Timezone for response times (e.g., 'America/New_York', 'Asia/Kolkata')"),
+                        .describe(
+                            "Timezone for response times (e.g., 'America/New_York', 'Asia/Kolkata')",
+                        ),
                 }),
             },
         ),
@@ -1057,7 +1099,8 @@ function createGmailTools(gmail: any) {
                         queryParts.push("has:attachment");
                     }
 
-                    const searchQuery = queryParts.length > 0 ? queryParts.join(" ") : "is:unread";
+                    const searchQuery =
+                        queryParts.length > 0 ? queryParts.join(" ") : "is:unread";
 
                     // Build list request params
                     const listParams: any = {
@@ -1103,8 +1146,7 @@ function createGmailTools(gmail: any) {
                                     from:
                                         headers.find((h: any) => h.name === "From")?.value ||
                                         "Unknown",
-                                    to:
-                                        headers.find((h: any) => h.name === "To")?.value || "",
+                                    to: headers.find((h: any) => h.name === "To")?.value || "",
                                     date:
                                         headers.find((h: any) => h.name === "Date")?.value || "",
                                     labels: labelList,
@@ -1189,7 +1231,15 @@ function createGmailTools(gmail: any) {
 
     tools.push(
         tool(
-            async ({ recipient, cc, bcc, subject, body, isHtml = false, replyTo }) => {
+            async ({
+                recipient,
+                cc,
+                bcc,
+                subject,
+                body,
+                isHtml = false,
+                replyTo,
+            }) => {
                 try {
                     if (!recipient || !subject || !body) {
                         return JSON.stringify({
@@ -1215,7 +1265,9 @@ function createGmailTools(gmail: any) {
                     }
 
                     headers.push(`Subject: ${subject}`);
-                    headers.push(`Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset="UTF-8"`);
+                    headers.push(
+                        `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset="UTF-8"`,
+                    );
                     headers.push(`MIME-Version: 1.0`);
 
                     const emailContent = [...headers, "", body].join("\r\n");
@@ -1243,7 +1295,9 @@ function createGmailTools(gmail: any) {
                 description:
                     "Send an email via Gmail with full email options. Use this when user asks to send, email, or message someone. Supports CC, BCC, HTML content, and reply-to address.",
                 schema: z.object({
-                    recipient: z.string().describe("Primary recipient's email address (required)"),
+                    recipient: z
+                        .string()
+                        .describe("Primary recipient's email address (required)"),
                     cc: z
                         .array(z.string())
                         .optional()
@@ -1257,7 +1311,9 @@ function createGmailTools(gmail: any) {
                     isHtml: z
                         .boolean()
                         .optional()
-                        .describe("Send as HTML email instead of plain text (default: false)"),
+                        .describe(
+                            "Send as HTML email instead of plain text (default: false)",
+                        ),
                     replyTo: z
                         .string()
                         .optional()
@@ -1269,7 +1325,15 @@ function createGmailTools(gmail: any) {
 
     tools.push(
         tool(
-            async ({ recipient, cc, bcc, subject, body, isHtml = false, replyTo }) => {
+            async ({
+                recipient,
+                cc,
+                bcc,
+                subject,
+                body,
+                isHtml = false,
+                replyTo,
+            }) => {
                 try {
                     if (!recipient || !subject || !body) {
                         return JSON.stringify({
@@ -1294,7 +1358,9 @@ function createGmailTools(gmail: any) {
                     }
 
                     headers.push(`Subject: ${subject}`);
-                    headers.push(`Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset="UTF-8"`);
+                    headers.push(
+                        `Content-Type: ${isHtml ? "text/html" : "text/plain"}; charset="UTF-8"`,
+                    );
                     headers.push(`MIME-Version: 1.0`);
 
                     const emailContent = [...headers, "", body].join("\r\n");
@@ -1321,7 +1387,9 @@ function createGmailTools(gmail: any) {
                 description:
                     "Create an email draft in Gmail without sending it. Use this when user asks to draft, prepare, or write an email for later. Supports CC, BCC, HTML content, and reply-to address.",
                 schema: z.object({
-                    recipient: z.string().describe("Primary recipient's email address (required)"),
+                    recipient: z
+                        .string()
+                        .describe("Primary recipient's email address (required)"),
                     cc: z
                         .array(z.string())
                         .optional()
@@ -1335,7 +1403,9 @@ function createGmailTools(gmail: any) {
                     isHtml: z
                         .boolean()
                         .optional()
-                        .describe("Create as HTML email instead of plain text (default: false)"),
+                        .describe(
+                            "Create as HTML email instead of plain text (default: false)",
+                        ),
                     replyTo: z
                         .string()
                         .optional()
@@ -1489,14 +1559,17 @@ function createBrowserUseClientWithKey(keyIndex: number): BrowserUseClient {
 }
 
 // Get a working BrowserUseClient, trying keys in order on auth failure
-async function withBrowserUseClient<T>(fn: (client: BrowserUseClient) => Promise<T>): Promise<T> {
+async function withBrowserUseClient<T>(
+    fn: (client: BrowserUseClient) => Promise<T>,
+): Promise<T> {
     if (browserUseApiKeys.length === 0) {
         throw new Error("No BROWSER_USE_API_KEY_N environment variables found");
     }
 
     let lastError: any;
     for (let attempt = 0; attempt < browserUseApiKeys.length; attempt++) {
-        const keyIndex = (currentBrowserUseKeyIndex + attempt) % browserUseApiKeys.length;
+        const keyIndex =
+            (currentBrowserUseKeyIndex + attempt) % browserUseApiKeys.length;
         const client = createBrowserUseClientWithKey(keyIndex);
         try {
             const result = await fn(client);
@@ -1506,11 +1579,17 @@ async function withBrowserUseClient<T>(fn: (client: BrowserUseClient) => Promise
         } catch (error: any) {
             lastError = error;
             const errMsg = (error?.message || error?.toString() || "").toLowerCase();
-            const isAuthError = errMsg.includes("401") || errMsg.includes("unauthorized") ||
-                errMsg.includes("forbidden") || errMsg.includes("invalid api key") ||
-                errMsg.includes("rate limit") || errMsg.includes("quota");
+            const isAuthError =
+                errMsg.includes("401") ||
+                errMsg.includes("unauthorized") ||
+                errMsg.includes("forbidden") ||
+                errMsg.includes("invalid api key") ||
+                errMsg.includes("rate limit") ||
+                errMsg.includes("quota");
             if (isAuthError) {
-                console.warn(`⚠️ BROWSER_USE_API_KEY_${keyIndex + 1} failed (${errMsg}), trying next key...`);
+                console.warn(
+                    `⚠️ BROWSER_USE_API_KEY_${keyIndex + 1} failed (${errMsg}), trying next key...`,
+                );
                 continue;
             }
             // Non-auth error, don't retry with different key
@@ -1521,9 +1600,11 @@ async function withBrowserUseClient<T>(fn: (client: BrowserUseClient) => Promise
     throw lastError;
 }
 
-
 // Helper function to save screenshot from base64 or URL
-async function saveShoppingScreenshot(data: string, filename: string): Promise<string> {
+async function saveShoppingScreenshot(
+    data: string,
+    filename: string,
+): Promise<string> {
     const screenshotDir = path.resolve(__dirname, "..", "..", "screenshots");
 
     if (!fs.existsSync(screenshotDir)) {
@@ -1549,11 +1630,21 @@ async function saveShoppingScreenshot(data: string, filename: string): Promise<s
 }
 
 // Shopping platforms array - more platforms can be added here
-const shoppingPlatforms = ["zepto"] as const;
-type ShoppingPlatform = typeof shoppingPlatforms[number];
+const shoppingPlatforms = ["zepto", "blinkit"] as const;
+type ShoppingPlatform = (typeof shoppingPlatforms)[number];
 
 // Zepto session info stored in user.zeptoSession (JSON field)
 interface ZeptoSessionInfo {
+    sessionId: string;
+    shareUrl: string;
+    liveUrl?: string;
+    product: string;
+    location: string;
+    phoneNumber: string;
+    createdAt: string;
+}
+
+interface BlinkitSessionInfo {
     sessionId: string;
     shareUrl: string;
     liveUrl?: string;
@@ -1586,7 +1677,13 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
     // Zepto Shopping Tool
     tools.push(
         tool(
-            async ({ location, phone_number, product, otp, sessionId: existingSessionId }) => {
+            async ({
+                location,
+                phone_number,
+                product,
+                otp,
+                sessionId: existingSessionId,
+            }) => {
                 let session: { id: string; liveUrl?: string } | null = null;
                 let share: { shareUrl: string; shareToken: string } | null = null;
                 let shouldStopSession = false; // Only stop if we complete the order
@@ -1602,24 +1699,34 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                     // Fetch stored session from database
                     const user = await prisma.user.findUnique({
                         where: { id: userId },
-                        select: { zeptoSession: true }
+                        select: { zeptoSession: true },
                     });
 
                     const storedSession = user?.zeptoSession as ZeptoSessionInfo | null;
 
                     if (storedSession) {
                         console.log(`🔄 Auto-resolved session from DB for user ${userId}:`);
-                        console.log(`   Session ID: ${existingSessionId || '(none)'} → ${storedSession.sessionId}`);
-                        console.log(`   Phone: ${phone_number || '(none)'} → ${storedSession.phoneNumber}`);
-                        console.log(`   Product: ${product || '(none)'} → ${storedSession.product}`);
-                        console.log(`   Location: ${location || '(none)'} → ${storedSession.location}`);
+                        console.log(
+                            `   Session ID: ${existingSessionId || "(none)"} → ${storedSession.sessionId}`,
+                        );
+                        console.log(
+                            `   Phone: ${phone_number || "(none)"} → ${storedSession.phoneNumber}`,
+                        );
+                        console.log(
+                            `   Product: ${product || "(none)"} → ${storedSession.product}`,
+                        );
+                        console.log(
+                            `   Location: ${location || "(none)"} → ${storedSession.location}`,
+                        );
 
                         resolvedSessionId = storedSession.sessionId;
                         resolvedLocation = location || storedSession.location;
                         resolvedPhoneNumber = phone_number || storedSession.phoneNumber;
                         resolvedProduct = product || storedSession.product;
                     } else {
-                        console.log(`⚠️ OTP provided but no stored session in DB for user ${userId}`);
+                        console.log(
+                            `⚠️ OTP provided but no stored session in DB for user ${userId}`,
+                        );
                     }
                 }
 
@@ -1635,10 +1742,12 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                 const stopBrowserSession = async (sessionId: string) => {
                     try {
                         console.log("🛑 Stopping browser session...");
-                        const stopClient = client || createBrowserUseClientWithKey(currentBrowserUseKeyIndex);
+                        const stopClient =
+                            client ||
+                            createBrowserUseClientWithKey(currentBrowserUseKeyIndex);
                         await stopClient.sessions.updateSession({
                             session_id: sessionId,
-                            action: "stop"
+                            action: "stop",
                         });
                         console.log("✅ Browser session stopped.");
                     } catch (err) {
@@ -1647,7 +1756,6 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                 };
 
                 try {
-
                     // If resuming an existing session (user provided OTP), skip Phase 1
                     if (resolvedSessionId && otp) {
                         console.log("🔄 Resuming existing Zepto session...");
@@ -1672,11 +1780,14 @@ function createShoppingTools(userId: string, deliveryDetails: DeliveryDetails) {
                         // New session - run Phase 1
                         // Validate required params for new orders
                         if (!location || !phone_number || !product) {
-                            console.log(`❌ Missing required params for new order: location=${!!location}, phone=${!!phone_number}, product=${!!product}`);
+                            console.log(
+                                `❌ Missing required params for new order: location=${!!location}, phone=${!!phone_number}, product=${!!product}`,
+                            );
                             return JSON.stringify({
                                 success: false,
                                 error: "Missing required parameters",
-                                details: "For new orders, location, phone_number, and product are all required. For OTP continuation, just provide the OTP.",
+                                details:
+                                    "For new orders, location, phone_number, and product are all required. For OTP continuation, just provide the OTP.",
                             });
                         }
 
@@ -1746,8 +1857,8 @@ IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
                                         location,
                                         phoneNumber: phone_number,
                                         createdAt: new Date().toISOString(),
-                                    }
-                                }
+                                    },
+                                },
                             });
                             console.log(`💾 Session stored in DB for user: ${userId}`);
 
@@ -1818,7 +1929,7 @@ STOP after confirming product is in cart. Return the screenshot.`,
                         try {
                             productScreenshot = await saveShoppingScreenshot(
                                 phase3Result.output,
-                                `zepto_product_${Date.now()}.png`
+                                `zepto_product_${Date.now()}.png`,
                             );
                         } catch (e) {
                             console.log("❌ Error saving product screenshot:", e);
@@ -1862,7 +1973,7 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
                         try {
                             checkoutScreenshot = await saveShoppingScreenshot(
                                 phase4Result.output,
-                                `zepto_checkout_${Date.now()}.png`
+                                `zepto_checkout_${Date.now()}.png`,
                             );
                         } catch (e) {
                             console.log("❌ Error saving checkout screenshot:", e);
@@ -1876,7 +1987,7 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
                     await prisma.user.update({
                         where: { id: userId },
                         //@ts-expect-error
-                        data: { zeptoSession: null }
+                        data: { zeptoSession: null },
                     });
                     console.log(`🧹 Cleared zeptoSession from DB for user: ${userId}`);
 
@@ -1895,11 +2006,13 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
                     // Also stop session on error to prevent cloud costs
                     shouldStopSession = true;
                     // Clear stored session on error
-                    await prisma.user.update({
-                        where: { id: userId },
-                        //@ts-expect-error
-                        data: { zeptoSession: null }
-                    }).catch(() => { }); // Ignore cleanup errors
+                    await prisma.user
+                        .update({
+                            where: { id: userId },
+                            //@ts-expect-error
+                            data: { zeptoSession: null },
+                        })
+                        .catch(() => { }); // Ignore cleanup errors
                     return JSON.stringify({
                         success: false,
                         error: "Failed to complete Zepto shopping",
@@ -1920,26 +2033,428 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
                     location: z
                         .string()
                         .optional()
-                        .describe("Delivery address/location. Required for NEW orders. Optional when providing OTP (auto-filled from stored session)."),
+                        .describe(
+                            "Delivery address/location. Required for NEW orders. Optional when providing OTP (auto-filled from stored session).",
+                        ),
                     phone_number: z
                         .string()
                         .optional()
-                        .describe("Phone number for OTP verification. Required for NEW orders. Optional when providing OTP (auto-filled from stored session)."),
+                        .describe(
+                            "Phone number for OTP verification. Required for NEW orders. Optional when providing OTP (auto-filled from stored session).",
+                        ),
                     product: z
                         .string()
                         .optional()
-                        .describe("Product to search and order. Required for NEW orders. Optional when providing OTP (auto-filled from stored session)."),
+                        .describe(
+                            "Product to search and order. Required for NEW orders. Optional when providing OTP (auto-filled from stored session).",
+                        ),
                     otp: z
                         .string()
                         .optional()
-                        .describe("OTP received on phone. When provided, other params are auto-filled from the stored session."),
+                        .describe(
+                            "OTP received on phone. When provided, other params are auto-filled from the stored session.",
+                        ),
                     sessionId: z
                         .string()
                         .optional()
-                        .describe("Session ID from previous call. Optional - auto-resolved from storage when OTP is provided."),
+                        .describe(
+                            "Session ID from previous call. Optional - auto-resolved from storage when OTP is provided.",
+                        ),
                 }),
-            }
-        )
+            },
+        ),
+    );
+
+    // Blinkit Shopping Tool
+    tools.push(
+        tool(
+            async ({
+                location,
+                phone_number,
+                product,
+                otp,
+                sessionId: existingSessionId,
+            }) => {
+                let session: { id: string; liveUrl?: string } | null = null;
+                let share: { shareUrl: string; shareToken: string } | null = null;
+                let shouldStopSession = false; // Only stop if we complete the order
+                let client: BrowserUseClient | null = null; // Will be resolved with key fallback
+
+                // Auto-lookup session and fill missing params when OTP is provided
+                let resolvedSessionId = existingSessionId;
+                let resolvedLocation = location;
+                let resolvedPhoneNumber = phone_number || deliveryDetails.phone;
+                let resolvedProduct = product;
+
+                if (otp) {
+                    // Fetch stored session from database
+                    const user = await prisma.user.findUnique({
+                        where: { id: userId },
+                        select: { blinkitSession: true },
+                    });
+
+                    const storedSession =
+                        user?.blinkitSession as BlinkitSessionInfo | null;
+
+                    if (storedSession) {
+                        console.log(`🔄 Auto-resolved session from DB for user ${userId}:`);
+                        console.log(
+                            `   Session ID: ${existingSessionId || "(none)"} → ${storedSession.sessionId}`,
+                        );
+                        console.log(
+                            `   Phone: ${phone_number || "(none)"} → ${storedSession.phoneNumber}`,
+                        );
+                        console.log(
+                            `   Product: ${product || "(none)"} → ${storedSession.product}`,
+                        );
+                        console.log(
+                            `   Location: ${location || "(none)"} → ${storedSession.location}`,
+                        );
+
+                        resolvedSessionId = storedSession.sessionId;
+                        resolvedLocation = location || storedSession.location;
+                        resolvedPhoneNumber = phone_number || storedSession.phoneNumber;
+                        resolvedProduct = product || storedSession.product;
+                    } else {
+                        console.log(
+                            `⚠️ OTP provided but no stored session in DB for user ${userId}`,
+                        );
+                    }
+                }
+
+                // Default to DB delivery details if not provided and not in session
+                if (!resolvedLocation && deliveryDetails.address) {
+                    resolvedLocation = deliveryDetails.address;
+                }
+                if (!resolvedPhoneNumber && deliveryDetails.phone) {
+                    resolvedPhoneNumber = deliveryDetails.phone;
+                }
+
+                // Helper function to stop the browser session
+                const stopBrowserSession = async (sessionId: string) => {
+                    try {
+                        console.log("🛑 Stopping browser session...");
+                        const stopClient =
+                            client ||
+                            createBrowserUseClientWithKey(currentBrowserUseKeyIndex);
+                        await stopClient.sessions.updateSession({
+                            session_id: sessionId,
+                            action: "stop",
+                        });
+                        console.log("✅ Browser session stopped.");
+                    } catch (err) {
+                        console.log(`⚠️ Failed to stop session: ${err}`);
+                    }
+                };
+
+                try {
+                    // If resuming an existing session (user provided OTP), skip Phase 1
+                    if (resolvedSessionId && otp) {
+                        console.log("🔄 Resuming existing Blinkit session...");
+                        console.log(`📍 Session ID: ${resolvedSessionId}`);
+                        console.log(`🔐 OTP: ${otp}`);
+                        console.log(`🛒 Product: ${resolvedProduct}`);
+
+                        session = { id: resolvedSessionId };
+
+                        // Get existing share URL (with key fallback)
+                        const resumeResult = await withBrowserUseClient(async (c) => {
+                            const s = await c.sessions.getSessionPublicShare({
+                                session_id: resolvedSessionId,
+                            });
+                            return { client: c, share: s };
+                        });
+                        client = resumeResult.client;
+                        share = resumeResult.share;
+
+                        console.log(`🌐 Existing Share URL: ${share.shareUrl}`);
+                    } else {
+                        // New session - run Phase 1
+                        // Validate required params for new orders
+                        if (!location || !phone_number || !product) {
+                            console.log(
+                                `❌ Missing required params for new order: location=${!!location}, phone=${!!phone_number}, product=${!!product}`,
+                            );
+                            return JSON.stringify({
+                                success: false,
+                                error: "Missing required parameters",
+                                details:
+                                    "For new orders, location, phone_number, and product are all required. For OTP continuation, just provide the OTP.",
+                            });
+                        }
+
+                        console.log("🚀 Starting NEW Blinkit shopping session...");
+                        console.log(`📍 Location: ${location}`);
+                        console.log(`📱 Phone: ${phone_number}`);
+                        console.log(`🛒 Product: ${product}`);
+
+                        // Step 1: Create a browser session (with key fallback)
+                        const createResult = await withBrowserUseClient(async (c) => {
+                            const newSession = await c.sessions.createSession({
+                                browserScreenWidth: 1920,
+                                browserScreenHeight: 1080,
+                            });
+                            return { client: c, session: newSession };
+                        });
+                        client = createResult.client;
+                        //@ts-expect-error
+                        session = createResult.session;
+                        //@ts-expect-error
+                        console.log(`✅ Session created! ID: ${session.id}`);
+
+                        // Step 2: Create a PUBLIC share URL
+                        share = await client.sessions.createSessionPublicShare({
+                            //@ts-expect-error
+                            session_id: session.id,
+                        });
+
+                        console.log(`🌐 Public Share URL: ${share.shareUrl}`);
+
+                        // Step 3: Run PHASE 1 - Location and Login (stop before OTP)
+                        console.log("🤖 Phase 1: Setting location and requesting OTP...");
+
+                        const phase1Task = await client.tasks.createTask({
+                            task: `1. Go to https://blinkit.com/
+2. Click "Select Location" button.
+3. In the location box, enter "${location}" and choose the closest option.
+4. Click confirm and continue.
+5. Click login button, enter the phone number: ${phone_number} into the input field.
+6. Click 'Continue' to send the OTP.
+7. STOP immediately after the OTP is sent and the OTP input field is visible.
+
+IMPORTANT: Stop and wait after OTP is requested. Do not proceed further.`,
+                            //@ts-expect-error
+                            sessionId: session.id,
+                        });
+
+                        for await (const step of phase1Task.stream()) {
+                            console.log(`   Step: ${JSON.stringify(step, null, 2)}`);
+                        }
+
+                        await phase1Task.complete();
+                        console.log("✅ Phase 1 completed - OTP requested!");
+
+                        // If no OTP provided, return session info for user to provide OTP
+                        if (!otp) {
+                            // Store session in database for auto-lookup when OTP is provided
+                            await prisma.user.update({
+                                where: { id: userId },
+                                data: {
+                                    blinkitSession: {
+                                        //@ts-expect-error
+                                        sessionId: session.id,
+                                        shareUrl: share.shareUrl,
+                                        liveUrl: (session as any).liveUrl,
+                                        product,
+                                        location,
+                                        phoneNumber: phone_number,
+                                        createdAt: new Date().toISOString(),
+                                    },
+                                },
+                            });
+                            console.log(`💾 Session stored in DB for user: ${userId}`);
+
+                            return JSON.stringify({
+                                success: true,
+                                phase: "awaiting_otp",
+                                //@ts-expect-error
+                                sessionId: session.id,
+                                product,
+                                location,
+                                phone_number,
+                            });
+                        }
+                    }
+
+                    // PHASE 2, 3, 4 - Continue with OTP
+                    // Step 4: Run PHASE 2 - Enter OTP and complete login
+                    console.log("🤖 Phase 2: Entering OTP and logging in...");
+
+                    const phase2Task = await client!.tasks.createTask({
+                        task: `PRE-CONDITION: You are viewing the OTP input field on Blinkit website.
+
+1. Enter the following OTP: ${otp} into the visible OTP field.
+2. Click submit to finish the login process.
+3. Wait until the page successfully redirects after login.
+4. If any popup appears, close it by clicking the cross button.
+5. Confirm you are logged in successfully.
+
+STOP after login is confirmed.`,
+                        //@ts-expect-error
+                        sessionId: session.id,
+                    });
+
+                    for await (const step of phase2Task.stream()) {
+                        console.log(`   Step: ${JSON.stringify(step, null, 2)}`);
+                    }
+
+                    await phase2Task.complete();
+                    console.log("✅ Phase 2 completed - Logged in!");
+
+                    // Step 5: Run PHASE 3 - Search product and add to cart
+                    console.log("🤖 Phase 3: Searching product and adding to cart...");
+
+                    const phase3Task = await client!.tasks.createTask({
+                        task: `PRE-CONDITION: You are logged in on Blinkit.
+
+1. Go to https://blinkit.com/search
+2. Search for the product "${resolvedProduct}" using the main search bar.
+3. After finding the product that best matches "${resolvedProduct}", click the ADD button to put it in the cart.
+4. Take a screenshot of the product page.
+5. Navigate to the cart by clicking the cart icon.
+6. Confirm the product is in the cart.
+
+STOP after confirming product is in cart. Return the screenshot.`,
+                        //@ts-expect-error
+                        sessionId: session.id,
+                    });
+
+                    for await (const step of phase3Task.stream()) {
+                        console.log(`   Step: ${JSON.stringify(step, null, 2)}`);
+                    }
+
+                    const phase3Result = await phase3Task.complete();
+                    console.log("✅ Phase 3 completed - Product added to cart!");
+
+                    let productScreenshot = "";
+                    if (phase3Result.output) {
+                        try {
+                            productScreenshot = await saveShoppingScreenshot(
+                                phase3Result.output,
+                                `blinkit_product_${Date.now()}.png`,
+                            );
+                        } catch (e) {
+                            console.log("❌ Error saving product screenshot:", e);
+                        }
+                    }
+
+                    // Step 6: Run PHASE 4 - Checkout process
+                    console.log("🤖 Phase 4: Proceeding to checkout...");
+
+                    const phase4Task = await client!.tasks.createTask({
+                        task: `PRE-CONDITION: You are logged in and have an item in the cart on Blinkit.
+
+1. Click on the cart to view cart items.
+2. Click "Add Address" or proceed to checkout.
+3. Click "Confirm and Continue".
+4. Enter address details:
+   - Address: ${deliveryDetails.address}
+5. Click "Save Address".
+6. Proceed to payment.
+7. Select UPI as payment method.
+8. Enter UPI ID: ${deliveryDetails.upiId}
+9. Click "Verify and Pay" or "Pay" button.
+10. Wait for the payment to be processed.
+11. If there is a UPI payment request, proceed with it.
+12. Take a screenshot of the final payment confirmation or order confirmation screen.
+
+FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
+                        //@ts-expect-error
+                        sessionId: session.id,
+                    });
+
+                    for await (const step of phase4Task.stream()) {
+                        console.log(`   Step: ${JSON.stringify(step, null, 2)}`);
+                    }
+
+                    const phase4Result = await phase4Task.complete();
+                    console.log("✅ Phase 4 completed - Checkout done!");
+
+                    let checkoutScreenshot = "";
+                    if (phase4Result.output) {
+                        try {
+                            checkoutScreenshot = await saveShoppingScreenshot(
+                                phase4Result.output,
+                                `blinkit_checkout_${Date.now()}.png`,
+                            );
+                        } catch (e) {
+                            console.log("❌ Error saving checkout screenshot:", e);
+                        }
+                    }
+
+                    // Mark that we should stop the session since order is complete
+                    shouldStopSession = true;
+
+                    // Clear stored session from database
+                    await prisma.user.update({
+                        where: { id: userId },
+                        //@ts-expect-error
+                        data: { blinkitSession: null },
+                    });
+                    console.log(`🧹 Cleared blinkitSession from DB for user: ${userId}`);
+
+                    return JSON.stringify({
+                        success: true,
+                        phase: "complete",
+                        //@ts-expect-error
+                        sessionId: session.id,
+                        product: resolvedProduct,
+                        location: resolvedLocation,
+                        productScreenshot,
+                        checkoutScreenshot,
+                    });
+                } catch (error) {
+                    console.error("❌ Blinkit shopping error:", error);
+                    // Also stop session on error to prevent cloud costs
+                    shouldStopSession = true;
+                    // Clear stored session on error
+                    await prisma.user
+                        .update({
+                            where: { id: userId },
+                            //@ts-expect-error
+                            data: { blinkitSession: null },
+                        })
+                        .catch(() => { }); // Ignore cleanup errors
+                    return JSON.stringify({
+                        success: false,
+                        error: "Failed to complete Blinkit shopping",
+                        details: (error as Error).message,
+                    });
+                } finally {
+                    // Stop the browser session after order completion or error
+                    if (shouldStopSession && session) {
+                        await stopBrowserSession(session.id);
+                    }
+                }
+            },
+            {
+                name: "blinkit_order",
+                description:
+                    "Order products from Blinkit (quick commerce grocery delivery). Use this when user asks to buy, order, or shop for groceries, food items, or household products from Blinkit. IMPORTANT: When continuing an order after OTP is received, you MUST provide the sessionId from the previous response along with the OTP.",
+                schema: z.object({
+                    location: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "Delivery address/location. Required for NEW orders. Optional when providing OTP (auto-filled from stored session).",
+                        ),
+                    phone_number: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "Phone number for OTP verification. Required for NEW orders. Optional when providing OTP (auto-filled from stored session).",
+                        ),
+                    product: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "Product to search and order. Required for NEW orders. Optional when providing OTP (auto-filled from stored session).",
+                        ),
+                    otp: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "OTP received on phone. When provided, other params are auto-filled from the stored session.",
+                        ),
+                    sessionId: z
+                        .string()
+                        .optional()
+                        .describe(
+                            "Session ID from previous call. Optional - auto-resolved from storage when OTP is provided.",
+                        ),
+                }),
+            },
+        ),
     );
 
     return tools;
@@ -1950,7 +2465,14 @@ FINAL OUTPUT: Return the screenshot of the payment/order confirmation screen.`,
 ============================================================ */
 
 // Supported platforms - prioritize no-login sources (youtube first for shorts)
-type DoomscrollPlatform = "google" | "bbc" | "reuters" | "apnews" | "techcrunch" | "reddit" | "x";
+type DoomscrollPlatform =
+    | "google"
+    | "bbc"
+    | "reuters"
+    | "apnews"
+    | "techcrunch"
+    | "reddit"
+    | "x";
 
 interface DoomscrollFinding {
     platform: DoomscrollPlatform;
@@ -1984,7 +2506,11 @@ function getResearchDir(): string {
 }
 
 // AI Summarization helper - summarizes but preserves full context
-async function summarizeWithAI(rawOutput: string, platform: string, topic: string): Promise<string> {
+async function summarizeWithAI(
+    rawOutput: string,
+    platform: string,
+    topic: string,
+): Promise<string> {
     try {
         const llm = getGeminiLLM();
         const result = await llm.invoke([
@@ -2005,7 +2531,9 @@ You are summarizing research from ${platform} about the topic: "${topic}"`),
 ${rawOutput}`),
         ]);
 
-        return typeof result.content === 'string' ? result.content : JSON.stringify(result.content);
+        return typeof result.content === "string"
+            ? result.content
+            : JSON.stringify(result.content);
     } catch (error) {
         console.log(`⚠️ AI summarization failed: ${error}`);
         return ""; // Return empty string on failure, raw output will still be saved
@@ -2020,10 +2548,14 @@ let cachedDoomscrollProfileId: string | null = null;
  * Gets or creates a persistent browser profile for the doomscroller.
  * This profile stores cookies to speed up subsequent sessions.
  */
-async function getOrCreateDoomscrollProfile(client: BrowserUseClient): Promise<string> {
+async function getOrCreateDoomscrollProfile(
+    client: BrowserUseClient,
+): Promise<string> {
     // Return cached profile ID if available
     if (cachedDoomscrollProfileId) {
-        console.log(`🔐 Using cached doomscroll profile: ${cachedDoomscrollProfileId}`);
+        console.log(
+            `🔐 Using cached doomscroll profile: ${cachedDoomscrollProfileId}`,
+        );
         return cachedDoomscrollProfileId;
     }
 
@@ -2031,10 +2563,14 @@ async function getOrCreateDoomscrollProfile(client: BrowserUseClient): Promise<s
         // Check for existing profile
         const profiles = await client.profiles.listProfiles();
         //@ts-expect-error
-        const existingProfile = profiles.profiles?.find((p: any) => p.name === DOOMSCROLL_PROFILE_NAME);
+        const existingProfile = profiles.profiles?.find(
+            (p: any) => p.name === DOOMSCROLL_PROFILE_NAME,
+        );
 
         if (existingProfile) {
-            console.log(`🔐 Found existing doomscroll profile: ${existingProfile.id}`);
+            console.log(
+                `🔐 Found existing doomscroll profile: ${existingProfile.id}`,
+            );
             cachedDoomscrollProfileId = existingProfile.id;
             return existingProfile.id;
         }
@@ -2055,7 +2591,10 @@ async function getOrCreateDoomscrollProfile(client: BrowserUseClient): Promise<s
 /**
  * Check if a page requires login and skip if it does
  */
-async function checkForLoginWall(client: BrowserUseClient, sessionId: string): Promise<boolean> {
+async function checkForLoginWall(
+    client: BrowserUseClient,
+    sessionId: string,
+): Promise<boolean> {
     try {
         const checkTask = await client.tasks.createTask({
             task: `Check if the current page requires login:
@@ -2068,7 +2607,9 @@ async function checkForLoginWall(client: BrowserUseClient, sessionId: string): P
 Output ONLY: "NO_LOGIN_REQUIRED" or "LOGIN_REQUIRED"`,
             sessionId,
         });
-        for await (const step of checkTask.stream()) { /* consume */ }
+        for await (const step of checkTask.stream()) {
+            /* consume */
+        }
         const result = await checkTask.complete();
         return result.output?.includes("LOGIN_REQUIRED") || false;
     } catch {
@@ -2080,7 +2621,7 @@ async function doomscrollPlatform(
     client: BrowserUseClient,
     sessionId: string,
     platform: DoomscrollPlatform,
-    topic: string
+    topic: string,
 ): Promise<DoomscrollFinding | null> {
     console.log(`\n🔍 DOOMSCROLL - Researching ${platform.toUpperCase()}...`);
 
@@ -2150,7 +2691,7 @@ Output all findings with full Reddit URLs. SKIP if login is required.`,
 5. For each tweet, collect: Author username, Tweet content preview, Tweet URL
 6. Only access content that is publicly visible without login
 7. Skip any content blocked behind authentication
-Output all findings with full X/Twitter URLs. SKIP completely if login is required.`
+Output all findings with full X/Twitter URLs. SKIP completely if login is required.`,
     };
 
     const task = await client.tasks.createTask({
@@ -2158,7 +2699,9 @@ Output all findings with full X/Twitter URLs. SKIP completely if login is requir
         sessionId,
     });
 
-    for await (const step of task.stream()) { /* consume */ }
+    for await (const step of task.stream()) {
+        /* consume */
+    }
     const result = await task.complete();
 
     // Check if this platform requires login (for reddit/x)
@@ -2174,19 +2717,27 @@ Output all findings with full X/Twitter URLs. SKIP completely if login is requir
         return {
             platform,
             rawOutput: result.output,
-            timestamp: new Date()
+            timestamp: new Date(),
         };
     }
     return null;
 }
 
-function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: string) {
+function createDoomscrollerTools(
+    userId: string,
+    userPrompt: string,
+    socketId?: string,
+) {
     console.log("✅ Creating Doomscroller tools (No-Login Research)");
     const tools = [];
 
     tools.push(
         tool(
-            async ({ topic, platforms = ["google", "bbc", "reuters", "apnews"], durationHours = 1 }) => {
+            async ({
+                topic,
+                platforms = ["google", "bbc", "reuters", "apnews"],
+                durationHours = 1,
+            }) => {
                 console.log("\n" + "═".repeat(60));
                 console.log("🌀 DOOMSCROLLER - Web Research Agent (No Login Required)");
                 console.log("═".repeat(60));
@@ -2224,7 +2775,9 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                 const browserSession = createDoomResult.session;
 
                 console.log(`✅ Browser session: ${browserSession.id}`);
-                console.log(`🎥 LIVE VIEW: https://browser-use.com/session/${browserSession.id}`);
+                console.log(
+                    `🎥 LIVE VIEW: https://browser-use.com/session/${browserSession.id}`,
+                );
                 // @ts-ignore
                 if (browserSession.liveUrl) {
                     console.log(`🎥 LIVE URL (Direct): ${browserSession.liveUrl}`);
@@ -2236,7 +2789,10 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                                 "Doomscrolling started",
                                 "streaming",
                                 socketId,
-                                JSON.stringify({ type: "doomscroll_start", url: browserSession.liveUrl })
+                                JSON.stringify({
+                                    type: "doomscroll_start",
+                                    url: browserSession.liveUrl,
+                                }),
                             );
                         } catch (e) {
                             console.error("Failed to stream doomscroll start:", e);
@@ -2268,7 +2824,7 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                     try {
                         await doomClient.sessions.updateSession({
                             session_id: browserSession.id,
-                            action: "stop"
+                            action: "stop",
                         });
                         console.log("✅ Browser session stopped.");
                     } catch (err) {
@@ -2284,12 +2840,16 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                                 doomClient,
                                 browserSession.id,
                                 platform,
-                                topic
+                                topic,
                             );
                             if (finding) {
                                 // ===== AI SUMMARIZATION PASS =====
                                 console.log(`🤖 Generating AI summary for ${platform}...`);
-                                const aiSummary = await summarizeWithAI(finding.rawOutput, platform, topic);
+                                const aiSummary = await summarizeWithAI(
+                                    finding.rawOutput,
+                                    platform,
+                                    topic,
+                                );
                                 finding.aiSummary = aiSummary;
 
                                 findings.push(finding);
@@ -2303,7 +2863,9 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                                         preview: aiSummary || finding.rawOutput.substring(0, 500),
                                     },
                                 });
-                                console.log(`📝 Saved ${platform} results to DB (with AI summary)`);
+                                console.log(
+                                    `📝 Saved ${platform} results to DB (with AI summary)`,
+                                );
                             }
                         } catch (error) {
                             console.log(`⚠️ Error on ${platform}: ${error}`);
@@ -2318,12 +2880,18 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                     let content = `# 🌀 Doomscroll Report: ${topic}\n\n`;
                     content += `**Started:** ${new Date(startTime).toLocaleString()}\n`;
                     content += `**Duration:** ${duration}\n`;
-                    content += `**Platforms:** ${findings.map(f => f.platform).join(", ")}\n`;
+                    content += `**Platforms:** ${findings.map((f) => f.platform).join(", ")}\n`;
                     if (shareUrl) content += `**Browser Session:** ${shareUrl}\n`;
                     content += `\n---\n\n`;
 
                     const emojis: Record<string, string> = {
-                        google: "🔍", bbc: "📺", reuters: "📰", apnews: "📡", techcrunch: "💻", reddit: "🔴", x: "𝕏"
+                        google: "🔍",
+                        bbc: "📺",
+                        reuters: "📰",
+                        apnews: "📡",
+                        techcrunch: "💻",
+                        reddit: "🔴",
+                        x: "𝕏",
                     };
 
                     for (const finding of findings) {
@@ -2357,23 +2925,24 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                         topic,
                         findings,
                         duration,
-                        reportPath: filepath
+                        reportPath: filepath,
                     };
 
                     return JSON.stringify({
                         success: true,
                         sessionId: dbSession.id,
                         topic,
-                        platformsResearched: findings.map(f => f.platform),
+                        platformsResearched: findings.map((f) => f.platform),
                         findingsCount: findings.length,
                         duration,
                         reportPath: filepath,
-                        summary: findings.map(f => ({
+                        summary: findings.map((f) => ({
                             platform: f.platform,
-                            preview: f.rawOutput.substring(0, 500) + (f.rawOutput.length > 500 ? "..." : "")
-                        }))
+                            preview:
+                                f.rawOutput.substring(0, 500) +
+                                (f.rawOutput.length > 500 ? "..." : ""),
+                        })),
                     });
-
                 } catch (error) {
                     // ===== UPDATE DB SESSION TO ERROR =====
                     await prisma.doomscrollSession.update({
@@ -2395,24 +2964,39 @@ function createDoomscrollerTools(userId: string, userPrompt: string, socketId?: 
                 description:
                     "Research a topic across the web using automated browser. Primarily uses Google News, BBC, Reuters, AP News, and TechCrunch - all sources that don't require login. Can optionally try Reddit and X but will skip if login is required. Great for market research, trend analysis, news tracking, competitive intelligence, or deep-diving into any subject. Each finding is enriched with an AI-generated summary (comprehensive, not shortened). The browser session is automatically cleaned up.",
                 schema: z.object({
-                    topic: z.string().describe("The topic to research across web sources"),
+                    topic: z
+                        .string()
+                        .describe("The topic to research across web sources"),
                     platforms: z
-                        .array(z.enum(["youtube", "google", "bbc", "reuters", "apnews", "techcrunch", "reddit", "x"]))
+                        .array(
+                            z.enum([
+                                "youtube",
+                                "google",
+                                "bbc",
+                                "reuters",
+                                "apnews",
+                                "techcrunch",
+                                "reddit",
+                                "x",
+                            ]),
+                        )
                         .optional()
-                        .describe("Which sources to research. Default: youtube (shorts with captions), google, bbc, reuters, apnews (no login required). Reddit/X are optional but will be skipped if login is required."),
+                        .describe(
+                            "Which sources to research. Default: youtube (shorts with captions), google, bbc, reuters, apnews (no login required). Reddit/X are optional but will be skipped if login is required.",
+                        ),
                     durationHours: z
                         .number()
                         .optional()
-                        .describe("Approximate duration in hours (default: 1). This influences depth of research."),
+                        .describe(
+                            "Approximate duration in hours (default: 1). This influences depth of research.",
+                        ),
                 }),
-            }
-        )
+            },
+        ),
     );
 
     return tools;
 }
-
-
 
 async function getUserContacts(userId: string) {
     const contacts = await prisma.userEmailList.findMany({
@@ -2454,27 +3038,36 @@ export async function runMainAgent(
         gmail: !!creds.gmail ? "✅ Connected" : "❌ Not connected",
     });
 
-    // Fetch delivery details for Zepto context
+    // Fetch delivery details for shopping tools
     const userHelper = await prisma.user.findUnique({
         where: { id: input.userId },
         select: {
             quickDeliveryPhoneNuber: true,
             quickDeliveryAddress: true,
-            quickDeliveryUpiId: true
-        }
+            quickDeliveryUpiId: true,
+        },
     });
 
     const delivery = {
         phone: userHelper?.quickDeliveryPhoneNuber,
         address: userHelper?.quickDeliveryAddress,
-        upi: userHelper?.quickDeliveryUpiId
+        upi: userHelper?.quickDeliveryUpiId,
     };
 
-    const zeptoConfigured = !!(delivery.phone && delivery.address && delivery.upi);
+    const zeptoConfigured = !!(
+        delivery.phone &&
+        delivery.address &&
+        delivery.upi
+    );
+    const blinkitConfigured = !!(
+        delivery.phone &&
+        delivery.address &&
+        delivery.upi
+    );
 
     let deliveryContext = "";
     if (zeptoConfigured) {
-        deliveryContext = `
+        deliveryContext += `
 === ZEPTO DELIVERY CONTEXT ===
 The user has configured the following delivery details for Zepto. 
 Use these values automatically when calling the zepto_order tool. DO NOT ask the user for them.
@@ -2484,7 +3077,7 @@ Use these values automatically when calling the zepto_order tool. DO NOT ask the
 ==============================
 `;
     } else {
-        deliveryContext = `
+        deliveryContext += `
 === ZEPTO DELIVERY CONTEXT ===
 ⚠️ ZEPTO NOT CONFIGURED.
 The user has NOT set up their delivery address or phone number in the database.
@@ -2496,6 +3089,28 @@ If the user asks to order/buy something from Zepto:
 `;
     }
 
+    if (blinkitConfigured) {
+        deliveryContext += `
+=== BLINKIT DELIVERY CONTEXT ===
+The user has configured the following delivery details for Blinkit. 
+Use these values automatically when calling the blinkit_order tool. DO NOT ask the user for them.
+- Address: "${delivery.address}"
+- Phone: "${delivery.phone}"
+- UPI ID: "${delivery.upi}"
+==============================
+`;
+    } else {
+        deliveryContext += `
+=== BLINKIT DELIVERY CONTEXT ===
+⚠️ BLINKIT NOT CONFIGURED.
+The user has NOT set up their delivery address or phone number in the database.
+If the user asks to order/buy something from Blinkit:
+1. DO NOT call the blinkit_order tool.
+2. DO NOT ask them for address/phone details.
+3. You MUST EXPLAIN to the user that they need to configure their Blinkit delivery details (Address, Phone, UPI) in the tools menu first. Do NOT use a hardcoded string. Generate a helpful, natural explanation.
+==============================
+`;
+    }
 
     // Flatten all tools into a single array
     // Using explicit type to avoid "Type instantiation is excessively deep" error
@@ -2505,15 +3120,15 @@ If the user asks to order/buy something from Zepto:
         ...createGmailTools(creds.gmail),
         ...createRedditTools(),
 
-
-        // Zepto tools - use the already fetched delivery details if available
-        ...(zeptoConfigured ? createShoppingTools(input.userId, {
-            phone: delivery.phone!,
-            address: delivery.address!,
-            upiId: delivery.upi!
-        }) : []),
+        // Shopping tools (Zepto, Blinkit) - use the already fetched delivery details if available
+        ...(zeptoConfigured || blinkitConfigured
+            ? createShoppingTools(input.userId, {
+                phone: delivery.phone!,
+                address: delivery.address!,
+                upiId: delivery.upi!,
+            })
+            : []),
         ...createDoomscrollerTools(input.userId, input.prompt, input.socketId),
-
     ];
 
     console.log(
@@ -2523,7 +3138,9 @@ If the user asks to order/buy something from Zepto:
 
     if (allTools.length === 0) {
         console.error("❌ NO TOOLS LOADED! Check credentials.");
-        const errorRes = await invokeGeminiWithFallback("SYSTEM: You are Paxio. The user has started the agent but NO tools (Gmail, Calendar, Notion) are connected. Use a friendly, natural voice to explain that they need to connect at least one account to proceed.");
+        const errorRes = await invokeGeminiWithFallback(
+            "SYSTEM: You are Paxio. The user has started the agent but NO tools (Gmail, Calendar, Notion) are connected. Use a friendly, natural voice to explain that they need to connect at least one account to proceed.",
+        );
         return {
             response: errorRes.content.toString(),
         };
@@ -2558,7 +3175,6 @@ If the user asks to order/buy something from Zepto:
             select: { onboardingName: true, onboardingCountry: true },
         });
 
-
         const shortTermContext = shortTermMemory
             .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
             .join("\n");
@@ -2585,15 +3201,21 @@ If the user asks to order/buy something from Zepto:
             for (const keyIndex of indices) {
                 try {
                     const agent = createAgentWithKey(keyIndex);
-                    console.log(`[mainAgent] Attempting with API key ${keyIndex + 1}/${keyCount} (random order)`);
+                    console.log(
+                        `[mainAgent] Attempting with API key ${keyIndex + 1}/${keyCount} (random order)`,
+                    );
                     const result = await agent.invoke({ messages });
                     return result;
                 } catch (err: any) {
-                    console.warn(`[mainAgent] API key ${keyIndex + 1}/${keyCount} failed:`, err.message || err);
+                    console.warn(
+                        `[mainAgent] API key ${keyIndex + 1}/${keyCount} failed:`,
+                        err.message || err,
+                    );
                     lastError = err;
 
                     // Only retry on rate limit / quota errors
-                    const isRetryable = err.message?.includes("429") ||
+                    const isRetryable =
+                        err.message?.includes("429") ||
                         err.message?.includes("quota") ||
                         err.message?.includes("rate") ||
                         err.message?.includes("RESOURCE_EXHAUSTED");
@@ -2601,7 +3223,9 @@ If the user asks to order/buy something from Zepto:
                     if (!isRetryable) throw err;
                 }
             }
-            throw new Error(`[mainAgent] All ${keyCount} API keys exhausted. Last error: ${lastError?.message || lastError}`);
+            throw new Error(
+                `[mainAgent] All ${keyCount} API keys exhausted. Last error: ${lastError?.message || lastError}`,
+            );
         }
 
         // Invoke with both system and human messages
@@ -2681,14 +3305,24 @@ CRITICAL TOOL RULES
      you MUST call zepto_order with the otp parameter and the previous order details (location, phone_number, product).
      The sessionId will be auto-resolved server-side, so you can pass it if you have it, or leave it empty.
      NEVER respond with "session expired" - always try calling the tool with the OTP.
-8. If user asks to research news, trends, or topics on the web → use doomscroll_research tool
+8. If user asks to order, buy, or shop for groceries/products from Blinkit → use the blinkit_order tool
+   - FIRST CALL: Provide location, phone_number, product (no OTP). Returns sessionId.
+   - WHEN USER PROVIDES OTP: You MUST call blinkit_order again with the SAME location, phone_number, product,
+     PLUS the otp AND the sessionId from the previous response. This resumes the existing session.
+   - CRITICAL: Without sessionId, a NEW session is created and the OTP won't work!
+   - **OTP DETECTION**: If the RECENT CONVERSATION shows "awaiting_otp" or "OTP sent" for a Blinkit order,
+     AND the user sends a 4-6 digit number (like "492983", "1234", "158196 is the otp", etc.),
+     you MUST call blinkit_order with the otp parameter and the previous order details (location, phone_number, product).
+     The sessionId will be auto-resolved server-side, so you can pass it if you have it, or leave it empty.
+     NEVER respond with "session expired" - always try calling the tool with the OTP.
+9. If user asks to research news, trends, or topics on the web → use doomscroll_research tool
    - Default platforms: Google News, BBC, Reuters, AP News (NO LOGIN REQUIRED)
    - Can optionally include Reddit/X but will SKIP them if login is required
    - Each finding is enriched with AI-generated comprehensive summary
    - Great for market research, news tracking, trend analysis, competitive intelligence
    - Browser session is automatically cleaned up after completion
 
-9. **NATURAL RESPONSES (CRITICAL)**:
+10. **NATURAL RESPONSES (CRITICAL)**:
    - DO NOT use generic success messages like "Email sent successfully" or "Order placed".
    - Generate a natural, conversational confirmation that includes context from the action.
    - Example: "I've sent the email to Nishant about the project update." or "I've placed the order for milk on Zepto. It should arrive soon!"
@@ -3353,8 +3987,8 @@ DO NOT return data.graphs as a direct array!
                 JSON.stringify({
                     type: "assistant_response",
                     message: finalResponse,
-                    data: parsed
-                })
+                    data: parsed,
+                }),
             );
         }
 
