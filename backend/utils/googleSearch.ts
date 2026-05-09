@@ -1,4 +1,3 @@
-// apps/backend/src/utils/googleSearch.ts
 import axios from "axios";
 
 interface SearchResult {

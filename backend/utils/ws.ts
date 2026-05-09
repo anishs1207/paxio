@@ -1,4 +1,3 @@
-// apps/backend/src/utils/ws.ts
 import axios from "axios";
 
 export type Service =

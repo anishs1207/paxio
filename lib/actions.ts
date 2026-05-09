@@ -8,7 +8,6 @@ async function consumeResponse(response: unknown): Promise<Buffer> {
   } else if (response && typeof response.arrayBuffer === "function") {
     return Buffer.from(await response.arrayBuffer());
   } else if (response && typeof response[Symbol.asyncIterator] === "function") {
-    // Handle Node18UniversalStreamWrapper (async iterable)
     const chunks: Uint8Array[] = [];
     for await (const chunk of response) {
       chunks.push(chunk instanceof Uint8Array ? chunk : Buffer.from(chunk));
@@ -61,7 +60,6 @@ export async function generateSpeech(text: string) {
         `[Cartesia TTS] Key ${i + 1} failed:`,
         err?.statusCode || err?.message
       );
-      // Continue to next key
     }
   }
 

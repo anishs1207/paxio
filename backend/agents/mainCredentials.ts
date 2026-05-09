@@ -1,4 +1,3 @@
-//apps\backend\src\agents\mainCredentials.ts
 import { google } from "googleapis";
 import {
   getValidGoogleCalendarAccessToken,

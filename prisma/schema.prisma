@@ -45,10 +45,7 @@ model User {
   plan          PlanEnum  @default(FREE)
   planStartedAt DateTime?
   planExpiresAt DateTime?
-
-  // see here
   credits BigInt @default(0)
-  // it shows 1000 by defualt hwy
 
   gmailAccessToken  String?
   gmailRefreshToken String?
@@ -72,70 +69,19 @@ model User {
 
   notionAccessToken String?
 
-  // outlookAccessToken  String?
-  // outlookRefreshToken String?
-  // outlookExpiry       BigInt?
-
-  // callPhoneNumber String?
-
-  // calendlyAccessToken  String?
-  // calendlyRefreshToken String?
-  // calendlyExpiry       BigInt?
-
-  // slackAccessToken  String?
-  // slackRefreshToken String?
-  // slackExpiry       BigInt?
-
-  // redditAccessToken  String?
-  // redditRefreshToken String?
-  // redditExpiry       BigInt?
-
-  // googleFormsAccessToken  String?
-  // googleFormsRefreshToken String?
-  // googleFormsExpiry       BigInt?
-
-  // twitterAccessToken  String?
-  // twitterRefreshToken String?
-  // twitterExpiry       BigInt?
-
   quickDeliveryPhoneNuber     String?
   quickDeliveryAddress        String?
   quickDeliveryUpiId          String?
   quickDeliveryBlinkitCookies Json?
   quickDeliveryZeptoCookies   Json?
 
-  // linearAccessToken  String?
-  // linearRefreshToken String?
-  // linearExpiry       BigInt?
-
-  // linkedinAccessToken  String?
-  // linkedinRefreshToken String?
-  // linkedinExpiry       BigInt?
-
-  // typeformAccessToken  String?
-  // typeformRefreshToken String?
-  // typeformExpiry       BigInt?
-
-  // shortTermMemories MemoryUnit[] @relation("UserShortTermMemories")
-  // longTermMemories  MemoryUnit[] @relation("UserLongTermMemories")
-
   autonomousTasks AutonomousTask[]
-
-  // gmailMessages GmailMessage[]
-  // CalendarEvent CalendarEvent[]
-  // budgetId      String?
-  // userList UserEmailList[]
-
-  // Active Zepto shopping session (cleared on order completion)
   zeptoSession   Json?
-  
-  // Active Blinkit shopping session (cleared on order completion)
   blinkitSession Json?
   
   userEmailLists UserEmailList[]
 }
 
-//@@change
 model UserEmailList {
   id        String   @id @default(uuid())
   name      String
@@ -145,53 +91,22 @@ model UserEmailList {
   createdAt DateTime @default(now())
 }
 
-// model Conversation {
-//   id               String        @id @default(uuid())
-//   conversationName String
-//   chats            Chat[]        @relation("ConversationChats")
-//   assistantUsed    AssistantType
-//   createdAt        DateTime      @default(now())
-//   updatedAt        DateTime      @updatedAt
-//   isPublic         Boolean       @default(false)
-
-//   userId String
-//   user   User   @relation("UserConversations", fields: [userId], references: [id])
-// }
-
-// model Chat {
-//   id                 String       @id @default(uuid())
-//   conversation       Conversation @relation("ConversationChats", fields: [conversationId], references: [id])
-//   conversationId     String
-//   type               ChatType
-//   sources            String[]
-//   graphs             Graph[]
-//   message            String
-//   images             String[]
-//   files              String[]
-//   extraInfo          Json?
-//   suggested          String[]
-//   status             Status?
-//   data               String?
-//   tobePermittedNodes String[]
-//   createdAt          DateTime     @default(now())
-// }
-
 model AutonomousTask {
   id                String    @id @default(uuid())
   userId            String
-  prompt            String // 🆕 Original user prompt that created this workflow
-  description       String? // 🆕 Optional short summary (for display)
+  prompt            String 
+  description       String?
   workflow          Json
-  triggerType       String // "time" | "event"
-  schedule          String? // cron expression for time triggers
-  scheduleType      String? // "once" | "recurring"
-  eventName         String? // for event triggers (e.g. "new_email")
-  pollInterval      String? // e.g. "5m"
-  status            String    @default("ACTIVE") // ACTIVE | PAUSED | DELETED
-  active            Boolean   @default(true) // 🆕 For easy toggle in UI
+  triggerType       String 
+  schedule          String? 
+  scheduleType      String? 
+  eventName         String? 
+  pollInterval      String?
+  status            String    @default("ACTIVE")
+  active            Boolean   @default(true)
   lastRunAt         DateTime?
   lastPollAt        DateTime?
-  lastResultSummary String? // 🆕 Quick summary of the last run result
+  lastResultSummary String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -206,46 +121,8 @@ model AutonomousTaskRun {
   runAt            DateTime       @default(now())
   success          Boolean
   summary          String
-  rawResults       Json // full run data (logs, summary, output, etc.)
+  rawResults       Json
 }
-
-// model GmailMessage {
-//   id        String   @id @default(cuid())
-//   userId    String
-//   messageId String   @unique
-//   threadId  String?
-//   sender    String
-//   subject   String?
-//   snippet   String?
-//   aiReply   String? // auto-reply generated by the agent
-//   userReply String? // last manual reply sent from frontend
-//   direction String   @default("INBOUND") // INBOUND | OUTBOUND
-//   replied   Boolean  @default(false) // whether we already replied (prevents double replies)
-//   metadata  Json? // store any headers or useful traces
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   user User @relation(fields: [userId], references: [id])
-
-//   @@index([userId])
-//   @@index([threadId])
-//   @@index([createdAt])
-// }
-
-// model CalendarEvent {
-//   id          String    @id @default(cuid())
-//   userId      String
-//   user        User      @relation(fields: [userId], references: [id])
-//   title       String
-//   startTime   DateTime
-//   endTime     DateTime?
-//   link        String?
-//   isCompleted Boolean   @default(false)
-//   createdAt   DateTime  @default(now())
-//   updatedAt   DateTime  @updatedAt
-
-//   @@index([userId, startTime])
-// }
 
 model ShortTermMemory {
   id             String   @id @default(cuid())
@@ -295,16 +172,15 @@ model newChat {
   @@index([conversationId])
 }
 
-// Doomscroller research sessions
 model DoomscrollSession {
   id        String   @id @default(uuid())
   userId    String
-  prompt    String // Original user prompt
-  topic     String // Extracted research topic
-  platforms String[] // ["reddit", "linkedin", "x"]
-  status    String   @default("RUNNING") // RUNNING | DONE | ERROR
-  shareUrl  String? // Browser session public URL
-  duration  String? // Time taken (e.g., "0h 5m 32s")
+  prompt    String 
+  topic     String
+  platforms String[]
+  status    String   @default("RUNNING")
+  shareUrl  String?
+  duration  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -318,21 +194,20 @@ model DoomscrollResult {
   id        String            @id @default(uuid())
   sessionId String
   session   DoomscrollSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  platform  String // "reddit" | "linkedin" | "x"
-  rawOutput String // Full findings text
-  preview   String? // First 500 chars for quick display
+  platform  String
+  rawOutput String
+  preview   String?
   createdAt DateTime          @default(now())
 
   @@index([sessionId])
 }
 
-// Track failed Gemini API keys for 24h exclusion
 model FailedApiKey {
   id        String   @id @default(cuid())
-  keyHash   String   @unique // SHA-256 hash of the API key
-  reason    String? // e.g. "429", "RESOURCE_EXHAUSTED"
+  keyHash   String   @unique
+  reason    String?
   failedAt  DateTime @default(now())
-  expiresAt DateTime // failedAt + 24 hours
+  expiresAt DateTime
 
   @@index([expiresAt])
 }

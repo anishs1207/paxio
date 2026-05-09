@@ -1,4 +1,3 @@
-// apps/backend/src/utils/GeminiChatModel.ts
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { getAvailableKeys, markKeyFailed } from "./failedKeyCache";
 
