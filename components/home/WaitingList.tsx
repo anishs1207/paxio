@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Mail, User, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Confetti from "react-dom-confetti";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const WaitingList = () => {
     const [name, setName] = useState("");
@@ -38,8 +38,9 @@ const WaitingList = () => {
             } else {
                 toast.error(response.data.error || "Something went wrong!");
             }
-        } catch (error: any) {
-            toast.error(error.response?.data?.error || "Failed to join waitlist");
+        } catch (error: unknown) {
+            const axiosError = error as AxiosError<{ error?: string }>;
+            toast.error(axiosError.response?.data?.error || "Failed to join waitlist");
         } finally {
             setIsSubmitting(false);
         }

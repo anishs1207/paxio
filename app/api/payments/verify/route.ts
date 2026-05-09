@@ -33,12 +33,22 @@ export async function GET(req: Request) {
     // Check payment status
     console.log(`[Verify] Retrieving payment details for: ${paymentId}`);
 
-    let payment: any;
+    let payment: { 
+      status?: string; 
+      payment_status?: string; 
+      business_status?: string; 
+      metadata?: { 
+        userId?: string; 
+        credits?: string; 
+      }; 
+    };
     // If it's a payment ID (starts with pay_), retrieve payment directly
     if (paymentId.startsWith('pay_')) {
+      //@ts-expect-error - DodoPayments SDK retrieve method might return a type that doesn't perfectly match our structural expectation
       payment = await client.payments.retrieve(paymentId);
     } else {
       // Fallback to session retrieval (though less likely to work with pay_ id)
+      //@ts-expect-error - DodoPayments SDK retrieve method might return a type that doesn't perfectly match our structural expectation
       payment = await client.checkoutSessions.retrieve(paymentId);
     }
 

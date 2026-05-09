@@ -10,12 +10,12 @@ import { Client as NotionClient } from "@notionhq/client";
 type ServiceResult<T> = T | false;
 
 export default async function TestAllCredentials(userId: string): Promise<{
-  gmail: ServiceResult<any>;
-  calendar: ServiceResult<any>;
+  gmail: ServiceResult<unknown>;
+  calendar: ServiceResult<unknown>;
   notion: ServiceResult<NotionClient>;
 }> {
-  let gmail: ServiceResult<any> = false;
-  let calendar: ServiceResult<any> = false;
+  let gmail: ServiceResult<unknown> = false;
+  let calendar: ServiceResult<unknown> = false;
   let notion: ServiceResult<NotionClient> = false;
 
   /* ---------------- GOOGLE ENV CHECK ---------------- */
@@ -95,14 +95,14 @@ export default async function TestAllCredentials(userId: string): Promise<{
         const notionClient = new NotionClient({ auth: notionToken });
 
         // Test call
-        //@ts-expect-error
-        await notionClient.users.me();
+        //@ts-expect-error - Notion client might have version-specific typing issues with the users.me method
+        await notionClient.users.me({});
 
         notion = notionClient;
         console.log("✅ Notion connected");
       }
-    } catch (err: any) {
-      console.error("❌ Notion failed:", err?.message || err);
+    } catch (err: unknown) {
+      console.error("❌ Notion failed:", (err as Error)?.message || err);
       notion = false;
     }
   }

@@ -10,7 +10,7 @@ dotenv.config();
 
 const apiKeys: string[] = Object.entries(process.env)
   .filter(([key]) => key.startsWith("GEMINI_API_KEY_"))
-  .map(([_, value]) => value as string)
+  .map(([, value]) => value as string)
   .filter(Boolean);
 
 if (apiKeys.length === 0) {
@@ -33,7 +33,7 @@ export async function callGemini(
   prompt: string,
   files?: File[],
 ): Promise<string> {
-  let lastError: any;
+  let lastError: unknown;
   const available = getAvailableKeys(apiKeys);
   if (available.length === 0) {
     console.warn("[callGemini] All API keys are rate-limited. Falling back to full list.");
@@ -44,13 +44,13 @@ export async function callGemini(
   for (const key of shuffledKeys) {
     try {
       const ai = new GoogleGenAI({ apiKey: key });
-      const parts: any[] = [prompt];
+      const parts: unknown[] = [prompt];
 
       // Handle multiple file uploads
       if (files && files.length > 0) {
         for (const file of files) {
           const upload = await ai.files.upload({ file });
-          //@ts-expect-error
+          //@ts-expect-error - createPartFromUri might not be fully typed in this version of the GenAI SDK
           parts.push(createPartFromUri(upload.uri, upload.mimeType));
         }
       }
@@ -60,10 +60,10 @@ export async function callGemini(
         contents: [createUserContent(parts)],
       });
 
-      //@ts-expect-error
+      //@ts-expect-error - response.text may not be directly available in all SDK response shapes
       return response.text;
-    } catch (err: any) {
-      console.error(`Gemini API key failed, trying another...`, err.message || err);
+    } catch (err: unknown) {
+      console.error(`Gemini API key failed, trying another...`, (err as Error).message || err);
       lastError = err;
 
       // Mark key as failed for 24h on rate-limit / quota errors
@@ -80,6 +80,6 @@ export async function callGemini(
   }
 
   throw new Error(
-    `All Gemini API keys failed. Last error: ${lastError?.message || lastError}`,
+    `All Gemini API keys failed. Last error: ${(lastError as Error)?.message || lastError}`,
   );
 }

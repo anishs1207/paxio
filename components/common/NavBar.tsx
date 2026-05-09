@@ -11,16 +11,14 @@ import {
     Puzzle,
     BookOpen,
     CheckCircle2,
-    Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { signIn } from "next-auth/react";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [isSigningIn, setIsSigningIn] = useState(false);
+
     const router = useRouter();
 
     const menuItems = [
@@ -30,14 +28,7 @@ export default function Navbar() {
         { name: "Pricing", href: "/#pricing", icon: <Puzzle size={16} /> },
     ];
 
-    const handleGoogleSignIn = async () => {
-        try {
-            setIsSigningIn(true);
-            await signIn("google", { callbackUrl: "/" });
-        } finally {
-            setIsSigningIn(false);
-        }
-    };
+
 
     const handleScrollToSection = (id: string) => {
         if (window.location.pathname !== "/") {

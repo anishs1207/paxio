@@ -94,7 +94,7 @@ async function getValidNotionAccessToken(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
 
-  let { notionAccessToken: accessToken } = user;
+  const { notionAccessToken: accessToken } = user;
 
   if (!accessToken) {
     return false;

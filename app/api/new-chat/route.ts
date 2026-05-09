@@ -41,7 +41,6 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-    const conversationId = searchParams.get("conversationId");
 
     if (!userId) {
       return NextResponse.json(

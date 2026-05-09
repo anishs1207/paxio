@@ -20,7 +20,7 @@ export const geminiCompat = createMiddleware({
 
         return {
           messages: [
-            //@ts-expect-error
+            //@ts-expect-error - RemoveMessage is part of LangGraph's message management and may not be fully typed in all LangChain versions used here
             new RemoveMessage({ id: systemMsg.id }),
             new HumanMessage({
               content: `${systemContent}\n\n${humanMsg.content}`,

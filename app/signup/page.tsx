@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import { Loader2 } from "lucide-react";
@@ -53,7 +53,7 @@ export default function SignupPage() {
                 </button>
 
                 <p className="text-xs text-zinc-500 text-center px-8">
-                    By continuing, you agree to Paxio's Terms of Service and Privacy Policy.
+                    By continuing, you agree to Paxio&apos;s Terms of Service and Privacy Policy.
                 </p>
 
             </div>

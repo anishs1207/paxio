@@ -1,47 +1,7 @@
 //apps\web\components\landing\home\Hero.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import ReactPlayer from "react-player";
-
 export default function Hero() {
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-    const [isPlaying, setIsPlaying] = useState(true);
-    const [isMuted, setIsMuted] = useState(true); // start muted (autoplay-safe)
-
-    useEffect(() => {
-        const video = videoRef.current;
-        if (video) {
-            video.volume = 0.08; // very low volume
-            video.muted = true; // start muted to allow autoplay
-            video
-                .play()
-                .then(() => setIsPlaying(true))
-                .catch(() => setIsPlaying(false)); // handle autoplay block gracefully
-        }
-    }, []);
-
-    const togglePlay = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (video.paused) {
-            video.play();
-            setIsPlaying(true);
-        } else {
-            video.pause();
-            setIsPlaying(false);
-        }
-    };
-
-    const toggleMute = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        video.muted = !video.muted;
-        setIsMuted(video.muted);
-    };
 
     return (
         <section className="relative min-h-screen flex flex-col items-center justify-center text-center text-white bg-black overflow-hidden mt-0">

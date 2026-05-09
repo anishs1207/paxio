@@ -61,10 +61,11 @@ export async function GET(req: NextRequest) {
 
     
   return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/voice`);
-  } catch (error: any) {
-    console.error("Error in Notion callback:", error?.response?.data || error);
+  } catch (error: unknown) {
+    const errorDetails = (error as { response?: { data?: unknown } })?.response?.data || error;
+    console.error("Error in Notion callback:", errorDetails);
     return NextResponse.json(
-      { error: "Internal Server Error", details: error?.response?.data },
+      { error: "Internal Server Error", details: errorDetails },
       { status: 500 },
     );
   }

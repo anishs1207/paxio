@@ -1,7 +1,7 @@
 import prisma from "@/lib/db";
 import { callGemini } from "../../utils/geminiClient";
 
-function getSummaryPrompt(results: any[]) {
+function getSummaryPrompt(results: unknown[]) {
   return `
 <role>
 You are "Workflow Summarizer", an advanced AI that converts raw workflow execution data into a **clean, user-facing Markdown summary**.
@@ -31,7 +31,7 @@ ${JSON.stringify(results, null, 2)}
 export async function generateRunSummary(
   taskId: string,
   userId: string,
-  workflowResults: any[]
+  workflowResults: Array<{ success: boolean; [key: string]: unknown }>
 ) {
   try {
     const prompt = getSummaryPrompt(workflowResults);
@@ -44,12 +44,12 @@ export async function generateRunSummary(
       .replace(/^```/, "")
       .replace(/```$/, "");
 
-    let parsed: any;
+    let parsed: { response?: string; suggestions?: string[]; loggedText?: string; loggedResults?: string };
 
     // 🧩 Try parsing Gemini output
     try {
       parsed = JSON.parse(cleaned);
-    } catch (err) {
+    } catch {
       console.warn(
         "[autonomous-summary] Failed to parse Gemini output as JSON, using fallback."
       );

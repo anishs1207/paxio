@@ -22,8 +22,6 @@ export default function FeatureShowcase() {
     return (
         <section className="py-28 bg-black text-white">
             <div className="container max-w-6xl mx-auto px-6">
-
-                {/* Heading */}
                 <div className="text-center mb-20">
                     <h2 className="text-5xl font-bold leading-tight">
                         Built To&nbsp;
@@ -36,7 +34,6 @@ export default function FeatureShowcase() {
                     </p>
                 </div>
 
-                {/* Feature blocks */}
                 <div className="space-y-28">
                     {features.map((f, i) => (
                         <div
@@ -65,7 +62,6 @@ export default function FeatureShowcase() {
                         </div>
                     ))}
                 </div>
-
             </div>
         </section>
     );

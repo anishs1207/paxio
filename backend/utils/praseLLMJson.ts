@@ -14,7 +14,7 @@ export function parseLLMJson(resultText: string) {
   return JSON.parse(cleaned);
 }
 
-export function parseResponse(response: any) {
+export function parseResponse(response: string) {
   try {
     const jsonMatch = response.match(/'''json\s*([\s\S]*?)\s*'''/);
 
@@ -33,8 +33,8 @@ export function parseResponse(response: any) {
     }
 
     throw new Error("No valid JSON block found in response.");
-  } catch (err: any) {
-    console.error("❌ Error parsing planning prompt response:", err.message);
+  } catch (err: unknown) {
+    console.error("❌ Error parsing planning prompt response:", (err as Error).message);
     return null;
   }
 }

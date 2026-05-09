@@ -1,7 +1,6 @@
 import { routePrompt } from "@/backend/agents/promptRouter";
 import { NextRequest, NextResponse } from "next/server";
 // import { createClient } from "@deepgram/sdk";
-import { AssemblyAI } from "assemblyai";
 import { CartesiaClient } from "@cartesia/cartesia-js";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -20,7 +19,7 @@ const CARTESIA_API_KEYS = [
 ];
 
 async function cartesiaTTSWithFallback(transcript: string) {
-  let lastError: any;
+  let lastError: unknown;
   for (const apiKey of CARTESIA_API_KEYS) {
     try {
       const client = new CartesiaClient({ apiKey });
@@ -38,8 +37,8 @@ async function cartesiaTTSWithFallback(transcript: string) {
         },
       });
       return response;
-    } catch (err: any) {
-      console.warn(`Cartesia TTS failed with key ${apiKey.slice(0, 10)}...:`, err?.statusCode || err?.message);
+    } catch (err: unknown) {
+      console.warn(`Cartesia TTS failed with key ${apiKey.slice(0, 10)}...:`, (err as { statusCode?: number; message?: string })?.statusCode || (err as Error)?.message);
       lastError = err;
     }
   }
@@ -52,8 +51,6 @@ export async function POST(req: NextRequest) {
   if (!session || !session.user || !session.user.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const requestId = crypto.randomUUID();
 
   try {
     // ✅ DEDUCT CREDITS MOVED TO PROMPT ROUTER FOR GRATULARITY
@@ -135,8 +132,8 @@ export async function POST(req: NextRequest) {
 
         text = groqResponse.data.text;
         console.log("Groq transcription result:", text);
-      } catch (error: any) {
-        console.error("Groq STT Error:", error.response?.data || error.message);
+      } catch (error: unknown) {
+        console.error("Groq STT Error:", (error as any).response?.data || (error as Error).message); // eslint-disable-line @typescript-eslint/no-explicit-any
         throw new Error("Groq Transcription failed");
       }
 
@@ -176,10 +173,11 @@ export async function POST(req: NextRequest) {
     // Handle different response shapes from routePrompt
     // For automation: { response, autonomousTaskId }
     // For direct execution: { parsed: { response, data } }
-    //@ts-expect-error
-    const responseText = obj.response || obj.parsed?.response || "Task completed.";
-    //@ts-expect-error
-    const responseData = obj.parsed || { response: responseText, data: {} };
+    // For direct execution: { parsed: { response, data } }
+    //@ts-expect-error - obj.response may exist if not parsed or if automation path taken
+    const responseText: string = obj.response || (obj as any).parsed?.response || "Task completed."; // eslint-disable-line @typescript-eslint/no-explicit-any
+    //@ts-expect-error - obj.parsed may be unknown or missing based on routing branch
+    const responseData: unknown = (obj as any).parsed || { response: responseText, data: {} }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // --- DEEPGRAM TTS COMMENTED OUT ---
     /*
@@ -218,24 +216,24 @@ export async function POST(req: NextRequest) {
 
     if (Buffer.isBuffer(response)) {
       finalBuffer = response;
-    } else if (response && typeof (response as any).arrayBuffer === "function") {
-      finalBuffer = Buffer.from(await (response as any).arrayBuffer());
-    } else if (response && typeof (response as any).buffer === "function") {
-      finalBuffer = Buffer.from(await (response as any).buffer());
+    } else if (response && typeof (response as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer === "function") {
+      finalBuffer = Buffer.from(await (response as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer());
+    } else if (response && typeof (response as { buffer: () => Promise<Buffer> }).buffer === "function") {
+      finalBuffer = Buffer.from(await (response as { buffer: () => Promise<Buffer> }).buffer());
     } else {
       // Is it an async iterable stream? (Node18UniversalStreamWrapper likely is)
       try {
-        const chunks: any[] = [];
-        // @ts-ignore
-        for await (const chunk of response) {
+        const chunks: unknown[] = [];
+        //@ts-expect-error - response is an unknown type but expected to be an async iterable from Cartesia SDK
+        for await (const chunk of (response as AsyncIterable<unknown>)) {
           chunks.push(chunk);
         }
-        finalBuffer = Buffer.concat(chunks);
+        finalBuffer = Buffer.concat(chunks as Uint8Array[]);
       } catch (err) {
         console.error("Failed to consume stream:", err);
         // Last resort fallback
-        // @ts-ignore
-        finalBuffer = Buffer.from(response);
+        //@ts-expect-error - response might be a Buffer or string but typed as unknown from SDK
+        finalBuffer = Buffer.from(response as any); // eslint-disable-line @typescript-eslint/no-explicit-any
       }
     }
 

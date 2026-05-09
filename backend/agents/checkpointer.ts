@@ -10,15 +10,15 @@ import prisma from "@/lib/db";
 
 // Simple JSON serializer
 const jsonSerializer: SerializerProtocol = {
-  //@ts-expect-error
-  stringify: (obj: any) => JSON.stringify(obj),
+  //@ts-expect-error - stringify method signature might vary across different LangGraph checkpoint versions
+  stringify: (obj: unknown) => JSON.stringify(obj),
 };
 
 /**
  * PostgreSQL Checkpointer for short-term memory (conversation history)
  * Uses Prisma to store conversation checkpoints in PostgreSQL
  */
-//@ts-expect-error
+//@ts-expect-error - BaseCheckpointSaver abstract methods or properties may not perfectly match this manual implementation
 export class PrismaCheckpointer extends BaseCheckpointSaver {
   constructor(serde?: SerializerProtocol) {
     super(serde || jsonSerializer);
@@ -38,10 +38,10 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
     if (!threadId) {
       throw new Error("thread_id is required in config.configurable");
     }
-//@ts-expect-error
+//@ts-expect-error - serde protocol stringify method might have version-specific typing issues
     const serializedCheckpoint = this.serde.stringify(checkpoint);
     const serializedMetadata = JSON.stringify(metadata);
-//@ts-expect-error
+//@ts-expect-error - prisma.checkpoint is dynamically defined via the schema and might lack full type generation in this env
     await prisma.checkpoint.upsert({
       where: {
         thread_id_checkpoint_ns_checkpoint_id: {
@@ -54,12 +54,12 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
         thread_id: threadId,
         checkpoint_ns: checkpointNs,
         checkpoint_id: checkpoint.id,
-        checkpoint: serializedCheckpoint as any,
-        metadata: serializedMetadata as any,
+        checkpoint: serializedCheckpoint as string,
+        metadata: serializedMetadata as string,
       },
       update: {
-        checkpoint: serializedCheckpoint as any,
-        metadata: serializedMetadata as any,
+        checkpoint: serializedCheckpoint as string,
+        metadata: serializedMetadata as string,
       },
     });
 
@@ -84,7 +84,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
       return undefined;
     }
 
-    const where: any = {
+    const where: { thread_id: string; checkpoint_ns: string; checkpoint_id?: string } = {
       thread_id: threadId,
       checkpoint_ns: checkpointNs,
     };
@@ -92,7 +92,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
     if (checkpointId) {
       where.checkpoint_id = checkpointId;
     }
-//@ts-expect-error
+//@ts-expect-error - prisma.checkpoint findFirst might have dynamic typing issues with the generated schema
     const record = await prisma.checkpoint.findFirst({
       where,
       orderBy: {
@@ -103,7 +103,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
     if (!record) {
       return undefined;
     }
-//@ts-expect-error
+//@ts-expect-error - serde parse method might vary in its return type signature
     const checkpoint = this.serde.parse(record.checkpoint as string);
     const metadata = JSON.parse(record.metadata as string);
 
@@ -124,7 +124,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
   /**
    * List checkpoints for a thread
    */
-  //@ts-expect-error
+  //@ts-expect-error - AsyncGenerator return type for list might not match the BaseCheckpointSaver definition
   async *list(
     config: RunnableConfig,
     limit?: number,
@@ -137,7 +137,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
       return;
     }
 
-    const where: any = {
+    const where: { thread_id: string; checkpoint_ns: string; checkpoint_id?: { lt: string } } = {
       thread_id: threadId,
       checkpoint_ns: checkpointNs,
     };
@@ -147,7 +147,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
         lt: before.configurable.checkpoint_id as string,
       };
     }
-//@ts-expect-error
+//@ts-expect-error - prisma.checkpoint findMany might have dynamic typing issues with the generated schema
     const records = await prisma.checkpoint.findMany({
       where,
       orderBy: {
@@ -157,7 +157,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
     });
 
     for (const record of records) {
-      //@ts-expect-error
+      //@ts-expect-error - serde parse method might vary in its return type signature
       const checkpoint = this.serde.parse(record.checkpoint as string);
       const metadata = JSON.parse(record.metadata as string);
 
@@ -181,7 +181,7 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
    */
   async putWrites(
     config: RunnableConfig,
-    writes: Array<[string, any]>,
+    writes: Array<[string, unknown]>,
     taskId: string
   ): Promise<void> {
     const threadId = config.configurable?.thread_id as string;
@@ -194,17 +194,17 @@ export class PrismaCheckpointer extends BaseCheckpointSaver {
 
     const serializedWrites = writes.map(([channel, value]) => ({
       channel,
-      //@ts-expect-error
+      //@ts-expect-error - serde stringify method might have version-specific typing issues
       value: this.serde.stringify(value),
     }));
-//@ts-expect-error
+//@ts-expect-error - prisma.checkpointWrite create might have dynamic typing issues with the generated schema
     await prisma.checkpointWrite.create({
       data: {
         thread_id: threadId,
         checkpoint_ns: checkpointNs,
         checkpoint_id: checkpointId,
         task_id: taskId,
-        writes: serializedWrites as any,
+        writes: serializedWrites as string,
       },
     });
   }

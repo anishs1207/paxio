@@ -1,6 +1,6 @@
 "use client";
 
-import PaymentCards from "./_components/PaymentCards";
+import PaymentCards from "@/components/payment/PaymentCards";
 import { ArrowLeft, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 

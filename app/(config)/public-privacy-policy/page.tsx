@@ -25,7 +25,6 @@ export default function PrivacyPolicyPage() {
                         policy.
                     </p>
 
-                    {/* 1 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             1. Information We Collect
@@ -48,7 +47,6 @@ export default function PrivacyPolicyPage() {
                         </ul>
                     </div>
 
-                    {/* 2 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             2. Third-Party Integrations & Permissions
@@ -105,7 +103,6 @@ export default function PrivacyPolicyPage() {
                         </ul>
                     </div>
 
-                    {/* 4 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             4. Data Storage & Retention
@@ -117,7 +114,6 @@ export default function PrivacyPolicyPage() {
                         </p>
                     </div>
 
-                    {/* 5 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             5. Data Sharing
@@ -129,7 +125,6 @@ export default function PrivacyPolicyPage() {
                         </p>
                     </div>
 
-                    {/* 6 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">6. Security</h2>
                         <p className="mt-3">
@@ -139,7 +134,6 @@ export default function PrivacyPolicyPage() {
                         </p>
                     </div>
 
-                    {/* 7 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             7. Your Rights & Controls
@@ -151,7 +145,6 @@ export default function PrivacyPolicyPage() {
                         </ul>
                     </div>
 
-                    {/* 8 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             8. Changes to This Policy
@@ -162,7 +155,6 @@ export default function PrivacyPolicyPage() {
                         </p>
                     </div>
 
-                    {/* 9 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">9. Contact Us</h2>
                         <p className="mt-3">

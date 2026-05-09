@@ -91,8 +91,8 @@ export async function markKeyFailed(
             },
         });
         console.log(`[FailedKeyCache] Marked key as failed for 24h (hash: ${h.slice(0, 8)}...)`);
-    } catch (err: any) {
-        console.error(`[FailedKeyCache] DB upsert failed:`, err.message);
+    } catch (err: unknown) {
+        console.error(`[FailedKeyCache] DB upsert failed:`, (err as Error).message);
         // In-memory cache still holds the entry, so the key stays excluded
     }
 }
@@ -114,8 +114,8 @@ export async function loadFailedKeysFromDB(): Promise<void> {
                 `[FailedKeyCache] Loaded ${entries.length} failed key(s) from DB`
             );
         }
-    } catch (err: any) {
-        console.error(`[FailedKeyCache] Failed to load from DB:`, err.message);
+    } catch (err: unknown) {
+        console.error(`[FailedKeyCache] Failed to load from DB:`, (err as Error).message);
     }
 }
 
@@ -139,8 +139,8 @@ async function cleanupExpiredKeys(): Promise<void> {
         if (count > 0) {
             console.log(`[FailedKeyCache] Cleaned up ${count} expired key(s) from DB`);
         }
-    } catch (err: any) {
-        console.error(`[FailedKeyCache] DB cleanup failed:`, err.message);
+    } catch (err: unknown) {
+        console.error(`[FailedKeyCache] DB cleanup failed:`, (err as Error).message);
     }
 }
 

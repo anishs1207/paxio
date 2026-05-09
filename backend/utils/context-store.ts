@@ -2,8 +2,8 @@
 export interface RunContext {
   runId: string;
   userId?: string;
-  stepResults: Record<number, any>;
-  memory: any[];
+  stepResults: Record<number, unknown>;
+  memory: unknown[];
 }
 
 export function createContext(runId: string, userId?: string): RunContext {
@@ -15,14 +15,14 @@ export function createContext(runId: string, userId?: string): RunContext {
   };
 }
 
-export function pushMemory(ctx: RunContext, note: any) {
+export function pushMemory(ctx: RunContext, note: unknown) {
   ctx.memory.push(note);
 }
 
 export function saveStepResult(
   ctx: RunContext,
   stepNumber: number,
-  result: any
+  result: unknown
 ) {
   ctx.stepResults[stepNumber] = result;
 }

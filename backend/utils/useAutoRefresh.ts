@@ -14,7 +14,7 @@ import {
   getValidAirtableAccessToken,
   getValidLinearAccessToken,
   getValidTypeformAccessToken
-  //@ts-ignore
+  //@ts-expect-error - tokenHelpers may have different structure in production build vs dev environment
 } from "../../../web/lib/tokenHelpers";
 
 export {

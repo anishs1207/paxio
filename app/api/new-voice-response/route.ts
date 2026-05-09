@@ -48,21 +48,21 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      //@ts-expect-error
+      //@ts-expect-error - savedPrompts might not be explicitly defined in the Prisma user model for this environment
       select: { savedPrompts: true },
     });
 
     if (!user) throw new Error("User not found");
 
     if (
-        //@ts-expect-error
+        //@ts-expect-error - savedPrompts is treated as unknown here because it was selected dynamically or is missing from the type definition
       !user.savedPrompts.some(
-        (p: any) => p.toLowerCase() === userPrompt.toLowerCase()
+        (p: string) => p.toLowerCase() === userPrompt.toLowerCase()
       )
     ) {
       await prisma.user.update({
         where: { id: userId },
-          //@ts-expect-error
+          //@ts-expect-error - push operation on savedPrompts might not be supported in all versions of the Prisma client used here
         data: { savedPrompts: { push: userPrompt } },
       });
     }
@@ -111,10 +111,10 @@ export async function POST(req: NextRequest) {
     };
 
     return NextResponse.json(result, { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
     return NextResponse.json(
-      { error: "Error processing request", details: err.message },
+      { error: "Error processing request", details: (err as Error).message },
       { status: 500 }
     );
   }

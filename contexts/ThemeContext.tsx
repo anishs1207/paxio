@@ -10,7 +10,7 @@ interface ThemeContextType {
     setTheme: (theme: Theme) => void;
 }
 
-const ThemeContext = createCgontext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setThemeState] = useState<Theme>("dark");
@@ -20,6 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const savedTheme = localStorage.getItem("paxio-theme") as Theme | null;
         if (savedTheme) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setThemeState(savedTheme);
         }
         setMounted(true);
@@ -28,7 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Apply theme class to document
     useEffect(() => {
         if (!mounted) return;
-        
+
         const root = document.documentElement;
         if (theme === "dark") {
             root.classList.add("dark");

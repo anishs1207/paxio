@@ -15,7 +15,6 @@ import {
     Linear,
     Reddit,
     Airtable,
-    Typeform,
 } from "@/assets/images";
 
 export default function IntegrationsGrid() {

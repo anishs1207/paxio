@@ -1,5 +1,4 @@
 import axios from "axios";
-import logo from "@/assets/landing/paxio2.png";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
 import { useState } from "react";
@@ -63,7 +62,7 @@ export default function PayButton() {
 
             // const rzp = new (window as any).Razorpay(options);
             // rzp.open();
-        } catch (error) {
+        } catch {
             toast("Unable to initiate payment");
             setLoading(false);
         }
@@ -81,8 +80,9 @@ export default function PayButton() {
     active:bg-white
     focus-visible:bg-white
   "
+                disabled={loading}
             >
-                Pay ₹10
+                {loading ? "Processing..." : "Pay ₹10"}
             </Button>
         </div>
     );

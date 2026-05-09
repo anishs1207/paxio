@@ -42,10 +42,10 @@ export async function streamVoiceMessage(message: string, socketId: string) {
     });
     console.log("response.data", response.data);
     return response.data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       "[WS] Error streaming message:",
-      err.response?.data || err.message,
+      (err as any).response?.data || (err as Error).message, // eslint-disable-line @typescript-eslint/no-explicit-any
     );
     throw err;
   }
@@ -69,10 +69,10 @@ export async function streamMessage(
       extraData: data,
     });
     return response.data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       "[WS] Error streaming message:",
-      err.response?.data || err.message,
+      (err as any).response?.data || (err as Error).message, // eslint-disable-line @typescript-eslint/no-explicit-any
     );
     throw err;
   }
@@ -89,10 +89,10 @@ export async function streamQuestions(questions: Question[], socketId: string) {
     });
     console.log("[WS] streamQuestions response:", response.data);
     return response.data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       "[WS] Error streaming the questions:",
-      err.response?.data || err.message,
+      (err as any).response?.data || (err as Error).message, // eslint-disable-line @typescript-eslint/no-explicit-any
     );
     throw err;
   }
@@ -119,10 +119,10 @@ export async function streamNodesToBePermitted(
     });
     console.log("[WS] streamNodesToBePermitted response:", response.data);
     return response.data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(
       "[WS] Error streaming nodes:",
-      err.response?.data || err.message,
+      (err as any).response?.data || (err as Error).message, // eslint-disable-line @typescript-eslint/no-explicit-any
     );
     throw err;
   }

@@ -37,13 +37,13 @@ export async function googleSearch(query: string): Promise<SearchResult[]> {
         }
       );
       const items = res.data.items || [];
-      return items.map((item: any) => ({
+      return items.map((item: { title: string; link: string; snippet: string }) => ({
         title: item.title,
         link: item.link,
         snippet: item.snippet,
       }));
-    } catch (err: any) {
-      const status = err.response?.status;
+    } catch (err: unknown) {
+      const status = (err as any).response?.status; // eslint-disable-line @typescript-eslint/no-explicit-any
       console.warn(
         `Google Search failed for key ${apiKey.slice(0, 8)}... (${status})`
       );

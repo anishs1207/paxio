@@ -2,7 +2,7 @@
 
 import { CartesiaClient } from "@cartesia/cartesia-js";
 
-async function consumeResponse(response: any): Promise<Buffer> {
+async function consumeResponse(response: unknown): Promise<Buffer> {
   if (Buffer.isBuffer(response)) {
     return response;
   } else if (response && typeof response.arrayBuffer === "function") {
@@ -55,10 +55,11 @@ export async function generateSpeech(text: string) {
 
       console.log(`[Cartesia TTS] Success with key ${i + 1}`);
       return { success: true, audio: finalBuffer.toString("base64") };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
       console.warn(
         `[Cartesia TTS] Key ${i + 1} failed:`,
-        error?.statusCode || error?.message
+        err?.statusCode || err?.message
       );
       // Continue to next key
     }

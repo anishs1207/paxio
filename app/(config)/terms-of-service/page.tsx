@@ -25,7 +25,6 @@ export default function TermsOfServicePage() {
                         these Terms.
                     </p>
 
-                    {/* 1 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             1. Use of the Service
@@ -37,7 +36,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 2 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             2. Account Registration
@@ -50,7 +48,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 3 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             3. Third-Party Integrations
@@ -67,7 +64,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 4 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             4. Acceptable Use
@@ -79,7 +75,6 @@ export default function TermsOfServicePage() {
                         </ul>
                     </div>
 
-                    {/* 5 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             5. Data & Privacy
@@ -90,7 +85,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 6 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             6. Intellectual Property
@@ -103,7 +97,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 7 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             7. Termination
@@ -114,7 +107,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 8 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             8. Disclaimer of Warranties
@@ -126,7 +118,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 9 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             9. Limitation of Liability
@@ -138,7 +129,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 10 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             10. Changes to These Terms
@@ -150,7 +140,6 @@ export default function TermsOfServicePage() {
                         </p>
                     </div>
 
-                    {/* 11 */}
                     <div>
                         <h2 className="text-lg font-semibold text-white">
                             11. Contact Us

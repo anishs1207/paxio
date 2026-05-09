@@ -1,18 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/common/NavBar";
-import Footer from "@/components/common/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProviders } from "./SessionProvider";
-
-// @@later: theme mode 
-// <ThemeProvider
-//           attribute="class"
-//           defaultTheme="system"
-//           enableSystem
-//           disableTransitionOnChange
-//         ></ThemeProvider>
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,8 +34,6 @@ export const metadata: Metadata = {
   },
 };
 
-// works
-// it works
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,17 +42,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* <script src="https://checkout.razorpay.com/v1/checkout.js"></script> */}
+
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <SessionProviders>
-
           <Toaster />
           {children}
-
         </SessionProviders>
       </body>
     </html>

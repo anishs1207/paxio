@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
+// for doomscroll action to be better write here
+
 export async function GET(
     _: Request,
     { params }: { params: Promise<{ userId: string }> }

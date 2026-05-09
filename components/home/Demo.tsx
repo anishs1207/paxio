@@ -1,8 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Bot, Database, Pencil, Brain, Search, Zap, Mail, Slack, Github } from "lucide-react";
+import { Pencil, Search, Zap, Mail, Slack, Github } from "lucide-react";
 import Image from "next/image";
 import PersonalAssistant from "@/assets/assistant-icons/personal.png";
 import LegalAssistant from "@/assets/assistant-icons/legal.png";

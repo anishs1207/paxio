@@ -106,8 +106,8 @@ export async function GET(
       );
       outlookAuthUrl.searchParams.set(
         "scope",
-        //@ts-ignore
-        serviceScopes?.outlook.join(" ")
+        //@ts-expect-error - outlook property exists in serviceScopes but optional chaining or dynamic access might trigger type checks here
+        serviceScopes.outlook.join(" ")
       );
       outlookAuthUrl.searchParams.set(
         "state",
@@ -120,8 +120,8 @@ export async function GET(
 
       const slackAuthUrl = new URL("https://slack.com/oauth/v2/authorize");
       slackAuthUrl.searchParams.set("client_id", process.env.SLACK_CLIENT_ID!);
-      //@ts-ignore
-      slackAuthUrl.searchParams.set("scope", serviceScopes?.slack.join(","));
+      //@ts-expect-error - slack property exists in serviceScopes but optional chaining or dynamic access might trigger type checks here
+      slackAuthUrl.searchParams.set("scope", serviceScopes.slack.join(","));
       slackAuthUrl.searchParams.set("user_scope", "");
       slackAuthUrl.searchParams.set(
         "redirect_uri",
@@ -149,7 +149,7 @@ export async function GET(
       );
       calendlyAuthUrl.searchParams.set(
         "scope",
-        //@ts-ignore
+        //@ts-expect-error - calendly property exists in serviceScopes but dynamic access might trigger type checks here
         serviceScopes.calendly.join(" ")
       );
       calendlyAuthUrl.searchParams.set(
@@ -169,7 +169,7 @@ export async function GET(
       twitterAuthUrl.searchParams.set(
         "redirect_uri",
         process.env.TWITTER_REDIRECT_URI!
-      ); //@ts-ignore
+      ); //@ts-expect-error - twitter property exists in serviceScopes but dynamic access might trigger type checks here
       twitterAuthUrl.searchParams.set("scope", serviceScopes.twitter.join(" "));
       twitterAuthUrl.searchParams.set(
         "state",
@@ -197,7 +197,7 @@ export async function GET(
         "duration",
         "permanent" // Use 'permanent' for a refresh token
       );
-      // @ts-ignore
+      // @ts-expect-error - reddit property exists in serviceScopes but dynamic access might trigger type checks here
       redditAuthUrl.searchParams.set("scope", serviceScopes.reddit.join(" "));
       redditAuthUrl.searchParams.set(
         "state",
@@ -217,7 +217,7 @@ export async function GET(
         process.env.REDDIT_REDIRECT_URI!
       );
       redditAuthUrl.searchParams.set("duration", "permanent");
-      // @ts-ignore
+      // @ts-expect-error - reddit property exists in serviceScopes but dynamic access might trigger type checks here
       redditAuthUrl.searchParams.set("scope", serviceScopes.reddit.join(" "));
       redditAuthUrl.searchParams.set(
         "state",
@@ -293,7 +293,7 @@ export async function GET(
         "redirect_uri",
         process.env.TYPEFORM_REDIRECT_URI!
       );
-      // @ts-ignore
+      // @ts-expect-error - typeform property exists in serviceScopes but dynamic access might trigger type checks here
       typeformAuthUrl.searchParams.set(
         "scope",
         serviceScopes.typeform.join(" ")

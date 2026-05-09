@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "State not found" }, { status: 400 });
     }
     const decodedState = JSON.parse(decodeURIComponent(state));
-    const { service, userId } = decodedState;
+    const { service } = decodedState;
 
     const session = await getServerSession(authOptions);
 
@@ -81,11 +81,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/voice`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error during token exchange:", error);
 
     return NextResponse.json(
-      { error: `Internal Server Error: ${error}` },
+      { error: `Internal Server Error: ${String(error)}` },
       { status: 500 }
     );
   }

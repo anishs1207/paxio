@@ -44,7 +44,7 @@ const FAQ = () => {
 
                     </h2>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Got questions? We've got answers. Can't find what you're looking for? Contact our support team.
+                        Got questions? We&apos;ve got answers. Can&apos;t find what you&apos;re looking for? Contact our support team.
                     </p>
                 </div>
 

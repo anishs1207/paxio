@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
     // --- ASSEMBLYAI IMPLEMENTATION ---
     const transcript = await client.transcripts.transcribe({
       audio: buffer,
-      // @ts-ignore - universal-2 is valid per API but not yet in SDK types
-      speech_model: "universal-2" as any,
+      // @ts-expect-error - universal-2 is valid per API but may not be in all versions of the SDK types used here
+      speech_model: "universal-2" as string,
     });
 
     if (transcript.status === "error") {

@@ -3,17 +3,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Mail, Calendar, Share2, ShoppingBag, X } from "lucide-react";
-import { Header, Footer } from "./_components/layout";
-import { PeopleOverlay, ToolsOverlay } from "./_components/overlays";
-import VoiceContent from "./_components/Container";
-import IdleVisualizer from "./_components/responses/NeuralCoreSteup"
-import { io, Socket } from "socket.io-client";
-import { WorkflowFormBubble } from "./_components/Workflow"
-import { DoomscrollSessions } from "./_components/DoomscrollSessions"
-import OnboardingForm from "./_components/Onboarding";
 import { useSession } from "next-auth/react";
 import { generateSpeech } from "@/lib/actions";
-
+import { io, Socket } from "socket.io-client";
+import { Header, Footer, PeopleOverlay, ToolsOverlay, VoiceContent, IdleVisualizer, WorkflowFormBubble, DoomscrollSessions, OnboardingForm } from "@/components/dashboard";
 
 type AppState = "idle" | "listening" | "thinking" | "speaking";
 type MessageRole = "user" | "assistant";
@@ -21,9 +14,10 @@ type MessageRole = "user" | "assistant";
 interface Message {
     id: string;
     role: MessageRole;
-    content: string;
+    message: string;
     timestamp: Date;
     isVoice?: boolean;
+    payload?: unknown;
 }
 
 interface ActivityLog {
@@ -33,41 +27,17 @@ interface ActivityLog {
     timestamp: Date;
 }
 
-interface Person {
-    id: string;
+interface Tool {
     name: string;
-    email: string;
-}
-
-function decodePCM16(chunk: Uint8Array, audioContext: AudioContext) {
-    const pcm16 = new Int16Array(
-        chunk.buffer,
-        chunk.byteOffset,
-        chunk.byteLength / 2
-    );
-
-    const float32 = new Float32Array(pcm16.length);
-
-    for (let i = 0; i < pcm16.length; i++) {
-        float32[i] = pcm16[i] / 32768;
-    }
-
-    const buffer = audioContext.createBuffer(
-        1,
-        float32.length,
-        48000
-    );
-
-    buffer.copyToChannel(float32, 0);
-    return buffer;
+    label: string;
+    icon: React.ReactNode;
+    status: "loading" | "connected" | "disconnected";
 }
 
 
 
 export default function VoicePage() {
-    // Onboarding state: "loading" | "onboarding" | "ready"
     const [onboardingState, setOnboardingState] = useState<"loading" | "onboarding" | "ready">("loading");
-
     const [appState, setAppState] = useState<AppState>("idle");
     const [activeResponse, setActiveResponse] = useState("");
     const [inputText, setInputText] = useState("");
@@ -99,7 +69,7 @@ export default function VoicePage() {
     const [response, setResponse] = useState(false);
     const [responsePayload, setResponsePayload] = useState(null);
 
-    const [tools, setTools] = useState<any[]>([
+    const [tools, setTools] = useState<Tool[]>([
         { name: "gmail", label: "Gmail", icon: <Mail size={22} />, status: "loading" },
         { name: "calendar", label: "Calendar", icon: <Calendar size={22} />, status: "loading" },
         // { name: "reddit", label: "Reddit", icon: <Share2 size={22} />, status: "loading" },
@@ -108,46 +78,35 @@ export default function VoicePage() {
     ]);
 
 
-    const [conversationId, setConversationId] = useState("default")
+    const [conversationId] = useState("default")
 
     const shouldShowVisualizer = Boolean(responsePayload);
     const [isSocketReady, setIsSocketReady] = useState(false);
 
     const socketRef = useRef<Socket | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
-    const sourceQueue = useRef<AudioBufferSourceNode[]>([]);
     const nextPlayTimeRef = useRef(0);
 
-    const [message, setMessage] = useState<string | null>(null);
-    const [status, setStatus] = useState<boolean>(false);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [socketId, setSocketId] = useState<string | null>(null);
     const [showWorkflow, setShowWorkflow] = useState(false);
     const [showSessions, setShowSessions] = useState(false);
     const [doomscrollUrl, setDoomscrollUrl] = useState<string | null>(null);
     const [showStopModal, setShowStopModal] = useState(false);
 
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
-    const [activities] = useState<any[]>([]);
+    const [activities] = useState<ActivityLog[]>([]);
 
-    // Auto-vanish activeResponse after 5 seconds
     useEffect(() => {
         if (!activeResponse || appState === "listening" || appState === "speaking") return;
 
         const timer = setTimeout(() => {
             setActiveResponse("");
-            // Optional: Reset to idle if we were in thinking state and text vanishes?
-            // Usually we stay in 'thinking' until response comes. 
-            // If response is done (text shows), we are usually in 'idle' or 'speaking'.
-            // If 'speaking', we shouldn't vanish.
-            // If 'idle', we can vanish.
         }, 5000);
 
         return () => clearTimeout(timer);
     }, [activeResponse, appState]);
 
-    // Check onboarding status on mount
     useEffect(() => {
         if (userStatus !== "authenticated") return;
         axios
@@ -160,7 +119,6 @@ export default function VoicePage() {
                 }
             })
             .catch(() => {
-                // If error, assume not onboarded
                 setOnboardingState("onboarding");
             });
     }, [session?.user.id, userStatus]);
@@ -196,17 +154,16 @@ export default function VoicePage() {
             .catch(() =>
                 setTools((prev) => prev.map((t) => ({ ...t, status: "disconnected" })))
             );
-    }, []);
+    }, [userId]);
 
     useEffect(() => {
         const socket = io("https://api.paxio.tech");
-        // const socket = io("http://localhost:3000");
         socketRef.current = socket;
         audioContextRef.current = new AudioContext();
 
         socket.on("connect", async () => {
             console.log("Connected with id:", socket.id);
-            console.log("VERSION: Transcription Feedback Fixed"); // Verify code update
+            console.log("VERSION: Transcription Feedback Fixed");
             setSocketId(socket.id || null);
             console.log("socket is connected", socket.id)
             setIsSocketReady(true);
@@ -224,11 +181,9 @@ export default function VoicePage() {
             setIsSocketReady(false);
         });
 
-        socket.on("streamVoiceMessage", async ({ message, status, audioBuffer }) => {
-            // Keep appState as "thinking" until we are ready to speak
+        socket.on("streamVoiceMessage", async ({ message, audioBuffer }) => {
             console.log("streamVoiceMessage received, processing audio...", message);
 
-            // --- CARTESIA TTS IMPLEMENTATION ---
             if (message && !audioBuffer) {
                 try {
                     console.log("Generating audio with Cartesia (Server Action) for:", message);
@@ -262,7 +217,6 @@ export default function VoicePage() {
 
                 } catch (e) {
                     console.error("Cartesia TTS Error:", e);
-                    // Fallback: Show text if audio fails
                     setAppState("speaking");
                     setActiveResponse(message);
                 }
@@ -279,51 +233,19 @@ export default function VoicePage() {
                     source.start(nextPlayTimeRef.current);
                     nextPlayTimeRef.current += buffer.duration;
 
-                    // Sync: Show text and speak ONLY when audio starts
                     setAppState("speaking");
                     setActiveResponse(message);
                 } catch (e) {
                     console.error("Error decoding streamed audio", e);
-                    // Fallback
                     setAppState("speaking");
                     setActiveResponse(message);
                 }
             }
         });
 
-        // socket.on("audioStream", (chunk: ArrayBuffer) => {
-        //     console.log("audioStream chunk received, size:", chunk.byteLength);
-        //     if (!audioContextRef.current) return;
-
-        //     try {
-        //         const buffer = decodePCM16(
-        //             new Uint8Array(chunk),
-        //             audioContextRef.current
-        //         );
-
-        //         const source = audioContextRef.current.createBufferSource();
-        //         source.buffer = buffer;
-        //         source.connect(audioContextRef.current.destination);
-        //         source.start(nextPlayTimeRef.current);
-        //         nextPlayTimeRef.current += buffer.duration;
-        //     } catch (err) {
-
-        //         console.error("Error processing audio chunk:", err);
-        //     }
-        // });
-
-
-        // socket.on("audioStreamEnd", () => {
-        //     console.log("audioStreamEnd");
-        //     // NOTE: Do NOT reset to idle here if we are expecting the main response.
-        //     // We'll let the main response handling reset the state when IT finishes.
-        // });
-
-
-        socket.on("streamMessage", (data: any) => {
+        socket.on("streamMessage", (data: { stepData?: string; extraData?: string; type?: string; url?: string; message?: string }) => {
             console.log("Stream message received raw:", data);
 
-            // Handle nested JSON in stepData or extraData (fallback)
             let processedData = data;
             const jsonString = data.stepData || data.extraData;
 
@@ -341,17 +263,16 @@ export default function VoicePage() {
             if (processedData.type === "doomscroll_start" && processedData.url) {
                 console.log("Setting doomscroll URL:", processedData.url);
                 setDoomscrollUrl(processedData.url);
-                setResponsePayload(null); // Clear any previous visualizer payload
+                setResponsePayload(null);
                 setAppState("thinking");
                 setActiveResponse("Researching...");
             } else if (processedData.type === "assistant_response") {
                 console.log("Assistant response received, clearing doomscroll URL");
                 setDoomscrollUrl(null);
-                // User requested NOT to show the final text response in the main UI
-                // setActiveResponse(processedData.message); 
                 setAppState("speaking");
             } else if (processedData.type === "user_transcription") {
                 console.log("User transcription received:", processedData.message);
+                // @ts-expect-error - message is dynamic from socket
                 setActiveResponse(processedData.message);
                 setAppState("thinking");
             }
@@ -378,7 +299,6 @@ export default function VoicePage() {
                 isAtBottomRef.current = distanceToBottom < 100;
             };
 
-            // Reset to true when the container re-appears (e.g. state change)
             isAtBottomRef.current = true;
 
             scrollContainer.addEventListener("scroll", handleScroll);
@@ -398,23 +318,23 @@ export default function VoicePage() {
     async function getAllMessages({
         userId,
         conversationId,
-    }: any) {
+    }: { userId: string; conversationId: string }) {
         try {
             setIsLoadingMessages(true);
-            const res = await axios.get<any[]>("/api/new-chat", {
+            const res = await axios.get<unknown[]>("/api/new-chat", {
                 params: {
                     userId,
                     conversationId,
                 },
             });
             console.log("getting messages")
-            setMessages(prev => [...prev, ...res.data]);
+            setMessages(prev => [...prev, ...res.data as Message[]]);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("getAllMessages failed:", error);
 
             throw (
-                error?.response?.data ??
+                (error as { response?: { data?: unknown } })?.response?.data ??
                 new Error("Failed to fetch messages")
             );
         } finally {
@@ -444,20 +364,18 @@ export default function VoicePage() {
         const text = inputText.trim();
         submittedPromptRef.current = text;
 
-        // 1. Optimistic Update (Show message immediately)
         setMessages((prev) => [
             ...prev,
             {
-                id: Date.now().toString(), // Temporary ID
+                id: Date.now().toString(),
                 role: "user",
-                message: text, // ✅ FIXED: Changed 'content' to 'message'
+                message: text,
                 timestamp: new Date(),
             },
         ]);
 
         setInputText("");
 
-        // 2. Call Backend
         await getResponse();
     };
 
@@ -480,11 +398,9 @@ export default function VoicePage() {
                 formData.append("audio", audioBlob, "voice.wav");
             }
 
-            // --- HANDLER: USER MESSAGE ---
             if (submittedPromptRef.current) {
                 formData.append("prompt", submittedPromptRef.current);
                 try {
-                    // 1. Capture the text strictly before the async call
                     const currentPrompt = submittedPromptRef.current;
 
                     axios.post("/api/new-chat", {
@@ -494,7 +410,6 @@ export default function VoicePage() {
                         message: currentPrompt,
                         payload: {},
                     }).catch(err => console.error("Failed to save user message:", err));
-
 
                 } catch (err) {
                     console.log(err);
@@ -510,7 +425,6 @@ export default function VoicePage() {
             formData.append("socketId", socketRef.current?.id);
             submittedPromptRef.current = "";
 
-            // --- CORE REQUEST ---
             const res = await axios.post(
                 "/api/voice-personal-agent",
                 formData,
@@ -520,7 +434,6 @@ export default function VoicePage() {
             const { audio: audioBase64, data, transcription } = res.data;
             setResponsePayload(data);
 
-            // --- HANDLER: VOICE USER MESSAGE (transcribed) ---
             if (audioBlob && transcription) {
                 try {
                     axios.post("/api/new-chat", {
@@ -545,7 +458,6 @@ export default function VoicePage() {
                 }
             }
 
-            // Play Audio Logic
             if (audioBase64) {
                 const audioData = atob(audioBase64);
                 const audioArray = new Uint8Array(audioData.length);
@@ -554,14 +466,12 @@ export default function VoicePage() {
                 }
 
                 if (audioContextRef.current) {
-                    // Decode the final audio into an internal buffer
                     const finalBuffer = await audioContextRef.current.decodeAudioData(audioArray.buffer);
 
                     const source = audioContextRef.current.createBufferSource();
                     source.buffer = finalBuffer;
                     source.connect(audioContextRef.current.destination);
 
-                    // Schedule it AFTER the previous streaming audio
                     if (nextPlayTimeRef.current < audioContextRef.current.currentTime) {
                         nextPlayTimeRef.current = audioContextRef.current.currentTime;
                     }
@@ -570,7 +480,6 @@ export default function VoicePage() {
 
                     setAppState("speaking");
 
-                    // Attach clean-up only to this final source
                     source.onended = () => {
                         setAppState("idle");
                         setActiveResponse("");
@@ -581,9 +490,7 @@ export default function VoicePage() {
                 setActiveResponse("");
             }
 
-            // --- HANDLER: ASSISTANT RESPONSE ---
             try {
-                // 2. Capture the response text strictly
                 const aiResponse = data.response;
 
                 axios.post("/api/new-chat", {
@@ -599,16 +506,11 @@ export default function VoicePage() {
                     {
                         id: Date.now().toString(),
                         role: "assistant",
-                        // FIX: Use aiResponse directly.
-                        // FIX: Changed key from 'content' to 'message'
                         message: aiResponse,
                         timestamp: new Date(),
                         payload: data.data,
                     },
                 ]);
-
-                // User requested NOT to show final text in main UI
-                // setActiveResponse(aiResponse); 
 
                 await refreshCredits();
             } catch (err) {
@@ -622,11 +524,11 @@ export default function VoicePage() {
         }
     }
 
-    let mediaRecorder: MediaRecorder;
-    // --- ADJUSTABLE PARAMETERS ---
-    const SILENCE_THRESHOLD = 0.05; // 5% volume - safer than 30%
-    const SILENCE_DURATION = 800;   // Wait 800ms of silence to stop (500ms is very short)
-    const NO_SPEECH_TIMEOUT = 5000; // Stop if no speech detected for 5s
+
+
+    const SILENCE_THRESHOLD = 0.05;
+    const SILENCE_DURATION = 800;
+    const NO_SPEECH_TIMEOUT = 5000;
 
     const startVoice = async () => {
         if (appState !== "idle") return;
@@ -643,7 +545,6 @@ export default function VoicePage() {
         mediaRecorderRef.current = recorder;
         audioChunksRef.current = [];
 
-        // Standard data collection
         recorder.ondataavailable = (e) => {
             if (e.data.size > 0) {
                 audioChunksRef.current.push(e.data);
@@ -651,7 +552,7 @@ export default function VoicePage() {
         };
 
         recorder.onstop = async () => {
-            silenceCleanupRef.current?.(); // cleanup silence detection loop
+            silenceCleanupRef.current?.();
             silenceCleanupRef.current = null;
             hasReceivedAudioRef.current = false;
 
@@ -665,11 +566,8 @@ export default function VoicePage() {
         setAppState("listening");
         setActiveResponse("Listening...");
 
-        // Start silence detection IMMEDIATELY
-        // @ts-expect-error
         silenceCleanupRef.current = startSilenceDetection(stream);
 
-        // Backup safety timeout (10s max)
         setTimeout(() => {
             if (mediaRecorderRef.current?.state === "recording") {
                 stopVoice();
@@ -689,7 +587,6 @@ export default function VoicePage() {
         const data = new Uint8Array(analyser.fftSize);
 
         let silenceStart: number | null = null;
-        let speechStart: number | null = null;
         let hasSpoken = false;
         let cancelled = false;
 
@@ -700,7 +597,6 @@ export default function VoicePage() {
 
             analyser.getByteTimeDomainData(data);
 
-            // Calculate RMS volume
             let sum = 0;
             for (let i = 0; i < data.length; i++) {
                 const v = (data[i] - 128) / 128;
@@ -708,24 +604,14 @@ export default function VoicePage() {
             }
             const volume = Math.sqrt(sum / data.length);
 
-            // Check if user has started speaking
             if (!hasSpoken && volume > SILENCE_THRESHOLD) {
                 hasSpoken = true;
-                speechStart = Date.now();
-                // console.log("Speech started!");
             }
 
-            // Logic:
-            // 1. If volume > threshold, reset silence timer (user is speaking)
-            // 2. If volume < threshold AND user has spoken, start silence timer
-            // 3. If silence timer > limit, stop recording
-
             if (volume > SILENCE_THRESHOLD) {
-                silenceStart = null; // Reset silence timer
+                silenceStart = null;
             } else {
-                // It is silent...
                 if (hasSpoken) {
-                    // ...and user has already spoken at least once
                     silenceStart ??= Date.now();
 
                     if (Date.now() - silenceStart > SILENCE_DURATION) {
@@ -734,7 +620,6 @@ export default function VoicePage() {
                         return;
                     }
                 } else {
-                    // User hasn't spoken yet. Check explicit timeout for "no speech"
                     if (Date.now() - startTime > NO_SPEECH_TIMEOUT) {
                         cancelled = true;
                         stopVoice();
@@ -751,34 +636,28 @@ export default function VoicePage() {
         return () => {
             cancelled = true;
             source.disconnect();
-            // analyser.disconnect(); // optional
         };
     };
 
     const stopVoice = () => {
-        // Stop silence detection loop
         silenceCleanupRef.current?.();
         silenceCleanupRef.current = null;
 
-        // Stop recorder
         const recorder = mediaRecorderRef.current;
         if (!recorder || recorder.state !== "recording") return;
         recorder.stop();
     };
 
-    // Handler for when onboarding is completed
     const handleOnboardingComplete = () => {
         setOnboardingState("ready");
     };
 
-    // Show blank black screen while checking onboarding status
     if (onboardingState === "loading") {
         return (
             <div className="h-screen w-screen bg-black" />
         );
     }
 
-    // Show onboarding form if user hasn't completed onboarding
     if (onboardingState === "onboarding") {
         return (
             <OnboardingForm
@@ -788,7 +667,6 @@ export default function VoicePage() {
         );
     }
 
-    // Main content (onboardingState === "ready")
     return (
         <div className="relative flex h-[100dvh] bg-black text-zinc-100 overflow-hidden w-full max-w-[100vw]">
             <div className="flex-1 flex flex-col relative w-full max-w-full overflow-x-hidden">
@@ -797,26 +675,26 @@ export default function VoicePage() {
                     setShowBriefing={setShowBriefing}
                     showHistory={showHistory}
                     setShowHistory={setShowHistory}
-                    setIsNexusOpen={setIsNexusOpen}
-                    setIsWorkflowOpen={setShowWorkflow}
-                    setIsSessionsOpen={setShowSessions}
+                    setIsNexusOpen={(val) => { if (val) { setShowPeople(false); setShowWorkflow(false); setShowSessions(false); } setIsNexusOpen(val); }}
+                    setIsWorkflowOpen={(val) => { if (val) { setIsNexusOpen(false); setShowPeople(false); setShowSessions(false); } setShowWorkflow(val); }}
+                    setIsSessionsOpen={(val) => { if (val) { setIsNexusOpen(false); setShowPeople(false); setShowWorkflow(false); } setShowSessions(val); }}
                     credits={credits}
                     plan={plan}
                     isLoadingCredits={isLoadingCredits}
                     showPeople={showPeople}
-                    setShowPeople={setShowPeople}
+                    setShowPeople={(val) => { if (val) { setIsNexusOpen(false); setShowWorkflow(false); setShowSessions(false); } setShowPeople(val); }}
                 />
 
                 {shouldShowVisualizer && (
-                    //@ts-expect-error
+                    // @ts-expect-error - nested payload structure is dynamic from assistant response
                     (responsePayload?.data?.gmail?.emails?.length > 0) ||
-                    //@ts-expect-error
+                    // @ts-expect-error - nested payload structure is dynamic from assistant response
                     (responsePayload?.data?.calendar?.events?.length > 0) ||
-                    //@ts-expect-error
+                    // @ts-expect-error - nested payload structure is dynamic from assistant response
                     (responsePayload?.data?.reddit?.subreddits?.length > 0) ||
-                    //@ts-expect-error
+                    // @ts-expect-error - nested payload structure is dynamic from assistant response
                     (responsePayload?.data?.notion?.pages?.length > 0) ||
-                    //@ts-expect-error
+                    // @ts-expect-error - nested payload structure is dynamic from assistant response
                     (responsePayload?.data?.graphs?.graph?.length > 0)
                 ) ?
                     <IdleVisualizer
@@ -869,7 +747,6 @@ export default function VoicePage() {
                                                 </button>
                                                 <button
                                                     onClick={() => {
-                                                        // TODO: implement actual stop signal to backend
                                                         setDoomscrollUrl(null);
                                                         setShowStopModal(false);
                                                         setAppState("idle");
@@ -905,13 +782,13 @@ export default function VoicePage() {
                                     activities={activities}
                                     isLoadingMessages={isLoadingMessages}
                                     response={response}
-                                    //@ts-expect-error
+                                    //@ts-expect-error - scrollRef type mismatch with component internal ref expectation
                                     scrollRef={scrollRef}
                                 />
                                 {
                                     appState === "idle" && (
                                         <Footer
-                                            //@ts-expect-error
+                                            // @ts-expect-error - Footer component disabled prop mismatch
                                             disabled={!isSocketReady}
                                             appState={appState}
                                             isKeyboardVisible={isKeyboardVisible}
@@ -927,7 +804,6 @@ export default function VoicePage() {
                         )
                 }
 
-                {/* @@fix this stop button */}
                 {appState === "listening" && (
                     <button
                         onClick={stopVoice}

@@ -5,7 +5,7 @@ import { getAvailableKeys, markKeyFailed } from "./failedKeyCache";
 // Collect all GEMINI_API_KEY_* from environment
 const apiKeys: string[] = Object.entries(process.env)
   .filter(([key]) => key.startsWith("GEMINI_API_KEY_"))
-  .map(([_, value]) => value as string)
+  .map(([, value]) => value as string)
   .filter(Boolean);
 
 if (apiKeys.length === 0) {
@@ -59,9 +59,9 @@ export function getGeminiLLM(): ChatGoogleGenerativeAI {
  * Shuffles all keys and tries each one until one succeeds.
  */
 export async function invokeGeminiWithFallback(
-  prompt: string | any[]
-): Promise<any> {
-  let lastError: any;
+  prompt: string | any[] // eslint-disable-line @typescript-eslint/no-explicit-any
+): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  let lastError: unknown;
   const available = getAvailableKeys(apiKeys);
   if (available.length === 0) {
     console.warn("[GeminiLLM] All API keys are rate-limited. Falling back to full list.");
@@ -78,23 +78,23 @@ export async function invokeGeminiWithFallback(
     try {
       const result = await llm.invoke(prompt);
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn(
         `[GeminiLLM] API key failed, trying another...`,
-        err.message || err
+        (err as Error).message || err
       );
       lastError = err;
 
       // Check if error is rate limit or quota exceeded
       const isRetirable =
-        err.message?.includes("429") ||
-        err.message?.includes("quota") ||
-        err.message?.includes("rate") ||
-        err.message?.includes("RESOURCE_EXHAUSTED");
+        (err as Error).message?.includes("429") ||
+        (err as Error).message?.includes("quota") ||
+        (err as Error).message?.includes("rate") ||
+        (err as Error).message?.includes("RESOURCE_EXHAUSTED");
 
       if (isRetirable) {
         // Mark key as failed for 24h exclusion
-        markKeyFailed(key, err.message).catch(() => { });
+        markKeyFailed(key, (err as Error).message).catch(() => { });
       } else {
         // Don't retry on non-retryable errors
         throw err;
@@ -103,7 +103,7 @@ export async function invokeGeminiWithFallback(
   }
 
   throw new Error(
-    `[GeminiLLM] All ${apiKeys.length} API keys failed. Last error: ${lastError?.message || lastError}`
+    `[GeminiLLM] All ${apiKeys.length} API keys failed. Last error: ${(lastError as Error)?.message || lastError}`
   );
 }
 
@@ -117,7 +117,7 @@ export function getGeminiLLMWithFallback(): ChatGoogleGenerativeAI & {
 
   // Return the base LLM with an additional fallback method
   return Object.assign(baseLLM, {
-    //@ts-expect-error
+    //@ts-expect-error - invokeWithFallback is a custom property added to the base LLM instance
     invokeWithFallback,
   });
 }
